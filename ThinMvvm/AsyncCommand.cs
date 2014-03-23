@@ -19,6 +19,7 @@ namespace ThinMvvm
         /// <summary>
         /// Creates a new AsyncCommand from the specified action and optional condition.
         /// </summary>
+        /// <param name="owner">The command's owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
         /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
         public AsyncCommand( object owner, Func<Task> execute, Expression<Func<bool>> canExecute = null )
@@ -79,6 +80,7 @@ namespace ThinMvvm
         /// <summary>
         /// Creates a new AsyncCommand from the specified action and optional condition.
         /// </summary>
+        /// <param name="owner">The command's owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
         /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
         public AsyncCommand( object owner, Func<T, Task> execute, Expression<Func<T, bool>> canExecute = null )

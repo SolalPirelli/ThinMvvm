@@ -31,6 +31,10 @@ namespace ThinMvvm
         /// Occurs when a property value changes.
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// Fires a property changed event.
+        /// </summary>
+        /// <param name="propertyName">The property's name.</param>
         protected void OnPropertyChanged( [CallerMemberName] string propertyName = "" )
         {
             var evt = this.PropertyChanged;

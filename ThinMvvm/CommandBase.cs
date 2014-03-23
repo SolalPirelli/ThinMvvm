@@ -24,6 +24,7 @@ namespace ThinMvvm
         /// <summary>
         /// Creates a new CommandBase with the specified predicate.
         /// </summary>
+        /// <param name="owner">The command's owner.</param>
         /// <param name="canExecute">The predicate indicating whether the command can be executed, or null to always execute it.</param>
         protected CommandBase( object owner, Expression canExecute )
         {
