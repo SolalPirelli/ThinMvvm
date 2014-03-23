@@ -47,7 +47,7 @@ namespace ThinMvvm
         /// Gets a concrete instance of the specified type, resolving constructor arguments as needed, 
         /// with an optional additional constructor argument.
         /// </summary>
-        public static object Get( Type type, object argument )
+        public static object Get( Type type, object argument = null )
         {
             TypeInfo typeInfo = type.GetTypeInfo();
 
