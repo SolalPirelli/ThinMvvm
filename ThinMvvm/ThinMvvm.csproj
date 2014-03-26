@@ -48,11 +48,12 @@
     <Compile Include="Internals\ObservablePropertyVisitor.cs" />
     <Compile Include="IViewModel.cs" />
     <Compile Include="Logging\CommandLoggingRequest.cs" />
+    <Compile Include="Logging\DisabledLogger.cs" />
     <Compile Include="Logging\EventLogRequest.cs" />
     <Compile Include="Logging\LogIdAttribute.cs" />
     <Compile Include="Logging\LogParameterAttribute.cs" />
     <Compile Include="Logging\LogValueConverterAttribute.cs" />
-    <Compile Include="Logging\NavigationLogger.cs" />
+    <Compile Include="Logging\Logger.cs" />
     <Compile Include="Messenger.cs" />
     <Compile Include="NoParameter.cs" />
     <Compile Include="ObservableObject.cs" />

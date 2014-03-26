@@ -25,7 +25,7 @@ namespace ThinMvvm.WindowsPhone
             get { return (PhoneApplicationFrame) Application.Current.RootVisual; }
         }
 
-        private readonly NavigationLogger _logger;
+        private readonly Logger _logger;
         private readonly Dictionary<Type, Uri> _views;
         // HACK: IViewModel can't be covariant to be used with value types
         //       and having a non-generic IViewModel that shouldn't be implemented is a terrible idea
@@ -39,7 +39,7 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Creates a new WindowsPhoneNavigationService.
         /// </summary>
-        public WindowsPhoneNavigationService( NavigationLogger logger )
+        public WindowsPhoneNavigationService( Logger logger )
         {
             _logger = logger;
             _views = new Dictionary<Type, Uri>();
@@ -93,14 +93,6 @@ namespace ThinMvvm.WindowsPhone
             }
             else if ( e.NavigationMode == NavigationMode.Forward || e.NavigationMode == NavigationMode.New )
             {
-                // Ignore pages we don't know about
-                if ( !_views.Any( p => UriEquals( p.Value, e.Uri ) ) )
-                {
-                    _ignored.Push( true );
-                    return;
-                }
-                _ignored.Push( false );
-
                 if ( _removeCurrentFromBackstack )
                 {
                     Frame.RemoveBackEntry();
@@ -114,12 +106,24 @@ namespace ThinMvvm.WindowsPhone
                     _removeCurrentFromBackstack = false;
                 }
 
-                if ( _backStack.Count > 0 )
+                if ( e.IsNavigationInitiator )
                 {
-                    var currentViewModel = _backStack.Peek();
-                    currentViewModel.OnNavigatedTo();
-                    page.DataContext = currentViewModel;
-                    _logger.LogNavigation( currentViewModel, false );
+                    // Ignore pages we don't know about
+                    if ( !_views.Any( p => UriEquals( p.Value, e.Uri ) ) )
+                    {
+                        _ignored.Push( true );
+                        return;
+                    }
+                    _ignored.Push( false );
+
+
+                    if ( _backStack.Count > 0 )
+                    {
+                        var currentViewModel = _backStack.Peek();
+                        currentViewModel.OnNavigatedTo();
+                        page.DataContext = currentViewModel;
+                        _logger.LogNavigation( currentViewModel, false );
+                    }
                 }
             }
         }

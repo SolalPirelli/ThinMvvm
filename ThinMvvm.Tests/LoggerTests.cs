@@ -8,17 +8,19 @@ using ThinMvvm.Logging;
 
 namespace ThinMvvm.Tests
 {
-    public class TestNavigationLogger : NavigationLogger
+    public class TestLogger : Logger
     {
         public List<string> ViewModelNavigations { get; private set; }
 
         public List<Tuple<string, string, string>> CommandNavigations { get; private set; }
 
-        public TestNavigationLogger()
+
+        public TestLogger()
         {
             ViewModelNavigations = new List<string>();
             CommandNavigations = new List<Tuple<string, string, string>>();
         }
+
 
         protected override void LogNavigation( string id )
         {
@@ -83,12 +85,12 @@ namespace ThinMvvm.Tests
     }
 
     [TestClass]
-    public class NavigationLoggerTests
+    public class LoggerTests
     {
         [TestMethod]
-        public void ViewModelNavigationIsLogged()
+        public void NavigationIsLogged()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
 
             logger.LogNavigation( new TestViewModel1(), true );
 
@@ -96,9 +98,9 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public void ViewModelNavigationsAreLogged()
+        public void NavigationsAreLogged()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
 
             logger.LogNavigation( new TestViewModel1(), true );
             logger.LogNavigation( new TestViewModel2(), true );
@@ -107,9 +109,9 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public void BackwardsViewModelNavigationIsNotLogged()
+        public void BackwardsNavigationIsNotLogged()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm = new TestViewModel1();
 
             logger.LogNavigation( vm, true );
@@ -120,26 +122,24 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public void CommandNavigationIsLogged()
+        public void CommandIsLogged()
         {
-            var logger = new TestNavigationLogger();
-
+            var logger = new TestLogger();
             var vm = new TestViewModel1();
-            logger.LogNavigation( vm, true );
 
+            logger.LogNavigation( vm, true );
             vm.Command1.Execute();
 
             CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "C1", (string) null ) }, logger.CommandNavigations );
         }
 
         [TestMethod]
-        public void CommandNavigationsAreLogged()
+        public void CommandsAreLogged()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm = new TestViewModel1();
 
             logger.LogNavigation( vm, true );
-
             vm.Command1.Execute();
             vm.Command2.Execute();
 
@@ -149,31 +149,29 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public void CommandNavigationIsLoggedAfterViewModelChange()
+        public void CommandIsLoggedAfterViewModelChange()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm1 = new TestViewModel1();
             var vm2 = new TestViewModel2();
 
             logger.LogNavigation( vm1, true );
             logger.LogNavigation( vm2, true );
-
             vm2.Command3.Execute();
 
             CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "C3", (string) null ) }, logger.CommandNavigations );
         }
 
         [TestMethod]
-        public void CommandNavigationIsLoggedAfterBackwardsViewModelChange()
+        public void CommandIsLoggedAfterBackwardsViewModelChange()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm1 = new TestViewModel1();
             var vm2 = new TestViewModel2();
 
             logger.LogNavigation( vm1, true );
             logger.LogNavigation( vm2, true );
             logger.LogNavigation( vm1, false );
-
             vm1.Command1.Execute();
 
             CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "C1", (string) null ) }, logger.CommandNavigations );
@@ -182,14 +180,12 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void CommandLoggingRequestIsHonored()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm1 = new TestViewModel1();
             var vm2 = new TestViewModel2();
 
             logger.LogNavigation( vm1, true );
-
             Messenger.Send( new CommandLoggingRequest( vm2 ) );
-
             vm2.Command3.Execute();
 
             CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "C3", (string) null ) }, logger.CommandNavigations );
@@ -198,11 +194,10 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void EventLogRequestIsHonored()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm = new TestViewModel1();
 
             logger.LogNavigation( vm, true );
-
             Messenger.Send( new EventLogRequest( "XYZ", "123" ) );
 
             CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "XYZ", "123" ) }, logger.CommandNavigations );
@@ -211,11 +206,10 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void LogParametersRelativeToViewModelAreHonored()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm = new TestViewModel2 { SomeValue = Tuple.Create( "a b c" ) };
 
             logger.LogNavigation( vm, true );
-
             vm.Command4.Execute();
 
             CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "C4", "a b c" ) }, logger.CommandNavigations );
@@ -224,11 +218,10 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void LogParametersRelativeToCommandParameterAreHonored()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm = new TestViewModel2();
 
             logger.LogNavigation( vm, true );
-
             vm.Command5.Execute( "x y z" );
 
             CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "C5", "x y z" ) }, logger.CommandNavigations );
@@ -237,11 +230,10 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void LogValueConvertersAreHonored()
         {
-            var logger = new TestNavigationLogger();
+            var logger = new TestLogger();
             var vm = new TestViewModel2();
 
             logger.LogNavigation( vm, true );
-
             vm.Command6.Execute( true );
             vm.Command6.Execute( false );
 

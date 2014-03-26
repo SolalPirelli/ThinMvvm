@@ -10,20 +10,28 @@ using System.Reflection;
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// Logs navigations to ViewModels.
+    /// Logs navigations and events.
     /// </summary>
-    public abstract class NavigationLogger
+    public abstract class Logger
     {
         private string _currentViewModelId;
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the logger should warn (in the debug output) about missing LogId attributes on ViewModels and their commands.
+        /// </summary>
+        public static bool WarnOnMissingAttributes { get; set; }
+
 
         /// <summary>
         /// Creates a new NavigationLogger.
         /// </summary>
-        protected NavigationLogger()
+        protected Logger()
         {
             Messenger.Register<CommandLoggingRequest>( req => EnableCommandLogging( req.Object ) );
             Messenger.Register<EventLogRequest>( req => LogEvent( req.ScreenId ?? _currentViewModelId, req.EventId, req.Label ) );
         }
+
 
         /// <summary>
         /// Logs a navigation to the specified ViewModel, and a value indicating whether it's a navigation to a new one.
@@ -34,7 +42,10 @@ namespace ThinMvvm.Logging
             var vmLogAttr = viewModelType.GetTypeInfo().GetCustomAttribute<LogIdAttribute>();
             if ( vmLogAttr == null )
             {
-                Debug.WriteLine( "WARNING: Page {0} has no LogId attribute.", viewModelType.FullName );
+                if ( WarnOnMissingAttributes )
+                {
+                    Debug.WriteLine( "WARNING: Page {0} has no LogId attribute.", viewModelType.FullName );
+                }
             }
             else
             {
@@ -51,12 +62,16 @@ namespace ThinMvvm.Logging
         /// <summary>
         /// Logs a navigation with the specified ID.
         /// </summary>
-        protected abstract void LogNavigation( string id );
+        protected virtual void LogNavigation( string id )
+        {
+        }
 
         /// <summary>
         /// Logs a command execution on the specified ViewModel with the specified ID and label.
         /// </summary>
-        protected abstract void LogEvent( string viewModelId, string eventId, string label );
+        protected virtual void LogEvent( string viewModelId, string eventId, string label )
+        {
+        }
 
 
         /// <summary>
@@ -69,7 +84,10 @@ namespace ThinMvvm.Logging
                 var idAttr = prop.GetCustomAttribute<LogIdAttribute>();
                 if ( idAttr == null )
                 {
-                    Debug.WriteLine( "WARNING: Command {0} on object {1} has no LogIdAttribute.", prop.Name, obj.GetType().Name );
+                    if ( WarnOnMissingAttributes )
+                    {
+                        Debug.WriteLine( "WARNING: Command {0} on object {1} has no LogIdAttribute.", prop.Name, obj.GetType().Name );
+                    }
                 }
                 else
                 {

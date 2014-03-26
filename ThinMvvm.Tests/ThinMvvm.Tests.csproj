@@ -56,7 +56,7 @@
     <Compile Include="ContainerTests.cs" />
     <Compile Include="DataViewModelTests.cs" />
     <Compile Include="MessengerTests.cs" />
-    <Compile Include="NavigationLoggerTests.cs" />
+    <Compile Include="LoggerTests.cs" />
     <Compile Include="ObservableObjectTests.cs" />
     <Compile Include="ParameterlessAsyncCommandTests.cs" />
     <Compile Include="ParameterlessCommandTests.cs" />
