@@ -15,6 +15,13 @@ namespace ThinMvvm.Tests
         private int _counter = 0;
         private int _forcedCounter = 0;
 
+        [TestInitialize]
+        public void Initialize()
+        {
+            DataViewModelOptions.ClearNetworkExceptionTypes();
+            DataViewModelOptions.AddNetworkExceptionType( typeof( WebException ) );
+        }
+
         [TestCleanup]
         public void Cleanup()
         {
@@ -23,7 +30,6 @@ namespace ThinMvvm.Tests
             IsLoading = false;
             HasError = false;
             HasNetworkError = false;
-            DataViewModelOptions.NetworkExceptionType = typeof( WebException );
         }
 
         protected override Task RefreshAsync( CancellationToken token, bool force )
@@ -116,9 +122,9 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public void DataViewModelOptionsNetworkExceptionTypeIsRespected()
+        public void DataViewModelOptionsNetworkExceptionTypesAreRespected()
         {
-            DataViewModelOptions.NetworkExceptionType = typeof( DuplicateWaitObjectException );
+            DataViewModelOptions.AddNetworkExceptionType( typeof( DuplicateWaitObjectException ) );
 
             var source = new TaskCompletionSource<int>();
             var task = TryExecuteAsync( _ => source.Task );

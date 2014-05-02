@@ -22,7 +22,7 @@ namespace ThinMvvm
         public static TImpl Bind<TAbstract, TImpl>()
             where TImpl : TAbstract
         {
-            Type key = typeof( TAbstract );
+            var key = typeof( TAbstract );
             var implInfo = typeof( TImpl ).GetTypeInfo();
 
             if ( typeof( TAbstract ) == typeof( TImpl ) )
@@ -49,7 +49,7 @@ namespace ThinMvvm
         /// </summary>
         public static object Get( Type type, object argument = null )
         {
-            TypeInfo typeInfo = type.GetTypeInfo();
+            var typeInfo = type.GetTypeInfo();
 
             var existingImpl = _impls.FirstOrDefault( pair => typeInfo.IsAssignableFrom( pair.Key.GetTypeInfo() ) ).Value;
             if ( existingImpl != null )
@@ -68,30 +68,30 @@ namespace ThinMvvm
                 throw new ArgumentException( "Could not find an unique constructor for type {0}", typeInfo.Name );
             }
 
-            var argType = argument == null ? null : argument.GetType();
+            var argTypeInfo = argument == null ? null : argument.GetType().GetTypeInfo();
             bool argUsed = false;
 
             var ctorArgs =
                 ctor.GetParameters()
                     .Select( param =>
-                             {
-                                 if ( argument != null && param.ParameterType.GetTypeInfo().IsAssignableFrom( argType.GetTypeInfo() ) )
-                                 {
-                                     if ( _impls.ContainsKey( param.ParameterType ) )
-                                     {
-                                         throw new ArgumentException( "Ambiguous match for constructor argument of type {0} between a dependency and the argument.", param.ParameterType.FullName );
-                                     }
+                    {
+                        if ( argument != null && param.ParameterType.GetTypeInfo().IsAssignableFrom( argTypeInfo ) )
+                        {
+                            if ( _impls.ContainsKey( param.ParameterType ) )
+                            {
+                                throw new ArgumentException( "Ambiguous match for constructor argument of type {0} between a dependency and the argument.", param.ParameterType.FullName );
+                            }
 
-                                     if ( argUsed )
-                                     {
-                                         throw new InvalidOperationException( "Cannot use the argument twice in a constructor." );
-                                     }
+                            if ( argUsed )
+                            {
+                                throw new InvalidOperationException( "Cannot use the argument twice in a constructor." );
+                            }
 
-                                     argUsed = true;
-                                     return argument;
-                                 }
-                                 return Get( param.ParameterType, null );
-                             } )
+                            argUsed = true;
+                            return argument;
+                        }
+                        return Get( param.ParameterType, null );
+                    } )
                     .ToArray();
             return ctor.Invoke( ctorArgs );
         }

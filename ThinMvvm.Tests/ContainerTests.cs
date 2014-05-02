@@ -125,7 +125,7 @@ namespace ThinMvvm.Tests
 
         [TestMethod]
         [ExpectedException( typeof( InvalidOperationException ), "Get() should fail if the additional argument is required twice." )]
-        public void GetFailesOnDuplicateArgument()
+        public void GetFailsOnDuplicateArgument()
         {
             Container.Get( typeof( WithTwoArguments ), 42 );
         }
