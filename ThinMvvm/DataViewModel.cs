@@ -2,8 +2,6 @@
 // See License.txt file for more details
 
 using System;
-using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinMvvm.Logging;
@@ -136,7 +134,7 @@ namespace ThinMvvm
             {
                 if ( !token.IsCancellationRequested )
                 {
-                    if ( DataViewModelOptions.NetworkExceptionType.GetTypeInfo().IsAssignableFrom( e.GetType().GetTypeInfo() ) )
+                    if ( DataViewModelOptions.IsNetworkException( e ) )
                     {
                         HasNetworkError = true;
                     }
@@ -192,31 +190,4 @@ namespace ThinMvvm
         }
         #endregion
     }
-
-    /// <summary>
-    /// Options for DataViewModel.
-    /// </summary>
-    public static class DataViewModelOptions
-    {
-        private static Type _networkExceptionType = typeof( WebException );
-
-        /// <summary>
-        /// Gets or sets the type of exceptions that are considered network exceptions; that is, 
-        /// which exceptions will set HasNetworkError to true in DataViewModel.TryExecuteAsync.
-        /// WebException by default.
-        /// </summary>
-        public static Type NetworkExceptionType
-        {
-            get { return _networkExceptionType; }
-            set
-            {
-                if ( !typeof( Exception ).GetTypeInfo().IsAssignableFrom( value.GetTypeInfo() ) )
-                {
-                    throw new ArgumentException( "NetworkExceptionType must be an exception type." );
-                }
-                _networkExceptionType = value;
-            }
-        }
-    }
-
 }
