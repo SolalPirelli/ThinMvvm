@@ -18,7 +18,7 @@ namespace ThinMvvm.WindowsPhone
     {
         private const char UriParametersPrefix = '?';
         private const char UriParametersDelimiter = '&';
-        private const string UniqueParameter = "mvvm_unique_id";
+        private const string UniqueParameter = "ThinMvvm.WindowsPhone_UniqueId";
 
         private static PhoneApplicationFrame Frame
         {

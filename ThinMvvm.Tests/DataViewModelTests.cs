@@ -10,172 +10,146 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ThinMvvm.Tests
 {
     [TestClass]
-    public sealed class DataViewModelTests : DataViewModel<NoParameter>
+    public sealed class DataViewModelTests
     {
-        private int _counter = 0;
-        private int _forcedCounter = 0;
+        private sealed class TestDataViewModel : DataViewModel<NoParameter>
+        {
+            public Func<bool, CancellationToken, Task> RefreshAsyncMethod { get; set; }
+
+            protected override Task RefreshAsync( bool force, CancellationToken token )
+            {
+                return RefreshAsyncMethod( force, token );
+            }
+
+            public new Task TryRefreshAsync( bool force )
+            {
+                return base.TryRefreshAsync( force );
+            }
+        }
 
         [TestInitialize]
         public void Initialize()
         {
             DataViewModelOptions.ClearNetworkExceptionTypes();
-            DataViewModelOptions.AddNetworkExceptionType( typeof( WebException ) );
         }
 
-        [TestCleanup]
-        public void Cleanup()
+        [TestMethod]
+        public async Task OnNavigatedToForcesRefreshTheFirstTime()
         {
-            _counter = 0;
-            _forcedCounter = 0;
-            IsLoading = false;
-            HasError = false;
-            HasNetworkError = false;
-        }
-
-        protected override Task RefreshAsync( CancellationToken token, bool force )
-        {
-            if ( force )
+            bool forced = true;
+            var vm = new TestDataViewModel
             {
-                _forcedCounter++;
-            }
-            _counter++;
+                RefreshAsyncMethod = ( f, _ ) => { forced = f; return Task.FromResult( 0 ); }
+            };
 
-            return Task.FromResult( 0 );
+            await vm.OnNavigatedToAsync();
+
+            Assert.AreEqual( forced, true );
         }
 
         [TestMethod]
-        public void OnNavigatedToForcesRefreshTheFirstTime()
+        public async Task OnNavigatedToDoesNotForcesRefreshSubsequentTimes()
         {
-            OnNavigatedTo();
-            Assert.AreEqual( _forcedCounter, 1, "OnNavigatedTo() should force a refresh the first time it's called." );
-            Assert.AreEqual( _counter, 1, "OnNavigatedTo() should ask for a refresh." );
+            int forcedCount = 0;
+            int count = 0;
+            var vm = new TestDataViewModel
+            {
+                RefreshAsyncMethod = ( f, _ ) => { count++; forcedCount += f ? 1 : 0; return Task.FromResult( 0 ); }
+            };
+
+            await vm.OnNavigatedToAsync();
+            await vm.OnNavigatedToAsync();
+
+            Assert.AreEqual( forcedCount, 1 );
+            Assert.AreEqual( count, 2 );
         }
 
         [TestMethod]
-        public void OnNavigatedToDoesNotForcesRefreshSubsequentTimes()
+        public async Task TryRefreshAsyncCallsRefreshAsync()
         {
-            OnNavigatedTo();
-            OnNavigatedTo();
-            Assert.AreEqual( _forcedCounter, 1, "OnNavigatedTo() should önly force a refresh the first time it's called." );
-            Assert.AreEqual( _counter, 2, "OnNavigatedTo() should ask for a refresh every time." );
+            int forcedCount = 0;
+            int count = 0;
+            var vm = new TestDataViewModel
+            {
+                RefreshAsyncMethod = ( f, _ ) => { count++; forcedCount += f ? 1 : 0; return Task.FromResult( 0 ); }
+            };
+
+            await vm.TryRefreshAsync( false );
+
+            Assert.AreEqual( forcedCount, 0 );
+            Assert.AreEqual( count, 1 );
         }
 
         [TestMethod]
-        public void TryRefreshAsyncCallsRefreshAsync()
+        public async Task TryRefreshAsyncCallsRefreshAsyncAndForcesWhenAsked()
         {
-            TryRefreshAsync( false );
-            Assert.AreEqual( _forcedCounter, 0, "TryRefreshAsync(false) should not force a refresh." );
-            Assert.AreEqual( _counter, 1, "TryRefreshAsync() should ask for a refresh." );
+            int forcedCount = 0;
+            var vm = new TestDataViewModel
+            {
+                RefreshAsyncMethod = ( f, _ ) => { forcedCount += f ? 1 : 0; return Task.FromResult( 0 ); }
+            };
+
+            await vm.TryRefreshAsync( true );
+            Assert.AreEqual( forcedCount, 1 );
         }
 
         [TestMethod]
-        public void TryRefreshAsyncCallsRefreshAsyncAndForcesWhenAsked()
-        {
-            TryRefreshAsync( true );
-            Assert.AreEqual( _forcedCounter, 1, "TryRefreshAsync(true) should force a refresh." );
-        }
-
-        [TestMethod]
-        public void TryExecuteAsyncSetsIsLoading()
+        public void DataStatusIsLoadingThenDataLoadedOnSuccessfulRefresh()
         {
             var source = new TaskCompletionSource<int>();
-            var task = TryExecuteAsync( _ => source.Task );
+            var vm = new TestDataViewModel
+            {
+                RefreshAsyncMethod = ( _, __ ) => source.Task
+            };
 
-            Assert.IsTrue( IsLoading, "TryExecuteAsync() should set IsLoading to true while the function is executing." );
+            vm.OnNavigatedTo();
+
+            Assert.AreEqual( DataStatus.Loading, vm.DataStatus );
 
             source.SetResult( 0 );
 
-            Assert.IsFalse( IsLoading, "TryExecuteAsync() should set IsLoading to false once the function has completed." );
+            Assert.AreEqual( DataStatus.DataLoaded, vm.DataStatus );
         }
 
         [TestMethod]
-        public void TryExecuteAsyncDoesNotSetHasErrorsWhenNoErrorOccurs()
+        public async Task DataStatusIsErrorOnErrorDuringLoad()
         {
-            var _ = TryExecuteAsync( __ => Task.FromResult( 0 ) );
+            var vm = new TestDataViewModel
+            {
+                RefreshAsyncMethod = ( _, __ ) => { throw new Exception(); }
+            };
 
-            Assert.IsFalse( HasError, "TryExecuteAsync() should not set HasError to true when no error occurs." );
-            Assert.IsFalse( HasNetworkError, "TryExecuteAsync() should not set HasNetworkError to true when no error occurs." );
+            await vm.OnNavigatedToAsync();
+
+            Assert.AreEqual( DataStatus.Error, vm.DataStatus );
         }
 
         [TestMethod]
-        public void TryExecuteAsyncSetsHasErrorInCaseOfError()
+        public async Task DataStatusIsNetworkErrorOnNetworkErrorDuringLoad()
         {
-            var source = new TaskCompletionSource<int>();
-            var task = TryExecuteAsync( __ => source.Task );
+            DataViewModelOptions.AddNetworkExceptionType( typeof( WebException ) );
+            var vm = new TestDataViewModel
+            {
+                RefreshAsyncMethod = ( _, __ ) => { throw new WebException(); }
+            };
 
-            source.SetException( new Exception() );
+            await vm.OnNavigatedToAsync();
 
-            Assert.IsTrue( HasError, "TryExecuteAsync() should set HasError to true when an error occurs." );
-            Assert.IsFalse( HasNetworkError, "TryExecuteAsync() should not set HasNetworkError to true when no network error occurs." );
+            Assert.AreEqual( DataStatus.NetworkError, vm.DataStatus );
         }
 
         [TestMethod]
-        public void TryExecuteAsyncSetsHasNetworkErrorInCaseOfNetworkError()
-        {
-            var source = new TaskCompletionSource<int>();
-            var task = TryExecuteAsync( __ => source.Task );
-
-            source.SetException( new WebException() );
-
-            Assert.IsFalse( HasError, "TryExecuteAsync() should not set HasError to true when a network error occurs." );
-            Assert.IsTrue( HasNetworkError, "TryExecuteAsync() should set HasNetworkError to true when a network error occurs." );
-        }
-
-        [TestMethod]
-        public void DataViewModelOptionsNetworkExceptionTypesAreRespected()
+        public async Task DataViewModelOptionsNetworkExceptionTypesAreRespected()
         {
             DataViewModelOptions.AddNetworkExceptionType( typeof( DuplicateWaitObjectException ) );
-
-            var source = new TaskCompletionSource<int>();
-            var task = TryExecuteAsync( _ => source.Task );
-
-            source.SetException( new DuplicateWaitObjectException() );
-
-            Assert.IsFalse( HasError, "TryExecuteAsync() should not set HasError to true when a network error occurs." );
-            Assert.IsTrue( HasNetworkError, "TryExecuteAsync() should set HasNetworkError to true when a network error occurs." );
-        }
-
-        [TestMethod]
-        public void TrySetAsyncDoesNotTurnOffIsLoadingWhenCancelling()
-        {
-            var source = new TaskCompletionSource<int>();
-
-            var task1 = TryExecuteAsync( async tok =>
+            var vm = new TestDataViewModel
             {
-                while ( true )
-                {
-                    await Task.Delay( 2 );
-                    tok.ThrowIfCancellationRequested();
-                }
-            } );
+                RefreshAsyncMethod = ( _, __ ) => { throw new DuplicateWaitObjectException(); }
+            };
 
-            var task2 = TryExecuteAsync( _ => source.Task );
+            await vm.OnNavigatedToAsync();
 
-            Assert.IsTrue( IsLoading, "TryExecuteAsync() should not set IsLoading to false when the task has been cancelled." );
-
-            source.SetResult( 0 );
-        }
-
-        [TestMethod]
-        public void TrySetAsyncDoesNotTurnOnHasErrorWhenCancelling()
-        {
-            var source = new TaskCompletionSource<int>();
-
-            var task1 = TryExecuteAsync( async tok =>
-            {
-                while ( true )
-                {
-                    await Task.Delay( 2 );
-                    tok.ThrowIfCancellationRequested();
-                }
-            } );
-
-            var task2 = TryExecuteAsync( _ => source.Task );
-
-            Assert.IsFalse( HasError, "TryExecuteAsync() should not set HasError to true when the task has been cancelled." );
-            Assert.IsFalse( HasNetworkError, "TryExecuteAsync() should not set HasNetworkError to true when the task has been cancelled." );
-
-            source.SetResult( 0 );
+            Assert.AreEqual( DataStatus.NetworkError, vm.DataStatus );
         }
     }
 }

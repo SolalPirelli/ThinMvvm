@@ -14,17 +14,16 @@ namespace ThinMvvm
     public abstract class DataViewModel<TArg> : ViewModel<TArg>, IDisposable
     {
         // Lock to ensure cancellation doesn't cause race conditions
-        private object _lock = new object();
+        private readonly object _lock = new object();
         // Cancellation source to avoid the problem of older tasks finishing after younger ones, and replacing data
         private CancellationTokenSource _cancellationSource;
-
+        // Flag to force refresh on the first load
         private bool _firstRun;
-        private bool _isLoading;
-        private bool _hasError;
-        private bool _hasNetworkError;
+
+        private DataStatus _dataStatus;
 
         /// <summary>
-        /// Gets the currently used cancellation token.
+        /// Gets the cancellation token currently used by the ViewModel.
         /// </summary>
         protected CancellationToken CurrentCancellationToken
         {
@@ -32,30 +31,12 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the ViewModel is loading.
+        /// Gets the data status of the ViewModel.
         /// </summary>
-        public bool IsLoading
+        public DataStatus DataStatus
         {
-            get { return _isLoading; }
-            protected set { SetProperty( ref _isLoading, value ); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the ViewModel has an error.
-        /// </summary>
-        public bool HasError
-        {
-            get { return _hasError; }
-            protected set { SetProperty( ref _hasError, value ); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the ViewModel encountered a network error.
-        /// </summary>
-        public bool HasNetworkError
-        {
-            get { return _hasNetworkError; }
-            protected set { SetProperty( ref _hasNetworkError, value ); }
+            get { return _dataStatus; }
+            private set { SetProperty( ref _dataStatus, value ); }
         }
 
         /// <summary>
@@ -64,7 +45,7 @@ namespace ThinMvvm
         [LogId( "Refresh" )]
         public AsyncCommand RefreshCommand
         {
-            get { return GetAsyncCommand( () => TryRefreshAsync( true ), () => !IsLoading ); }
+            get { return GetAsyncCommand( () => TryRefreshAsync( true ), () => DataStatus != DataStatus.Loading ); }
         }
 
 
@@ -90,11 +71,11 @@ namespace ThinMvvm
         /// <summary>
         /// Refreshes the data.
         /// </summary>
-        /// <param name="token">The token used to cancel the refresh.</param>
         /// <param name="force">Whether to force the data refresh.</param>
-        protected virtual Task RefreshAsync( CancellationToken token, bool force )
+        /// <param name="token">The token used to cancel the refresh.</param>
+        protected virtual Task RefreshAsync( bool force, CancellationToken token )
         {
-            return Task.Delay( 0 );
+            return Task.FromResult( 0 );
         }
 
         /// <summary>
@@ -103,7 +84,7 @@ namespace ThinMvvm
         /// <param name="force">Whether to force the data refresh.</param>
         protected Task TryRefreshAsync( bool force )
         {
-            return TryExecuteAsync( tok => RefreshAsync( tok, force ) );
+            return TryExecuteAsync( tok => RefreshAsync( force, tok ) );
         }
 
         /// <summary>
@@ -120,9 +101,7 @@ namespace ThinMvvm
                 _cancellationSource = new CancellationTokenSource();
             }
 
-            HasError = false;
-            HasNetworkError = false;
-            IsLoading = true;
+            DataStatus = DataStatus.Loading;
 
             var token = _cancellationSource.Token;
 
@@ -136,18 +115,18 @@ namespace ThinMvvm
                 {
                     if ( DataViewModelOptions.IsNetworkException( e ) )
                     {
-                        HasNetworkError = true;
+                        DataStatus = DataStatus.NetworkError;
                     }
                     else
                     {
-                        HasError = true;
+                        DataStatus = DataStatus.Error;
                     }
                 }
             }
 
-            if ( !token.IsCancellationRequested )
+            if ( DataStatus == DataStatus.Loading && !token.IsCancellationRequested )
             {
-                IsLoading = false;
+                DataStatus = DataStatus.DataLoaded;
             }
         }
 
@@ -181,7 +160,7 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Disposes of the DataViewModel (part of the common IDisposable pattern recommended by Microsoft).
+        /// Disposes of the DataViewModel.
         /// </summary>
         protected virtual void Dispose( bool onlyManaged )
         {

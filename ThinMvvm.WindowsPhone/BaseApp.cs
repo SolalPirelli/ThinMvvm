@@ -17,7 +17,7 @@ namespace ThinMvvm.WindowsPhone
     /// </summary>
     public abstract class BaseApp : Application
     {
-        private const string FirstRunSettingKey = "MVVM_FirstRun";
+        private const string FirstRunKey = "ThinMvvm.WindowsPhone_FirstRun";
 
         /// <summary>
         /// Gets the current BaseApp instance.
@@ -125,10 +125,10 @@ namespace ThinMvvm.WindowsPhone
 
             // Do first run stuff now, message boxes (a common use case) can't be displayed before
             bool dummy;
-            if ( !IsolatedStorageSettings.ApplicationSettings.TryGetValue( FirstRunSettingKey, out dummy ) )
+            if ( !IsolatedStorageSettings.ApplicationSettings.TryGetValue( FirstRunKey, out dummy ) )
             {
                 OnFirstRun();
-                IsolatedStorageSettings.ApplicationSettings.Add( FirstRunSettingKey, false );
+                IsolatedStorageSettings.ApplicationSettings.Add( FirstRunKey, false );
             }
         }
 
