@@ -34,9 +34,17 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
+        public void DataStatusIsNoDataAfterInitialization()
+        {
+            var vm = new TestDataViewModel();
+
+            Assert.AreEqual( DataStatus.NoData, vm.DataStatus );
+        }
+
+        [TestMethod]
         public async Task OnNavigatedToForcesRefreshTheFirstTime()
         {
-            bool forced = true;
+            bool forced = false;
             var vm = new TestDataViewModel
             {
                 RefreshAsyncMethod = ( f, _ ) => { forced = f; return Task.FromResult( 0 ); }
