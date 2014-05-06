@@ -7,5 +7,7 @@ namespace ThinMvvm.Logging
     /// Logger that doesn't log anything.
     /// Use this if you don't want to use the logging features.
     /// </summary>
-    public sealed class DisabledLogger : Logger { }
+    public sealed class DisabledLogger : Logger
+    {
+    }
 }

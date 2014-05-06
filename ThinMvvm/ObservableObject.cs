@@ -19,7 +19,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Creates a new ObservableObject.
+        /// Initializes a new instance of the <see cref="ObservableObject" /> class.
         /// </summary>
         protected ObservableObject()
         {
@@ -31,6 +31,7 @@ namespace ThinMvvm
         /// Occurs when a property value changes.
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
+
         /// <summary>
         /// Fires a property changed event.
         /// </summary>

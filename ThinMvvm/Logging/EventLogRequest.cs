@@ -25,8 +25,11 @@ namespace ThinMvvm.Logging
 
 
         /// <summary>
-        /// Creates a new EventLogRequest.
+        /// Initializes a new instance of the <see cref="EventLogRequest" /> class with the specified parameters.
         /// </summary>
+        /// <param name="eventId">The event ID.</param>
+        /// <param name="label">The label.</param>
+        /// <param name="screenId">Optional. The screen ID, if it's different from the current screen.</param>
         public EventLogRequest( string eventId, string label, string screenId = null )
         {
             EventId = eventId;

@@ -11,7 +11,8 @@ namespace ThinMvvm
     /// <summary>
     /// ViewModel that loads data.
     /// </summary>
-    public abstract class DataViewModel<TArg> : ViewModel<TArg>, IDisposable
+    /// <typeparam name="TParameter">The type of the ViewModel's constructor parameter, or <see cref="NoParameter" /> if it does not have one.</typeparam>
+    public abstract class DataViewModel<TParameter> : ViewModel<TParameter>, IDisposable
     {
         // Lock to ensure cancellation doesn't cause race conditions
         private readonly object _lock = new object();
@@ -22,13 +23,6 @@ namespace ThinMvvm
 
         private DataStatus _dataStatus;
 
-        /// <summary>
-        /// Gets the cancellation token currently used by the ViewModel.
-        /// </summary>
-        protected CancellationToken CurrentCancellationToken
-        {
-            get { return _cancellationSource.Token; }
-        }
 
         /// <summary>
         /// Gets the data status of the ViewModel.
@@ -40,7 +34,15 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Command executed to update all data.
+        /// Gets the cancellation token currently used by the ViewModel.
+        /// </summary>
+        protected CancellationToken CurrentCancellationToken
+        {
+            get { return _cancellationSource.Token; }
+        }
+
+        /// <summary>
+        /// Gets the command executed to update all data.
         /// </summary>
         [LogId( "Refresh" )]
         public AsyncCommand RefreshCommand
@@ -50,7 +52,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Creates a new DataViewModel.
+        /// Initializes a new instance of the <see cref="DataViewModel" /> class.
         /// </summary>
         protected DataViewModel()
         {
@@ -62,6 +64,7 @@ namespace ThinMvvm
         /// <summary>
         /// Occurs after the user navigated to the ViewModel.
         /// </summary>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual async Task OnNavigatedToAsync()
         {
             await TryRefreshAsync( _firstRun );
@@ -73,6 +76,7 @@ namespace ThinMvvm
         /// </summary>
         /// <param name="force">Whether to force the data refresh.</param>
         /// <param name="token">The token used to cancel the refresh.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         protected virtual Task RefreshAsync( bool force, CancellationToken token )
         {
             return Task.FromResult( 0 );
@@ -82,6 +86,7 @@ namespace ThinMvvm
         /// Attempts to refresh the data.
         /// </summary>
         /// <param name="force">Whether to force the data refresh.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         protected Task TryRefreshAsync( bool force )
         {
             return TryExecuteAsync( tok => RefreshAsync( force, tok ) );
@@ -90,6 +95,8 @@ namespace ThinMvvm
         /// <summary>
         /// Attempts to execute the specified asynchronous action.
         /// </summary>
+        /// <param name="action">The action to execute.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         protected async Task TryExecuteAsync( Func<CancellationToken, Task> action )
         {
             lock ( _lock )
@@ -98,6 +105,7 @@ namespace ThinMvvm
                 {
                     _cancellationSource.Cancel();
                 }
+
                 _cancellationSource = new CancellationTokenSource();
             }
 
@@ -143,7 +151,7 @@ namespace ThinMvvm
 
         #region IDisposable implementation
         /// <summary>
-        /// Destroys the DataViewModel.
+        /// Finalizes an instance.
         /// </summary>
         ~DataViewModel()
         {
@@ -162,7 +170,8 @@ namespace ThinMvvm
         /// <summary>
         /// Disposes of the DataViewModel.
         /// </summary>
-        protected virtual void Dispose( bool onlyManaged )
+        /// <param name="alsoManaged">A value indicating whether managed resources should be disposed.</param>
+        protected virtual void Dispose( bool alsoManaged )
         {
             _cancellationSource.Cancel();
             _cancellationSource.Dispose();

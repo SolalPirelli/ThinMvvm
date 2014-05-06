@@ -221,10 +221,10 @@ namespace ThinMvvm.WindowsPhone
 
         #region IWindowsPhoneNavigationService implementation
         /// <summary>
-        /// Adds a ViewModel to View URI link.
+        /// Binds the specified View URI to the specified ViewModel type.
         /// </summary>
-        /// <typeparam name="TViewModel">The ViewModel's type.</typeparam>
-        /// <param name="viewUri">The View URI. Needs to be relative to the app root (e.g. /MyApp;Component/Views/MyView.xaml).</param>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
+        /// <param name="viewUri">The View URI. It needs to be relative to the app root (e.g. /MyApp;Component/Views/MyView.xaml).</param>
         public void Bind<TViewModel>( string viewUri )
         {
             _views.Add( typeof( TViewModel ), new Uri( viewUri, UriKind.Relative ) );

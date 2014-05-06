@@ -18,13 +18,13 @@ namespace ThinMvvm.Logging
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether the logger should warn (in the debug output) about missing LogId attributes on ViewModels and their commands.
+        /// Gets or sets a value indicating whether the logger should warn in the debug output about missing LogId attributes on ViewModels and their commands.
         /// </summary>
         public static bool WarnOnMissingAttributes { get; set; }
 
 
         /// <summary>
-        /// Creates a new NavigationLogger.
+        /// Initializes a new instance of the <see cref="Logger" /> class.
         /// </summary>
         protected Logger()
         {
@@ -62,6 +62,7 @@ namespace ThinMvvm.Logging
         /// <summary>
         /// Logs a navigation with the specified ID.
         /// </summary>
+        /// <param name="id">The ID.</param>
         protected virtual void LogNavigation( string id )
         {
         }
@@ -69,6 +70,9 @@ namespace ThinMvvm.Logging
         /// <summary>
         /// Logs a command execution on the specified ViewModel with the specified ID and label.
         /// </summary>
+        /// <param name="viewModelId">The ViewModel ID.</param>
+        /// <param name="eventId">The event ID.</param>
+        /// <param name="label">The label.</param>
         protected virtual void LogEvent( string viewModelId, string eventId, string label )
         {
         }
@@ -122,7 +126,7 @@ namespace ThinMvvm.Logging
                         string label;
                         try
                         {
-                            label = getLabel( e.Parameter );
+                            label = getLabel( e.Argument );
                         }
                         catch ( Exception exn )
                         {
@@ -139,19 +143,17 @@ namespace ThinMvvm.Logging
         /// <summary>
         /// Get all properties of a type info, including those declared by base types.
         /// </summary>
-        private static IEnumerable<PropertyInfo> GetAllProperties( TypeInfo type )
+        private static IEnumerable<PropertyInfo> GetAllProperties( TypeInfo typeInfo )
         {
-            foreach ( var prop in type.DeclaredProperties )
+            var props = new List<PropertyInfo>();
+
+            while ( typeInfo != null )
             {
-                yield return prop;
+                props.AddRange( typeInfo.DeclaredProperties );
+                typeInfo = typeInfo.BaseType == null ? null : typeInfo.BaseType.GetTypeInfo();
             }
-            if ( type.BaseType != null )
-            {
-                foreach ( var prop in GetAllProperties( type.BaseType.GetTypeInfo() ) )
-                {
-                    yield return prop;
-                }
-            }
+
+            return props;
         }
 
         /// <summary>

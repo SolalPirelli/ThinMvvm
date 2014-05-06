@@ -23,7 +23,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Creates a new instance of WindowsPhoneDataCache.
+        /// Initializes a new instance of the <see cref="WindowsPhoneCache" /> class.
         /// </summary>
         public WindowsPhoneCache()
         {
@@ -97,6 +97,7 @@ namespace ThinMvvm
             {
                 _data.Remove( GetKey( tup.Item1, tup.Item2 ) );
             }
+
             SaveData( _data, _settings );
             SaveMetadata( _metadata, _settings );
         }
@@ -112,6 +113,7 @@ namespace ThinMvvm
             {
                 metadata = new CacheMetadata();
             }
+
             return metadata;
         }
 
@@ -162,20 +164,20 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Serializable etadata for the cache.
+        /// Serializable metadata for the cache.
         /// </summary>
         [DataContract]
         private sealed class CacheMetadata
         {
             /// <summary>
-            /// The serialized data.
+            /// Gets (or sets, but only for serialization) the serialized data.
             /// </summary>
             [DataMember]
             public Dictionary<string, Dictionary<long, DateTime>> Data { get; set; }
 
 
             /// <summary>
-            /// Creates a new instance of CacheMetadata.
+            /// Initializes a new instance of the <see cref="CacheMetadata" /> class.
             /// </summary>
             public CacheMetadata()
             {
@@ -218,6 +220,7 @@ namespace ThinMvvm
                 {
                     return null;
                 }
+
                 return DateTime.Now <= Data[key][id];
             }
 

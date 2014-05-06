@@ -18,7 +18,7 @@ namespace ThinMvvm
 
         /// <summary>
         /// Initializes static members of the DataViewModelOptions class.
-        /// By default, network exception types are restricted to System.Net.WebException.
+        /// By default, there are no network exception types.
         /// </summary>
         static DataViewModelOptions()
         {

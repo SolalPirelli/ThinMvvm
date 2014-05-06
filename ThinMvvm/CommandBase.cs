@@ -22,7 +22,7 @@ namespace ThinMvvm
         internal object Owner { get; private set; }
 
         /// <summary>
-        /// Creates a new CommandBase with the specified predicate.
+        /// Initializes a new instance of the <see cref="CommandBase" /> class with the specified predicate.
         /// </summary>
         /// <param name="owner">The command's owner.</param>
         /// <param name="canExecute">The predicate indicating whether the command can be executed, or null to always execute it.</param>
@@ -46,6 +46,7 @@ namespace ThinMvvm
         /// Occurs when changes occur that affect whether or not the command should execute.
         /// </summary>
         public event EventHandler CanExecuteChanged;
+
         /// <summary>
         /// Fires the CanExecuteChanged event.
         /// </summary>
@@ -63,9 +64,11 @@ namespace ThinMvvm
         /// Occurs when the command is executed.
         /// </summary>
         internal event EventHandler<CommandExecutedEventArgs> Executed;
+
         /// <summary>
         /// Fires the Executed event.
         /// </summary>
+        /// <param name="parameter">The parameter given to the command's Execute method, if any.</param>
         protected void OnExecuted( object parameter = null )
         {
             var evt = Executed;

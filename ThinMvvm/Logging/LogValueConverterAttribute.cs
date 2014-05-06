@@ -17,14 +17,16 @@ namespace ThinMvvm.Logging
         public object Value { get; private set; }
 
         /// <summary>
-        /// Gets the actual value that should be logged.
+        /// Gets the corresponding value to log.
         /// </summary>
         public string LoggedValue { get; private set; }
 
 
         /// <summary>
-        /// Creates a new LogValueConverterAttribute.
+        /// Initializes a new instance of the <see cref="LogValueConverterAttribute" /> class with the specified parameters.
         /// </summary>
+        /// <param name="value">The parameter value.</param>
+        /// <param name="loggedValue">The corresponding value to log.</param>
         public LogValueConverterAttribute( object value, string loggedValue )
         {
             Value = value;

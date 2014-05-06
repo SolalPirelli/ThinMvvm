@@ -4,12 +4,12 @@
 namespace ThinMvvm
 {
     /// <summary>
-    /// Special class to denote that a ViewModel has no explicit parameters.
+    /// Special class to denote that a <see cref="IViewModel{TParameter}"/> has no constructor parameter in addition to its dependencies.
     /// </summary>
     public sealed class NoParameter
     {
         /// <summary>
-        /// Prevents instances of NoParameter from being created.
+        /// Prevents the creation of <see cref="NoParameter"/> instances.
         /// </summary>
         private NoParameter() { }
     }

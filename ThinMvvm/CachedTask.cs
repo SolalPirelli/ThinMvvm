@@ -36,7 +36,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Creates a new instance of the CachedTask class with the specified parameters.
+        /// Initializes a new instance of the <see cref="CachedTask{T}" /> class with the specified parameters.
         /// </summary>
         internal CachedTask( Func<Task<T>> getter, long? id, DateTime? expirationDate, bool hasNewData, bool shouldBeCached )
         {
@@ -51,7 +51,7 @@ namespace ThinMvvm
         /// <summary>
         /// Asynchronously gets the data held by the task.
         /// </summary>
-        /// <returns>The data.</returns>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         public Task<T> GetDataAsync()
         {
             return _getter();
@@ -64,34 +64,34 @@ namespace ThinMvvm
     public static class CachedTask
     {
         /// <summary>
-        /// Creates a task with a result that will be cached, an optional ID and an optional expiration date.
+        /// Creates a <see cref="CachedTask{T}"/> with a result that will be cached, an optional ID and an optional expiration date.
         /// </summary>
         /// <typeparam name="T">The result type.</typeparam>
         /// <param name="getter">The asynchronous result getter.</param>
         /// <param name="id">The ID, if any.</param>
         /// <param name="expirationDate">The expiration date, if any.</param>
-        /// <returns>A task with the specified parameters.</returns>
+        /// <returns>A <see cref="CachedTask{T}" /> with the specified parameters.</returns>
         public static CachedTask<T> Create<T>( Func<Task<T>> getter, long? id = null, DateTime? expirationDate = null )
         {
             return new CachedTask<T>( getter, id, expirationDate, true, true );
         }
 
         /// <summary>
-        /// Creates a task whose result will not be cached.
+        /// Creates a <see cref="CachedTask{T}" /> whose result will not be cached.
         /// </summary>
         /// <typeparam name="T">The result type.</typeparam>
         /// <param name="getter">The asynchronous result getter.</param>
-        /// <returns>A task with the specified result getter.</returns>
+        /// <returns>A <see cref="CachedTask{T}" /> with the specified result getter.</returns>
         public static CachedTask<T> DoNotCache<T>( Func<Task<T>> getter )
         {
             return new CachedTask<T>( getter, null, null, true, false );
         }
 
         /// <summary>
-        /// Creates a task without new data.
+        /// Creates a <see cref="CachedTask{T}" /> without new data.
         /// </summary>
         /// <typeparam name="T">The data type.</typeparam>
-        /// <returns>A task without new data.</returns>
+        /// <returns>A <see cref="CachedTask{T}" /> without new data.</returns>
         public static CachedTask<T> NoNewData<T>()
         {
             return new CachedTask<T>( null, null, null, false, false );

@@ -16,9 +16,11 @@ namespace ThinMvvm
         private static readonly Dictionary<Type, object> _impls = new Dictionary<Type, object>();
 
         /// <summary>
-        /// Binds a type to a concrete implementation.
+        /// Binds an abstract type to a concrete type.
         /// </summary>
         /// <returns>The instance of the implementation.</returns>
+        /// <typeparam name="TAbstract">The abstract type (or interface).</typeparam>
+        /// <typeparam name="TImpl">The concrete type.</typeparam>
         public static TImpl Bind<TAbstract, TImpl>()
             where TImpl : TAbstract
         {
@@ -29,10 +31,12 @@ namespace ThinMvvm
             {
                 throw new ArgumentException( "Cannot bind a type to itself." );
             }
+
             if ( implInfo.IsInterface || implInfo.IsAbstract )
             {
                 throw new ArgumentException( "The implementation type must be concrete." );
             }
+
             if ( _impls.ContainsKey( key ) )
             {
                 throw new InvalidOperationException( "Cannot override an implementation." );
@@ -44,10 +48,13 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Gets a concrete instance of the specified type, resolving constructor arguments as needed, 
-        /// with an optional additional constructor argument.
+        /// Gets a concrete instance of the specified type, resolving constructor parameters as needed,
+        /// with an optional additional constructor parameter.
         /// </summary>
-        public static object Get( Type type, object argument = null )
+        /// <param name="type">The type.</param>
+        /// <param name="parameter">Optional. The additional parameter, if any.</param>
+        /// <returns>A concrete instance of the specified type.</returns>
+        public static object Get( Type type, object parameter = null )
         {
             var typeInfo = type.GetTypeInfo();
 
@@ -68,18 +75,19 @@ namespace ThinMvvm
                 throw new ArgumentException( "Could not find an unique constructor for type {0}", typeInfo.Name );
             }
 
-            var argTypeInfo = argument == null ? null : argument.GetType().GetTypeInfo();
+            var argTypeInfo = parameter == null ? null : parameter.GetType().GetTypeInfo();
             bool argUsed = false;
 
             var ctorArgs =
                 ctor.GetParameters()
                     .Select( param =>
                     {
-                        if ( argument != null && param.ParameterType.GetTypeInfo().IsAssignableFrom( argTypeInfo ) )
+                        if ( parameter != null && param.ParameterType.GetTypeInfo().IsAssignableFrom( argTypeInfo ) )
                         {
                             if ( _impls.ContainsKey( param.ParameterType ) )
                             {
-                                throw new ArgumentException( "Ambiguous match for constructor argument of type {0} between a dependency and the argument.", param.ParameterType.FullName );
+                                throw new ArgumentException( "Ambiguous match for constructor parameter of type {0} between a dependency and the additional parameter.",
+                                                             param.ParameterType.FullName );
                             }
 
                             if ( argUsed )
@@ -88,7 +96,7 @@ namespace ThinMvvm
                             }
 
                             argUsed = true;
-                            return argument;
+                            return parameter;
                         }
                         return Get( param.ParameterType, null );
                     } )

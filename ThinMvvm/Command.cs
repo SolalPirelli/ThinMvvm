@@ -8,7 +8,7 @@ using System.Windows.Input;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Parameterless ICommand.
+    /// Synchronous ICommand without a parameter.
     /// </summary>
     public sealed class Command : CommandBase, ICommand
     {
@@ -16,7 +16,7 @@ namespace ThinMvvm
         private readonly Func<bool> _canExecute;
 
         /// <summary>
-        /// Creates a new Command from the specified action and optional condition.
+        /// Initializes a new instance of the <see cref="Command" /> class with the specified action and optional condition.
         /// </summary>
         /// <param name="owner">The command's owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
@@ -49,7 +49,7 @@ namespace ThinMvvm
         /// <summary>
         /// Defines the method that determines whether the command can execute in its current state.
         /// </summary>
-        /// <param name="parameter">Ignored.</param>
+        /// <param name="parameter">Ignored parameter.</param>
         /// <returns>True if this command can be executed; otherwise, false.</returns>
         bool ICommand.CanExecute( object parameter )
         {
@@ -59,7 +59,7 @@ namespace ThinMvvm
         /// <summary>
         /// Defines the method to be called when the command is invoked.
         /// </summary>
-        /// <param name="parameter">Ignored.</param>
+        /// <param name="parameter">Ignored parameter.</param>
         void ICommand.Execute( object parameter )
         {
             OnExecuted();
@@ -69,15 +69,16 @@ namespace ThinMvvm
     }
 
     /// <summary>
-    /// ICommand that takes a parameter.
+    /// Synchronous ICommand with a parameter.
     /// </summary>
+    /// <typeparam name="T">The parameter type.</typeparam>
     public sealed class Command<T> : CommandBase, ICommand
     {
         private readonly Action<T> _execute;
         private readonly Func<T, bool> _canExecute;
 
         /// <summary>
-        /// Creates a new Command from the specified action and optional condition.
+        /// Initializes a new instance of the <see cref="Command{T}" /> class with the specified action and optional condition.
         /// </summary>
         /// <param name="owner">The command's owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>

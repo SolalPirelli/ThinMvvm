@@ -11,6 +11,8 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Binds the specified View URI to the specified ViewModel type.
         /// </summary>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
+        /// <param name="viewUri">The View URI.</param>
         void Bind<TViewModel>( string viewUri );
     }
 }

@@ -11,17 +11,17 @@ namespace ThinMvvm.Internals
     internal sealed class CommandExecutedEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets the parameter with which the command was executed.
+        /// Gets the argument given to command's Execute method was called.
         /// </summary>
-        public object Parameter { get; private set; }
+        public object Argument { get; private set; }
 
 
         /// <summary>
-        /// Creates a new CommandExecutedEventArgs.
+        /// Initializes a new instance of the <see cref="CommandExecutedEventArgs" /> class with the specified command argument.
         /// </summary>
-        public CommandExecutedEventArgs( object parameter )
+        public CommandExecutedEventArgs( object argument )
         {
-            Parameter = parameter;
+            Argument = argument;
         }
     }
 }

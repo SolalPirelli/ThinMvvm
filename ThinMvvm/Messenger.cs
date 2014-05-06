@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace ThinMvvm
@@ -13,70 +14,83 @@ namespace ThinMvvm
     /// </summary>
     public static class Messenger
     {
-        private static readonly List<Recipient> _recipients = new List<Recipient>();
+        private static readonly List<object> _handlers = new List<object>();
 
         /// <summary>
         /// Registers the specified handler for the specified message type.
         /// </summary>
-        public static void Register<T>( Action<T> action )
+        /// <typeparam name="T">The message type.</typeparam>
+        /// <param name="handler">The handler.</param>
+        public static void Register<T>( Action<T> handler )
         {
-            _recipients.Add( Recipient.Create( action ) );
+            _handlers.Add( new Handler<T>( handler ) );
         }
 
         /// <summary>
         /// Sends the specified message.
         /// </summary>
-        public static void Send( object message )
+        /// <typeparam name="T">The message type.</typeparam>
+        /// <param name="message">The message.</param>
+        public static void Send<T>( T message )
         {
-            _recipients.RemoveAll( r => !r.TryReceive( message ) );
+            foreach ( var deadHandler in _handlers.OfType<Handler<T>>().Where( h => !h.TryHandle( message ) ).ToArray() )
+            {
+                _handlers.Remove( deadHandler );
+            }
         }
 
         /// <summary>
-        /// Clears the registered actions.
+        /// Clears the registered handlers.
         /// </summary>
         /// <remarks>
         /// For use in unit tests.
         /// </remarks>
         internal static void Clear()
         {
-            _recipients.Clear();
+            _handlers.Clear();
         }
 
 
-        private sealed class Recipient
+        /// <summary>
+        /// Stores data necessary to handle messages.
+        /// </summary>
+        /// <typeparam name="T">The message type.</typeparam>
+        private sealed class Handler<T>
         {
             private const string ClosureMethodToken = "<";
 
             // If the action is a closure, a strong reference to the target is needed
 #pragma warning disable 0414 // Field is assigned but never used
-            private object _targetStrongRef;
+            private readonly object _targetStrongRef;
 #pragma warning restore 0414
-            private bool _hasNoTarget;
-            private WeakReference<object> _targetRef;
-            private MethodInfo _method;
-            private Type _messageType;
+            private readonly WeakReference<object> _targetRef;
+            private readonly MethodInfo _method;
 
-            public static Recipient Create<T>( Action<T> action )
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Handler{T}" /> class with the specified handler action.
+            /// </summary>
+            /// <param name="handler">The handler.</param>
+            /// <returns>A recipient with the specified message handler.</returns>
+            public Handler( Action<T> handler )
             {
-                return new Recipient
-                {
-                    _targetStrongRef = action.GetMethodInfo().Name.Contains( ClosureMethodToken ) ? action.Target : null,
-                    _hasNoTarget = action.Target == null,
-                    _method = action.GetMethodInfo(),
-                    _targetRef = new WeakReference<object>( action.Target ),
-                    _messageType = typeof( T )
-                };
+                _targetStrongRef = handler.GetMethodInfo().Name.Contains( ClosureMethodToken ) ? handler.Target : null;
+                _method = handler.GetMethodInfo();
+                _targetRef = handler.Target == null ? null : new WeakReference<object>( handler.Target );
             }
 
-            public bool TryReceive( object message )
+
+            /// <summary>
+            /// Attempts to handle the specified message.
+            /// </summary>
+            /// <param name="message">The message.</param>
+            /// <returns>True if the handler is still alive, false otherwise.</returns>
+            public bool TryHandle( T message )
             {
                 object target = null;
-                if ( _hasNoTarget || _targetRef.TryGetTarget( out target ) )
+                if ( _targetRef == null || _targetRef.TryGetTarget( out target ) )
                 {
-                    if ( message.GetType() == _messageType )
-                    {
-                        _method.Invoke( target, new[] { message } );
-                    }
+                    _method.Invoke( target, new object[] { message } );
                     return true;
                 }
 

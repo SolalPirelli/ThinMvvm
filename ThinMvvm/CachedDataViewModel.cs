@@ -10,9 +10,9 @@ namespace ThinMvvm
     /// <summary>
     /// DataViewModel that can cache data.
     /// </summary>
-    /// <typeparam name="TArg">The viewmodel's argument type.</typeparam>
+    /// <typeparam name="TParameter">The type of the ViewModel's constructor parameter, or <see cref="NoParameter" /> if it does not have one.</typeparam>
     /// <typeparam name="TData">The type of the cached data.</typeparam>
-    public abstract class CachedDataViewModel<TArg, TData> : DataViewModel<TArg>
+    public abstract class CachedDataViewModel<TParameter, TData> : DataViewModel<TParameter>
     {
         private const long DefaultId = 0;
         private static readonly DateTime DefaultExpirationDate = DateTime.MaxValue;
@@ -32,9 +32,9 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Creates a new instance of the CachedDataViewModel class that uses the specified data cache.
+        /// Initializes a new instance of the <see cref="CachedDataViewModel{TParameter, TData}" /> class with the specified cache.
         /// </summary>
-        /// <param name="cache">The data cache.</param>
+        /// <param name="cache">The cache used by the ViewModel.</param>
         protected CachedDataViewModel( ICache cache )
         {
             _cache = cache;
@@ -52,7 +52,7 @@ namespace ThinMvvm
         /// <summary>
         /// Handles data, either cached or live.
         /// </summary>
-        /// <param name="data">The data.</param>
+        /// <param name="data">The data, which can be cached or live.</param>
         /// <param name="token">The cancellation token for the refresh request.</param>
         /// <returns>True if the data should be cached, false otherwise.</returns>
         protected abstract bool HandleData( TData data, CancellationToken token );
@@ -61,9 +61,9 @@ namespace ThinMvvm
         /// <summary>
         /// Asynchronously refreshes the data using cached data both as a placeholder and as a fallback.
         /// </summary>
-        /// <param name="token">The cancellation token for the refresh request.</param>
         /// <param name="force">A value indicating whether to force a refresh or not.</param>
-        /// <returns>A Task that will complete when the refresh operation is done.</returns>
+        /// <param name="token">The cancellation token for the refresh request.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
         protected override sealed async Task RefreshAsync( bool force, CancellationToken token )
         {
             var cachedData = GetData( force, token );

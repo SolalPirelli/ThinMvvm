@@ -22,7 +22,7 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Gets the current BaseApp instance.
         /// </summary>
-        public new static BaseApp Current
+        public static new BaseApp Current
         {
             get { return (BaseApp) Application.Current; }
         }
@@ -33,7 +33,7 @@ namespace ThinMvvm.WindowsPhone
         public PhoneApplicationFrame RootFrame { get; private set; }
 
         /// <summary>
-        /// Creates a new BaseApp.
+        /// Initializes a new instance of the <see cref="BaseApp" /> class.
         /// </summary>
         public BaseApp()
         {
@@ -51,6 +51,7 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Creates the root frame of the app.
         /// </summary>
+        /// <returns>A frame that will be set as the root frame of the app.</returns>
         protected abstract PhoneApplicationFrame CreateRootFrame();
 
         /// <summary>
@@ -66,12 +67,15 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Gets the language and flow direction of the app.
         /// </summary>
+        /// <returns>A Tuple whose first item is the app language and whose second item is the app flow direction.</returns>
         protected abstract Tuple<string, string> GetLanguageAndFlowDirection();
 
 
         /// <summary>
         /// Occurs when a navigation fails.
         /// </summary>
+        /// <param name="sender">The event source.</param>
+        /// <param name="e">The event data.</param>
         protected virtual void OnNavigationFailed( object sender, NavigationFailedEventArgs e )
         {
             if ( !e.Handled && Debugger.IsAttached )
@@ -83,6 +87,8 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Occurs when an unhandled exception is raised.
         /// </summary>
+        /// <param name="sender">The event source.</param>
+        /// <param name="e">The event data.</param>
         protected virtual void OnUnhandledException( object sender, ApplicationUnhandledExceptionEventArgs e )
         {
             if ( !e.Handled && Debugger.IsAttached )
@@ -116,6 +122,8 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Occurs after the first navigation.
         /// </summary>
+        /// <param name="sender">The event source.</param>
+        /// <param name="e">The event data.</param>
         private void OnNavigated( object sender, NavigationEventArgs e )
         {
             // Set the root visual to allow the application to render

@@ -18,8 +18,9 @@ namespace ThinMvvm.Logging
 
 
         /// <summary>
-        /// Creates a new LogIdAttribute.
+        /// Initializes a new instance of the <see cref="LogIdAttribute" /> class with the specified ID.
         /// </summary>
+        /// <param name="id">The ID.</param>
         public LogIdAttribute( string id )
         {
             Id = id;

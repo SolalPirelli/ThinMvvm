@@ -13,24 +13,28 @@ namespace ThinMvvm
     /// <summary>
     /// Concrete implementation of IViewModel, inheriting from ObservableObject.
     /// </summary>
-    public abstract class ViewModel<TArg> : ObservableObject, IViewModel<TArg>
+    /// <typeparam name="TParameter">The type of the ViewModel's constructor parameter, or <see cref="NoParameter" /> if it does not have one.</typeparam>
+    public abstract class ViewModel<TParameter> : ObservableObject, IViewModel<TParameter>
     {
         private Dictionary<string, ICommand> _cache = new Dictionary<string, ICommand>();
 
         /// <summary>
-        /// Called when the user navigates to the ViewModel.
+        /// Executed when the user navigates to the ViewModel.
         /// </summary>
         public virtual void OnNavigatedTo() { }
 
         /// <summary>
-        /// Called when the user navigates from the ViewModel.
+        /// Executed when the user navigates from the ViewModel.
         /// </summary>
         public virtual void OnNavigatedFrom() { }
 
 
         /// <summary>
-        /// Gets or create a parameterless Command that will be unique to this ViewModel.
+        /// Gets or creates a Command without parameter that will be unique to this ViewModel.
         /// </summary>
+        /// <param name="execute">The action to execute when the command is executed.</param>
+        /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
+        /// <param name="name">Optional. Should not be provieded as it uses compiler functionality. The command name.</param>
         protected Command GetCommand( Action execute, Expression<Func<bool>> canExecute = null, [CallerMemberName] string name = "" )
         {
             if ( !_cache.ContainsKey( name ) )
@@ -42,8 +46,11 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Gets or create a Command that will be unique to this ViewModel.
+        /// Gets or creates a Command that will be unique to this ViewModel.
         /// </summary>
+        /// <param name="execute">The action to execute when the command is executed.</param>
+        /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
+        /// <param name="name">Optional. Should not be provieded as it uses compiler functionality. The command name.</param>
         protected Command<T> GetCommand<T>( Action<T> execute, Expression<Func<T, bool>> canExecute = null, [CallerMemberName] string name = "" )
         {
             if ( !_cache.ContainsKey( name ) )
@@ -58,8 +65,11 @@ namespace ThinMvvm
         //       signature, overload resolution cannot decide whether a parameterless method is an Action or a Func<T>.
 
         /// <summary>
-        /// Gets or create a parameterless AsyncCommand that will be unique to this ViewModel.
+        /// Gets or creates an AsyncCommand without parameter that will be unique to this ViewModel.
         /// </summary>
+        /// <param name="execute">The action to execute when the command is executed.</param>
+        /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
+        /// <param name="name">Optional. Should not be provieded as it uses compiler functionality. The command name.</param>
         protected AsyncCommand GetAsyncCommand( Func<Task> execute, Expression<Func<bool>> canExecute = null, [CallerMemberName] string name = "" )
         {
             if ( !_cache.ContainsKey( name ) )
@@ -71,8 +81,11 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Gets or create an AsyncCommand that will be unique to this ViewModel.
+        /// Gets or creates an AsyncCommand that will be unique to this ViewModel.
         /// </summary>
+        /// <param name="execute">The action to execute when the command is executed.</param>
+        /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
+        /// <param name="name">Optional. Should not be provieded as it uses compiler functionality. The command name.</param>
         protected AsyncCommand<T> GetAsyncCommand<T>( Func<T, Task> execute, Expression<Func<T, bool>> canExecute = null, [CallerMemberName] string name = "" )
         {
             if ( !_cache.ContainsKey( name ) )

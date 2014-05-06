@@ -29,8 +29,9 @@ namespace ThinMvvm.Logging
 
 
         /// <summary>
-        /// Creates a new LogParameterAttribute.
+        /// Initializes a new instance of the <see cref="LogParameterAttribute" /> class with the specified path.
         /// </summary>
+        /// <param name="parameterPath">The parameter path.</param>
         public LogParameterAttribute( string parameterPath )
         {
             ParameterPath = parameterPath;

@@ -14,6 +14,9 @@ namespace ThinMvvm.Internals
         /// <summary>
         /// Gets the name of the property in a property expression.
         /// </summary>
+        /// <typeparam name="TObj">The type of the object the property belongs to.</typeparam>
+        /// <typeparam name="TProp">The type of the property.</typeparam>
+        /// <param name="expr">The expression.</param>
         public static string GetPropertyName<TObj, TProp>( Expression<Func<TObj, TProp>> expr )
         {
             if ( !( expr.Body is MemberExpression ) )

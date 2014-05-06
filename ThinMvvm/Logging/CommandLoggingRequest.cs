@@ -14,7 +14,7 @@ namespace ThinMvvm.Logging
         public object Object { get; private set; }
 
         /// <summary>
-        /// Creates a new LoggingRequest for the specified object.
+        /// Initializes a new instance of the <see cref="CommandLoggingRequest" /> class for the specified object.
         /// </summary>
         public CommandLoggingRequest( object obj )
         {
