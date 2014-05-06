@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ThinMvvm.Internals
 {
@@ -19,11 +20,18 @@ namespace ThinMvvm.Internals
         /// <param name="expr">The expression.</param>
         public static string GetPropertyName<TObj, TProp>( Expression<Func<TObj, TProp>> expr )
         {
-            if ( !( expr.Body is MemberExpression ) )
+            var memberExpr = expr.Body as MemberExpression;
+            if ( memberExpr == null )
             {
                 throw new ArgumentException( "Invalid expression; it must return a property." );
             }
-            return ( (MemberExpression) expr.Body ).Member.Name;
+
+            if ( !( memberExpr.Member is PropertyInfo ) )
+            {
+                throw new ArgumentException( "Invalid expression; it must return a property." );
+            }
+
+            return memberExpr.Member.Name;
         }
     }
 }

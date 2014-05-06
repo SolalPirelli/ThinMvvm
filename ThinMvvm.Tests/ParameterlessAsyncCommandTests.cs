@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -63,9 +62,15 @@ namespace ThinMvvm.Tests
             Assert.AreEqual( true, ( (ICommand) cmd ).CanExecute( null ), "ICommand.CanExecute() should call the provided 'canExecute' parameter." );
         }
 
-        private sealed class InpcExample : INotifyPropertyChanged
+        private sealed class InpcExample : ObservableObject
         {
-            public int Value { get; set; }
+            private int _value;
+
+            public int Value
+            {
+                get { return _value; }
+                set { SetProperty( ref _value, value ); }
+            }
 
             public void TestAsyncCommand()
             {
@@ -73,19 +78,9 @@ namespace ThinMvvm.Tests
                 int count = 0;
 
                 cmd.CanExecuteChanged += ( s, e ) => count++;
-                OnPropertyChanged( "Value" );
+                Value++;
 
                 Assert.AreEqual( 1, count, "CanExecuteChanged should be fired exactly once when a property it uses changes." );
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged;
-            public void OnPropertyChanged( string propertyName )
-            {
-                var evt = PropertyChanged;
-                if ( evt != null )
-                {
-                    evt( this, new PropertyChangedEventArgs( propertyName ) );
-                }
             }
         }
 
@@ -103,9 +98,15 @@ namespace ThinMvvm.Tests
             int count = 0;
 
             cmd.CanExecuteChanged += ( s, e ) => count++;
-            ex.OnPropertyChanged( "Value" );
+            ex.Value++;
 
             Assert.AreEqual( 1, count, "CanExecuteChanged should be fired exactly once when a property it uses changes, even in a closure." );
+        }
+
+        [TestMethod]
+        public void CanExecuteShouldWorkWithConstants()
+        {
+            new AsyncCommand( null, () => Task.FromResult( 0 ), () => true );
         }
     }
 }

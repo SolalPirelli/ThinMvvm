@@ -56,6 +56,7 @@
     <Compile Include="CommandTests.cs" />
     <Compile Include="ContainerTests.cs" />
     <Compile Include="DataViewModelTests.cs" />
+    <Compile Include="INotifyPropertyChangedExtensionsTests.cs" />
     <Compile Include="MessengerTests.cs" />
     <Compile Include="LoggerTests.cs" />
     <Compile Include="ObservableObjectTests.cs" />
