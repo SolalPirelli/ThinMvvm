@@ -68,8 +68,8 @@ namespace ThinMvvm
         {
             var cachedData = GetData( force, token );
 
-            TData data;
-            if ( cachedData.ShouldBeCached && _cache.TryGet( this.GetType(), cachedData.Id ?? DefaultId, out data ) )
+            TData data = default( TData );
+            if ( _cache.TryGet( this.GetType(), cachedData.Id ?? DefaultId, out data ) )
             {
                 CacheStatus = CacheStatus.UsedTemporarily;
                 HandleData( data, token );
@@ -79,14 +79,17 @@ namespace ThinMvvm
                 CacheStatus = CacheStatus.Loading;
             }
 
-            if ( !cachedData.HasNewData )
-            {
-                return;
-            }
-
             try
             {
-                data = await cachedData.GetDataAsync();
+                if ( cachedData.HasNewData )
+                {
+                    data = await cachedData.GetDataAsync();
+                }
+                else if ( object.Equals( data, default( TData ) ) )
+                {
+                    throw new InvalidOperationException( "GetData cannot return CachedTask.NoNewData if nothing was cached previously." );
+                }
+
                 if ( HandleData( data, token ) && cachedData.ShouldBeCached )
                 {
                     _cache.Set( this.GetType(), cachedData.Id ?? DefaultId, cachedData.ExpirationDate ?? DefaultExpirationDate, data );

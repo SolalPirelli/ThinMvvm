@@ -52,7 +52,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataViewModel" /> class.
+        /// Initializes a new instance of the <see cref="DataViewModel{TArg}" /> class.
         /// </summary>
         protected DataViewModel()
         {
@@ -68,7 +68,10 @@ namespace ThinMvvm
         public virtual async Task OnNavigatedToAsync()
         {
             await TryRefreshAsync( _firstRun );
-            _firstRun = false;
+            if ( DataStatus == DataStatus.DataLoaded )
+            {
+                _firstRun = false;
+            }
         }
 
         /// <summary>

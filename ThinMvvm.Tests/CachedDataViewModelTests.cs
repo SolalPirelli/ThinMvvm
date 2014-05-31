@@ -13,15 +13,43 @@ namespace ThinMvvm.Tests
     [TestClass]
     public sealed class CachedDataViewModelTests
     {
+        public sealed class TestCache : ICache
+        {
+            // pretend it's a static cache, as a real one would be
+            public static readonly Dictionary<Type, Dictionary<long, Tuple<object, DateTime>>> Data
+                = new Dictionary<Type, Dictionary<long, Tuple<object, DateTime>>>();
+
+            public bool TryGet<T>( Type owner, long id, out T value )
+            {
+                if ( Data.ContainsKey( owner ) && Data[owner].ContainsKey( id ) )
+                {
+                    if ( DateTime.Now <= Data[owner][id].Item2 )
+                    {
+                        value = (T) Data[owner][id].Item1;
+                        return true;
+                    }
+                }
+                value = default( T );
+                return false;
+            }
+
+            public void Set( Type owner, long id, DateTime expirationDate, object value )
+            {
+                if ( !Data.ContainsKey( owner ) )
+                {
+                    Data.Add( owner, new Dictionary<long, Tuple<object, DateTime>>() );
+                }
+                Data[owner][id] = Tuple.Create( value, expirationDate );
+            }
+        }
+
         public sealed class TestCachedDataViewModel : CachedDataViewModel<NoParameter, int>
         {
             public Func<bool, CancellationToken, CachedTask<int>> GetDataMethod { get; set; }
 
             public Func<int, CancellationToken, bool> HandleDataMethod { get; set; }
 
-
             public TestCachedDataViewModel() : base( new TestCache() ) { }
-
 
             protected override CachedTask<int> GetData( bool force, CancellationToken token )
             {
@@ -32,42 +60,15 @@ namespace ThinMvvm.Tests
             {
                 return HandleDataMethod( data, token );
             }
-
-            private sealed class TestCache : ICache
-            {
-                private Dictionary<Type, Dictionary<long, Tuple<object, DateTime>>> _cache
-                    = new Dictionary<Type, Dictionary<long, Tuple<object, DateTime>>>();
-
-                public bool TryGet<T>( Type owner, long id, out T value )
-                {
-                    if ( _cache.ContainsKey( owner ) && _cache[owner].ContainsKey( id ) )
-                    {
-                        if ( DateTime.Now <= _cache[owner][id].Item2 )
-                        {
-                            value = (T) _cache[owner][id].Item1;
-                            return true;
-                        }
-                    }
-                    value = default( T );
-                    return false;
-                }
-
-                public void Set( Type owner, long id, DateTime expirationDate, object value )
-                {
-                    if ( !_cache.ContainsKey( owner ) )
-                    {
-                        _cache.Add( owner, new Dictionary<long, Tuple<object, DateTime>>() );
-                    }
-                    _cache[owner][id] = Tuple.Create( value, expirationDate );
-                }
-            }
         }
+
 
         [TestInitialize]
         public void Initialize()
         {
             DataViewModelOptions.ClearNetworkExceptionTypes();
         }
+
 
         [TestMethod]
         public void CacheStatusOnInitializationIsNoCache()
@@ -148,7 +149,6 @@ namespace ThinMvvm.Tests
             Assert.AreEqual( CacheStatus.OptedOut, vm.CacheStatus );
         }
 
-
         [TestMethod]
         public async Task CacheStatusWhenHandleDateReturnsFalseIsOptedOut()
         {
@@ -219,6 +219,58 @@ namespace ThinMvvm.Tests
             vm.OnNavigatedTo();
 
             Assert.AreEqual( CacheStatus.Used, vm.CacheStatus );
+        }
+
+
+
+        [TestMethod]
+        public async Task HandleDataIsCalledOnLiveData()
+        {
+            bool called = false;
+            var vm = new TestCachedDataViewModel
+            {
+                GetDataMethod = ( _, __ ) => CachedTask.Create( () => Task.FromResult( 0 ) ),
+                HandleDataMethod = ( _, __ ) => { called = true; return true; }
+            };
+
+            await vm.OnNavigatedToAsync();
+
+            Assert.IsTrue( called );
+        }
+
+        [TestMethod]
+        public async Task HandleDataIsCalledOnCachedData()
+        {
+            var vm = new TestCachedDataViewModel
+            {
+                GetDataMethod = ( _, __ ) => CachedTask.Create( () => Task.FromResult( 0 ) ),
+                HandleDataMethod = ( _, __ ) => true
+            };
+
+            await vm.OnNavigatedToAsync();
+
+            bool called = false;
+            vm.GetDataMethod = ( _, __ ) => CachedTask.NoNewData<int>();
+            vm.HandleDataMethod = ( _, __ ) => { called = true; return true; };
+
+            await vm.RefreshCommand.ExecuteAsync();
+
+            Assert.IsTrue( called );
+        }
+
+        [TestMethod]
+        public async Task HandleDataIsCalledOnDataThatMustNotBeCached()
+        {
+            bool called = false;
+            var vm = new TestCachedDataViewModel
+            {
+                GetDataMethod = ( _, __ ) => CachedTask.DoNotCache( () => Task.FromResult( 0 ) ),
+                HandleDataMethod = ( _, __ ) => { called = true; return true; }
+            };
+
+            await vm.OnNavigatedToAsync();
+
+            Assert.IsTrue( called );
         }
     }
 }
