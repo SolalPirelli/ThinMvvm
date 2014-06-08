@@ -21,12 +21,7 @@ namespace ThinMvvm.Internals
         public static string GetPropertyName<TObj, TProp>( Expression<Func<TObj, TProp>> expr )
         {
             var memberExpr = expr.Body as MemberExpression;
-            if ( memberExpr == null )
-            {
-                throw new ArgumentException( "Invalid expression; it must return a property." );
-            }
-
-            if ( !( memberExpr.Member is PropertyInfo ) )
+            if ( memberExpr == null || !( memberExpr.Member is PropertyInfo ) )
             {
                 throw new ArgumentException( "Invalid expression; it must return a property." );
             }

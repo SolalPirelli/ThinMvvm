@@ -74,7 +74,7 @@ namespace ThinMvvm
                 CacheStatus = CacheStatus.UsedTemporarily;
                 HandleData( data, token );
             }
-            else
+            else if ( cachedData.HasNewData )
             {
                 CacheStatus = CacheStatus.Loading;
             }
@@ -84,20 +84,19 @@ namespace ThinMvvm
                 if ( cachedData.HasNewData )
                 {
                     data = await cachedData.GetDataAsync();
-                }
-                else if ( object.Equals( data, default( TData ) ) )
-                {
-                    throw new InvalidOperationException( "GetData cannot return CachedTask.NoNewData if nothing was cached previously." );
-                }
+                    if ( HandleData( data, token ) && cachedData.ShouldBeCached )
+                    {
+                        if ( cachedData.HasNewData )
+                        {
+                            _cache.Set( this.GetType(), cachedData.Id ?? DefaultId, cachedData.ExpirationDate ?? DefaultExpirationDate, data );
+                        }
 
-                if ( HandleData( data, token ) && cachedData.ShouldBeCached )
-                {
-                    _cache.Set( this.GetType(), cachedData.Id ?? DefaultId, cachedData.ExpirationDate ?? DefaultExpirationDate, data );
-                    CacheStatus = CacheStatus.Unused;
-                }
-                else
-                {
-                    CacheStatus = CacheStatus.OptedOut;
+                        CacheStatus = CacheStatus.Unused;
+                    }
+                    else
+                    {
+                        CacheStatus = CacheStatus.OptedOut;
+                    }
                 }
             }
             catch ( Exception e )

@@ -4,10 +4,27 @@
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// Logger that doesn't log anything.
-    /// Use this if you don't want to use the logging features.
+    /// Logger that does not log anything.
+    /// Used to disable the logging features.
     /// </summary>
     public sealed class DisabledLogger : Logger
     {
+        /// <summary>
+        /// Does not do anything.
+        /// </summary>
+        /// <param name="id">Ignored.</param>
+        protected override void LogNavigation( string id )
+        {
+        }
+
+        /// <summary>
+        /// Does not do anything.
+        /// </summary>
+        /// <param name="viewModelId">Ignored.</param>
+        /// <param name="eventId">Ignored.</param>
+        /// <param name="label">Ignored.</param>
+        protected override void LogEvent( string viewModelId, string eventId, string label )
+        {
+        }
     }
 }

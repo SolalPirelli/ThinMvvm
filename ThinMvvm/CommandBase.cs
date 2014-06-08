@@ -21,6 +21,7 @@ namespace ThinMvvm
         /// </summary>
         internal object Owner { get; private set; }
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandBase" /> class with the specified predicate.
         /// </summary>
@@ -40,6 +41,7 @@ namespace ThinMvvm
                 obsProp.Item1.ListenToProperty( obsProp.Item2, OnCanExecuteChanged );
             }
         }
+
 
         #region Partial ICommand implementation
         /// <summary>

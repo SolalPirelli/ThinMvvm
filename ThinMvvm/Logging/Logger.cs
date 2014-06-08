@@ -18,7 +18,8 @@ namespace ThinMvvm.Logging
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether the logger should warn in the debug output about missing LogId attributes on ViewModels and their commands.
+        /// Gets or sets a value indicating whether the logger should warn 
+        /// about missing LogId attributes on ViewModels and their commands in the debug output.
         /// </summary>
         public static bool WarnOnMissingAttributes { get; set; }
 
@@ -63,9 +64,7 @@ namespace ThinMvvm.Logging
         /// Logs a navigation with the specified ID.
         /// </summary>
         /// <param name="id">The ID.</param>
-        protected virtual void LogNavigation( string id )
-        {
-        }
+        protected abstract void LogNavigation( string id );
 
         /// <summary>
         /// Logs a command execution on the specified ViewModel with the specified ID and label.
@@ -73,13 +72,11 @@ namespace ThinMvvm.Logging
         /// <param name="viewModelId">The ViewModel ID.</param>
         /// <param name="eventId">The event ID.</param>
         /// <param name="label">The label.</param>
-        protected virtual void LogEvent( string viewModelId, string eventId, string label )
-        {
-        }
+        protected abstract void LogEvent( string viewModelId, string eventId, string label );
 
 
         /// <summary>
-        /// Enables logging of commands on the specified object with the specified name.
+        /// Enables logging of commands on the specified object.
         /// </summary>
         private void EnableCommandLogging( object obj )
         {
