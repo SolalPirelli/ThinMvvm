@@ -15,7 +15,7 @@ namespace ThinMvvm
     public sealed class WindowsPhoneCache : ICache
     {
         private const string MetadataKey = "ThinMvvm.WindowsPhone.CacheMetadata";
-        private const string DataKeyFormat = "ThinMvvm.WindowsPhone.Cache_{0}_{1}";
+        private const string DataKeyFormat = "ThinMvvm.WindowsPhone.Cache.{0}_{1}";
 
         private readonly IsolatedStorageSettings _settings;
         private Dictionary<string, object> _data;

@@ -71,7 +71,11 @@ namespace ThinMvvm
             TData data = default( TData );
             if ( _cache.TryGet( this.GetType(), cachedData.Id ?? DefaultId, out data ) )
             {
-                CacheStatus = CacheStatus.UsedTemporarily;
+                if ( cachedData.HasNewData )
+                {
+                    CacheStatus = CacheStatus.UsedTemporarily;
+                }
+
                 HandleData( data, token );
             }
             else if ( cachedData.HasNewData )
@@ -79,24 +83,26 @@ namespace ThinMvvm
                 CacheStatus = CacheStatus.Loading;
             }
 
+            if ( !cachedData.HasNewData )
+            {
+                return;
+            }
+
             try
             {
-                if ( cachedData.HasNewData )
+                data = await cachedData.GetDataAsync();
+                if ( HandleData( data, token ) && cachedData.ShouldBeCached )
                 {
-                    data = await cachedData.GetDataAsync();
-                    if ( HandleData( data, token ) && cachedData.ShouldBeCached )
+                    if ( cachedData.HasNewData )
                     {
-                        if ( cachedData.HasNewData )
-                        {
-                            _cache.Set( this.GetType(), cachedData.Id ?? DefaultId, cachedData.ExpirationDate ?? DefaultExpirationDate, data );
-                        }
+                        _cache.Set( this.GetType(), cachedData.Id ?? DefaultId, cachedData.ExpirationDate ?? DefaultExpirationDate, data );
+                    }
 
-                        CacheStatus = CacheStatus.Unused;
-                    }
-                    else
-                    {
-                        CacheStatus = CacheStatus.OptedOut;
-                    }
+                    CacheStatus = CacheStatus.Unused;
+                }
+                else
+                {
+                    CacheStatus = CacheStatus.OptedOut;
                 }
             }
             catch ( Exception e )

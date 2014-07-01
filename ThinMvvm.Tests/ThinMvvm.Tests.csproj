@@ -63,6 +63,7 @@
     <Compile Include="ParameterlessAsyncCommandTests.cs" />
     <Compile Include="ParameterlessCommandTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettingsBaseTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThinMvvm\ThinMvvm.csproj">

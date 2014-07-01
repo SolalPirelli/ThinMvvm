@@ -19,7 +19,10 @@ namespace ThinMvvm
     public abstract class SettingsBase<TSelf> : ObservableObject
         where TSelf : SettingsBase<TSelf>
     {
+        private const string KeyPrefixSeparator = ".";
+
         private readonly ISettingsStorage _settings;
+        private readonly string _keyPrefix;
 
         private Dictionary<string, Func<object>> _defaultValues;
 
@@ -31,6 +34,10 @@ namespace ThinMvvm
         protected SettingsBase( ISettingsStorage settings )
         {
             _settings = settings;
+            // Make sure that different settings types don't collide
+            // e.g. if SettingsA and SettingsB both inherit from SettingsBase and have a property named X,
+            // setting A.X shouldn't affect B.X.
+            _keyPrefix = GetType().FullName + KeyPrefixSeparator;
         }
 
 
@@ -47,7 +54,7 @@ namespace ThinMvvm
         protected T Get<T>( [CallerMemberName] string propertyName = "" )
         {
             SetIfUndefined( propertyName );
-            return _settings.Get<T>( propertyName );
+            return _settings.Get<T>( GetFullKey( propertyName ) );
         }
 
         /// <summary>
@@ -56,20 +63,22 @@ namespace ThinMvvm
         /// </summary>
         protected void Set( object value, [CallerMemberName] string propertyName = "" )
         {
-            _settings.Set( propertyName, value );
+            string fullKey = GetFullKey( propertyName );
+
+            _settings.Set( fullKey, value );
 
             OnPropertyChanged( propertyName );
 
             var propNotif = value as INotifyPropertyChanged;
             if ( propNotif != null )
             {
-                propNotif.PropertyChanged += ( s, _ ) => _settings.Set( propertyName, s );
+                propNotif.PropertyChanged += ( s, _ ) => _settings.Set( fullKey, s );
             }
 
             var collNotif = value as INotifyCollectionChanged;
             if ( collNotif != null )
             {
-                collNotif.CollectionChanged += ( s, _ ) => _settings.Set( propertyName, s );
+                collNotif.CollectionChanged += ( s, _ ) => _settings.Set( fullKey, s );
             }
         }
 
@@ -79,7 +88,9 @@ namespace ThinMvvm
         /// </summary>
         private void SetIfUndefined( string key )
         {
-            if ( _settings.IsDefined( key ) )
+            string fullKey = GetFullKey( key );
+
+            if ( _settings.IsDefined( fullKey ) )
             {
                 return;
             }
@@ -95,6 +106,15 @@ namespace ThinMvvm
             }
 
             Set( _defaultValues[key](), key );
+        }
+
+
+        /// <summary>
+        /// Gets the full key for the specified setting key.
+        /// </summary>
+        private string GetFullKey( string key )
+        {
+            return _keyPrefix + key;
         }
 
 

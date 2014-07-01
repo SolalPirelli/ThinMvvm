@@ -17,7 +17,7 @@ namespace ThinMvvm.WindowsPhone
     /// </summary>
     public abstract class BaseApp : Application
     {
-        private const string FirstRunKey = "ThinMvvm.WindowsPhone_FirstRun";
+        private const string FirstRunKey = "ThinMvvm.WindowsPhone.FirstRun";
 
         /// <summary>
         /// Gets the current BaseApp instance.

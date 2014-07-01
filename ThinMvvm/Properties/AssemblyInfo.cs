@@ -13,6 +13,6 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible( false )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "0.9.6.*" )]
+[assembly: AssemblyVersion( "0.9.7.*" )]
 
 [assembly: InternalsVisibleTo( "ThinMvvm.Tests" )]
