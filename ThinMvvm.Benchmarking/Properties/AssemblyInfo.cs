@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle( "ThinMvvm.Benchmarking" )]
-[assembly: AssemblyDescription( "Benchmarks for ThinMvvm." )]
+[assembly: AssemblyDescription( "Benchmarks for ThinMVVM." )]
 [assembly: AssemblyCompany( "Solal Pirelli" )]
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
@@ -14,4 +14,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible( false )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "1.0.*" )]
+[assembly: AssemblyVersion( "1.0.0" )]
