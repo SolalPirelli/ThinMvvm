@@ -3,10 +3,9 @@
 
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle( "ThinMvvm" )]
+[assembly: AssemblyTitle( "ThinMvvm.Logging" )]
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
 
@@ -14,6 +13,3 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant( true )]
 
 [assembly: AssemblyVersion( "0.9.7.*" )]
-
-[assembly: InternalsVisibleTo( "ThinMvvm.Logging" )]
-[assembly: InternalsVisibleTo( "ThinMvvm.Tests" )]

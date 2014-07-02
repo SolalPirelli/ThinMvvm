@@ -1,19 +1,13 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle( "ThinMvvm" )]
+[assembly: AssemblyTitle( "ThinMvvm.Logging.Tests" )]
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
 
 [assembly: ComVisible( false )]
-[assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "0.9.7.*" )]
-
-[assembly: InternalsVisibleTo( "ThinMvvm.Logging" )]
-[assembly: InternalsVisibleTo( "ThinMvvm.Tests" )]
+[assembly: AssemblyVersion( "0.9.1.*" )]

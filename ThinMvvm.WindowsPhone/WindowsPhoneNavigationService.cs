@@ -7,7 +7,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Navigation;
 using Microsoft.Phone.Controls;
-using ThinMvvm.Logging;
 
 namespace ThinMvvm.WindowsPhone
 {
@@ -25,7 +24,6 @@ namespace ThinMvvm.WindowsPhone
             get { return (PhoneApplicationFrame) Application.Current.RootVisual; }
         }
 
-        private readonly Logger _logger;
         private readonly Dictionary<Type, Uri> _views;
         // HACK: IViewModel can't be covariant to be used with value types
         //       and having a non-generic IViewModel that shouldn't be implemented is a terrible idea
@@ -39,9 +37,8 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Creates a new WindowsPhoneNavigationService.
         /// </summary>
-        public WindowsPhoneNavigationService( Logger logger )
+        public WindowsPhoneNavigationService()
         {
-            _logger = logger;
             _views = new Dictionary<Type, Uri>();
             _backStack = new Stack<dynamic>();
             _ignored = new Stack<bool>();
@@ -56,7 +53,7 @@ namespace ThinMvvm.WindowsPhone
         private void NavigateToPrivate( object viewModel )
         {
             var viewModelType = viewModel.GetType();
-            _logger.LogNavigation( viewModel, true );
+            OnNavigated( viewModel, true );
             _backStack.Push( viewModel );
             Frame.Navigate( MakeUnique( _views[viewModelType] ) );
         }
@@ -88,7 +85,7 @@ namespace ThinMvvm.WindowsPhone
                     var currentViewModel = _backStack.Peek();
                     currentViewModel.OnNavigatedTo();
                     page.DataContext = currentViewModel;
-                    _logger.LogNavigation( currentViewModel, false );
+                    OnNavigated( currentViewModel, false );
                 }
             }
             else if ( e.NavigationMode == NavigationMode.Forward || e.NavigationMode == NavigationMode.New )
@@ -122,7 +119,7 @@ namespace ThinMvvm.WindowsPhone
                         var currentViewModel = _backStack.Peek();
                         currentViewModel.OnNavigatedTo();
                         page.DataContext = currentViewModel;
-                        _logger.LogNavigation( currentViewModel, false );
+                        OnNavigated( currentViewModel, false );
                     }
                 }
             }
@@ -216,6 +213,22 @@ namespace ThinMvvm.WindowsPhone
         public void PopBackStack()
         {
             _removeCurrentFromBackstack = true;
+        }
+
+        /// <summary>
+        /// Occurs when the service navigates to a page, forwards or backwards.
+        /// </summary>
+        public event EventHandler<NavigatedEventArgs> Navigated;
+        /// <summary>
+        /// Fires the <see cref="Navigated" /> event.
+        /// </summary>
+        private void OnNavigated( object viewModel, bool isForwards )
+        {
+            var evt = Navigated;
+            if ( evt != null )
+            {
+                evt( this, new NavigatedEventArgs( viewModel, isForwards ) );
+            }
         }
         #endregion
 

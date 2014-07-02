@@ -1,6 +1,7 @@
 // Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System;
 namespace ThinMvvm
 {
     /// <summary>
@@ -30,5 +31,10 @@ namespace ThinMvvm
         /// Pops the ViewModel back-stack, removing the current one so that going backwards will not go to it.
         /// </summary>
         void PopBackStack();
+
+        /// <summary>
+        /// Occurs when the service navigates to a page, forwards or backwards.
+        /// </summary>
+        event EventHandler<NavigatedEventArgs> Navigated;
     }
 }

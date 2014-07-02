@@ -1,0 +1,333 @@
+﻿// Copyright (c) Solal Pirelli 2014
+// See License.txt file for more details
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace ThinMvvm.Logging.Tests
+{
+    public class TestNavigationService : INavigationService
+    {
+        public object CurrentViewModel { get { return _viewModels.Peek(); } }
+
+        private Stack<object> _viewModels = new Stack<object>();
+
+        public void NavigateTo<T>() where T : IViewModel<NoParameter>
+        {
+            _viewModels.Push( Activator.CreateInstance<T>() );
+            OnNavigated( CurrentViewModel, true );
+        }
+
+        public void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : IViewModel<TArg>
+        {
+            throw new NotSupportedException();
+        }
+
+        public void NavigateBack()
+        {
+            _viewModels.Pop();
+            OnNavigated( CurrentViewModel, false );
+        }
+
+        public void PopBackStack()
+        {
+            throw new NotSupportedException();
+        }
+
+        public event EventHandler<NavigatedEventArgs> Navigated;
+        private void OnNavigated( object viewModel, bool isForwards )
+        {
+            var evt = Navigated;
+            if ( evt != null )
+            {
+                evt( this, new NavigatedEventArgs( viewModel, isForwards ) );
+            }
+        }
+    }
+
+    public class TestLogger : Logger
+    {
+        public List<Tuple<string, SpecialAction>> Actions { get; private set; }
+
+        public List<Tuple<string, string, string>> Commands { get; private set; }
+
+
+        public TestLogger( INavigationService navigationService )
+            : base( navigationService )
+        {
+            Actions = new List<Tuple<string, SpecialAction>>();
+            Commands = new List<Tuple<string, string, string>>();
+        }
+
+        protected override void LogAction( string viewModelId, SpecialAction action )
+        {
+            Actions.Add( Tuple.Create( viewModelId, action ) );
+        }
+
+        protected override void LogCommand( string viewModelId, string eventId, string label )
+        {
+            Commands.Add( Tuple.Create( viewModelId, eventId, label ) );
+        }
+    }
+
+    [LogId( "1" )]
+    public class TestViewModel1 : DataViewModel<NoParameter>
+    {
+        [LogId( "C1" )]
+        public Command Command1
+        {
+            get { return GetCommand( () => { } ); }
+        }
+
+        [LogId( "C2" )]
+        public Command Command2
+        {
+            get { return GetCommand( () => { } ); }
+        }
+    }
+
+    [LogId( "2" )]
+    public class TestViewModel2 : ViewModel<NoParameter>
+    {
+        public Tuple<string> SomeValue { get; set; }
+
+        [LogId( "C3" )]
+        public Command Command3
+        {
+            get { return GetCommand( () => { } ); }
+        }
+
+        [LogId( "C4" )]
+        [LogParameter( "SomeValue.Item1" )]
+        public Command Command4
+        {
+            get { return GetCommand( () => { } ); }
+        }
+
+        [LogId( "C5" )]
+        [LogParameter( "$Param" )]
+        public Command<string> Command5
+        {
+            get { return GetCommand<string>( _ => { } ); }
+        }
+
+        [LogId( "C6" )]
+        [LogParameter( "$Param" )]
+        [LogValueConverter( typeof( TestLogValueConverter ) )]
+        public Command<bool> Command6
+        {
+            get { return GetCommand<bool>( _ => { } ); }
+        }
+
+        private sealed class TestLogValueConverter : ILogValueConverter
+        {
+            public string Convert( object value )
+            {
+                return (bool) value ? "Yes" : "No";
+            }
+        }
+    }
+
+    [TestClass]
+    public class LoggerTests
+    {
+        [TestMethod]
+        public void NavigationIsLogged()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", SpecialAction.ForwardsNavigation ) }, logger.Actions );
+        }
+
+        [TestMethod]
+        public void NavigationsAreLogged()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            nav.NavigateTo<TestViewModel2>();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", SpecialAction.ForwardsNavigation ),
+                                               Tuple.Create( "2", SpecialAction.ForwardsNavigation ) }, logger.Actions );
+        }
+
+        [TestMethod]
+        public void BackwardsNavigationIsLogged()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            nav.NavigateTo<TestViewModel2>();
+            nav.NavigateBack();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", SpecialAction.ForwardsNavigation ),
+                                               Tuple.Create( "2", SpecialAction.ForwardsNavigation ),
+                                               Tuple.Create( "1", SpecialAction.BackwardsNavigation ) }, logger.Actions );
+        }
+
+        [TestMethod]
+        public void CommandIsLogged()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            ( (TestViewModel1) nav.CurrentViewModel ).Command1.Execute();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "C1", (string) null ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public void CommandsAreLogged()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            ( (TestViewModel1) nav.CurrentViewModel ).Command1.Execute();
+            ( (TestViewModel1) nav.CurrentViewModel ).Command2.Execute();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "C1", (string) null ), 
+                                               Tuple.Create( "1", "C2", (string) null ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public void CommandIsLoggedAfterViewModelChange()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            nav.NavigateTo<TestViewModel2>();
+            ( (TestViewModel2) nav.CurrentViewModel ).Command3.Execute();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "C3", (string) null ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public void CommandIsLoggedAfterBackwardsViewModelChange()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            nav.NavigateTo<TestViewModel2>();
+            nav.NavigateBack();
+            ( (TestViewModel1) nav.CurrentViewModel ).Command1.Execute();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "C1", (string) null ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public async Task RefreshCommandIsSpecialAction()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            await ( (TestViewModel1) nav.CurrentViewModel ).RefreshCommand.ExecuteAsync();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", SpecialAction.ForwardsNavigation ),
+                                               Tuple.Create( "1", SpecialAction.Refresh ) }, logger.Actions );
+        }
+
+        [TestMethod]
+        public void CommandLoggingRequestIsHonored()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+            var vm2 = new TestViewModel2();
+
+            nav.NavigateTo<TestViewModel1>();
+            Messenger.Send( new CommandLoggingRequest( vm2 ) );
+            vm2.Command3.Execute();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "C3", (string) null ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public void EventLogRequestIsHonored()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            Messenger.Send( new EventLogRequest( "XYZ", "123" ) );
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", "XYZ", "123" ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public void EventLogRequestWithScreenIdIsHonored()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel1>();
+            Messenger.Send( new EventLogRequest( "XYZ", "123", "ABC" ) );
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "ABC", "XYZ", "123" ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public void LogParametersRelativeToViewModelAreHonored()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel2>();
+            ( (TestViewModel2) nav.CurrentViewModel ).SomeValue = Tuple.Create( "a b c" );
+            ( (TestViewModel2) nav.CurrentViewModel ).Command4.Execute();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "C4", "a b c" ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public void LogParametersRelativeToCommandParameterAreHonored()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel2>();
+            ( (TestViewModel2) nav.CurrentViewModel ).Command5.Execute( "x y z" );
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "C5", "x y z" ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public void LogValueConvertersAreHonored()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+
+            nav.NavigateTo<TestViewModel2>();
+            ( (TestViewModel2) nav.CurrentViewModel ).Command6.Execute( true );
+            ( (TestViewModel2) nav.CurrentViewModel ).Command6.Execute( false );
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "C6", "Yes" ), 
+                                               Tuple.Create( "2", "C6", "No" ) }, logger.Commands );
+        }
+    }
+}

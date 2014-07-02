@@ -35,6 +35,7 @@ namespace ThinMvvm
         /// <returns>The task object representing the asynchronous operation.</returns>
         public Task ExecuteAsync()
         {
+            OnExecuted();
             return _execute();
         }
 
@@ -64,8 +65,7 @@ namespace ThinMvvm
         /// <param name="parameter">Ignored parameter.</param>
         async void ICommand.Execute( object parameter )
         {
-            OnExecuted();
-            await _execute();
+            await ExecuteAsync();
         }
         #endregion
     }

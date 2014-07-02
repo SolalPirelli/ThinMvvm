@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{17E212E7-86FC-4330-9627-DAE2325DF64C}</ProjectGuid>
+    <ProjectGuid>{B7059682-8FC1-453D-9407-CC2D24EAE6A1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinMvvm.Tests</RootNamespace>
-    <AssemblyName>ThinMvvm.Tests</AssemblyName>
+    <RootNamespace>ThinMvvm.Logging.Tests</RootNamespace>
+    <AssemblyName>ThinMvvm.Logging.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -25,7 +25,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -51,20 +50,14 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="AsyncCommandTests.cs" />
-    <Compile Include="CachedDataViewModelTests.cs" />
-    <Compile Include="CommandTests.cs" />
-    <Compile Include="ContainerTests.cs" />
-    <Compile Include="DataViewModelTests.cs" />
-    <Compile Include="INotifyPropertyChangedExtensionsTests.cs" />
-    <Compile Include="MessengerTests.cs" />
-    <Compile Include="ObservableObjectTests.cs" />
-    <Compile Include="ParameterlessAsyncCommandTests.cs" />
-    <Compile Include="ParameterlessCommandTests.cs" />
+    <Compile Include="LoggerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SettingsBaseTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ThinMvvm.Logging\ThinMvvm.Logging.csproj">
+      <Project>{4e255288-94ea-4ffb-a6a3-11a03513a664}</Project>
+      <Name>ThinMvvm.Logging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ThinMvvm\ThinMvvm.csproj">
       <Project>{caac84d9-3e69-4e83-bd1d-8edbe01298a0}</Project>
       <Name>ThinMvvm</Name>
