@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle( "ThinMvvm.WindowsPhone" )]
+[assembly: AssemblyDescription( "Windows Phone Silverlight 8.x extensions for ThinMvvm." )]
+[assembly: AssemblyCompany( "Solal Pirelli" )]
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
 

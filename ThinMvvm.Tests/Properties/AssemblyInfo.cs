@@ -5,6 +5,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle( "ThinMvvm.Tests" )]
+[assembly: AssemblyDescription( "Tests for ThinMvvm." )]
+[assembly: AssemblyCompany( "Solal Pirelli" )]
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
 

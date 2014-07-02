@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle( "ThinMvvm.Benchmarking" )]
+[assembly: AssemblyDescription( "Benchmarks for ThinMvvm." )]
+[assembly: AssemblyCompany( "Solal Pirelli" )]
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
 
