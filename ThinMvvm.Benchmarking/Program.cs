@@ -1,5 +1,5 @@
-﻿// Copyright (c) 2014 Solal Pirelli
-// This code is licensed under the MIT License (see Licence.txt for details).
+﻿// Copyright (c) Solal Pirelli 2014
+// See License.txt file for more details
 
 using System;
 using System.Collections.Generic;

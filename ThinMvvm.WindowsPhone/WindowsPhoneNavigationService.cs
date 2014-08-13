@@ -20,13 +20,8 @@ namespace ThinMvvm.WindowsPhone
         private const char UriParameterKeyValueSeparator = '=';
         private const string UniqueParameter = "ThinMvvm.WindowsPhone.UniqueId";
 
-        private static PhoneApplicationFrame Frame
-        {
-            get { return (PhoneApplicationFrame) Application.Current.RootVisual; }
-        }
-
         private readonly Dictionary<Type, Uri> _views;
-        // HACK: IViewModel can't be covariant to be used with value types
+        // HACK: IViewModel can't be covariant because it would forbid value types as TArgs,
         //       and having a non-generic IViewModel that shouldn't be implemented is a terrible idea
         //       so we use dynamic to call OnNavigatedTo/From
         private readonly Stack<dynamic> _backStack;
@@ -44,7 +39,7 @@ namespace ThinMvvm.WindowsPhone
             _backStack = new Stack<dynamic>();
             _ignored = new Stack<bool>();
 
-            Frame.Navigated += Frame_Navigated;
+            AppBase.RootFrame.Navigated += Frame_Navigated;
         }
 
 
@@ -56,7 +51,7 @@ namespace ThinMvvm.WindowsPhone
             var viewModelType = viewModel.GetType();
             OnNavigated( viewModel, true );
             _backStack.Push( viewModel );
-            Frame.Navigate( MakeUnique( _views[viewModelType] ) );
+            AppBase.RootFrame.Navigate( MakeUnique( _views[viewModelType] ) );
         }
 
         /// <summary>
@@ -64,7 +59,7 @@ namespace ThinMvvm.WindowsPhone
         /// </summary>
         private void Frame_Navigated( object sender, NavigationEventArgs e )
         {
-            var page = (PhoneApplicationPage) Frame.Content;
+            var page = (PhoneApplicationPage) AppBase.RootFrame.Content;
 
             // need to check IsNavigationInitiator to avoid doing stuff when the user
             // long-presses the Back button to multitask
@@ -93,7 +88,7 @@ namespace ThinMvvm.WindowsPhone
             {
                 if ( _removeCurrentFromBackstack )
                 {
-                    Frame.RemoveBackEntry();
+                    AppBase.RootFrame.RemoveBackEntry();
 
                     var newTop = _backStack.Pop();
                     var currentTop = _backStack.Pop();
@@ -104,7 +99,7 @@ namespace ThinMvvm.WindowsPhone
                     _removeCurrentFromBackstack = false;
                 }
 
-                if ( e.IsNavigationInitiator )
+                if ( e.Uri.ToString().Contains( UniqueParameter ) ) // can't check for IsNavigationInitiator as it's false for the first navigation
                 {
                     // Ignore pages we don't know about
                     if ( !_views.Any( p => UriEquals( p.Value, e.Uri ) ) )
@@ -201,7 +196,7 @@ namespace ThinMvvm.WindowsPhone
         {
             if ( _backStack.Count > 0 )
             {
-                Frame.GoBack();
+                AppBase.RootFrame.GoBack();
             }
             else
             {

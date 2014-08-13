@@ -54,7 +54,7 @@ namespace ThinMvvm
         /// <param name="type">The type.</param>
         /// <param name="parameter">Optional. The additional parameter, if any.</param>
         /// <returns>A concrete instance of the specified type.</returns>
-        public static object Get( Type type, object parameter = null )
+        internal static object Get( Type type, object parameter = null )
         {
             var typeInfo = type.GetTypeInfo();
 

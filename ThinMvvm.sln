@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm", "ThinMvvm\ThinMvvm.csproj", "{CAAC84D9-3E69-4E83-BD1D-8EDBE01298A0}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Logging", "ThinMvvm.Logging\ThinMvvm.Logging.csproj", "{4E255288-94EA-4FFB-A6A3-11A03513A664}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Logging.Tests", "ThinMvvm.Logging.Tests\ThinMvvm.Logging.Tests.csproj", "{B7059682-8FC1-453D-9407-CC2D24EAE6A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.WindowsPhone.SampleApp", "ThinMvvm.WindowsPhone.SampleApp\ThinMvvm.WindowsPhone.SampleApp.csproj", "{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,24 @@ Global
 		{B7059682-8FC1-453D-9407-CC2D24EAE6A1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B7059682-8FC1-453D-9407-CC2D24EAE6A1}.Release|ARM.ActiveCfg = Release|Any CPU
 		{B7059682-8FC1-453D-9407-CC2D24EAE6A1}.Release|x86.ActiveCfg = Release|Any CPU
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|ARM.ActiveCfg = Debug|ARM
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|ARM.Build.0 = Debug|ARM
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|ARM.Deploy.0 = Debug|ARM
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|x86.ActiveCfg = Debug|x86
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|x86.Build.0 = Debug|x86
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Debug|x86.Deploy.0 = Debug|x86
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|ARM.ActiveCfg = Release|ARM
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|ARM.Build.0 = Release|ARM
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|ARM.Deploy.0 = Release|ARM
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|x86.ActiveCfg = Release|x86
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|x86.Build.0 = Release|x86
+		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

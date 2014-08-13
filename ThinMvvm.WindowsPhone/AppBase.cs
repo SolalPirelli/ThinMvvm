@@ -15,61 +15,111 @@ namespace ThinMvvm.WindowsPhone
     /// <summary>
     /// Base application class that does most of the boilerplate, and abstracts away some concepts.
     /// </summary>
-    public abstract class BaseApp : Application
+    public abstract class AppBase : Application
     {
         private const string FirstRunKey = "ThinMvvm.WindowsPhone.FirstRun";
 
-        /// <summary>
-        /// Gets the current BaseApp instance.
-        /// </summary>
-        public static new BaseApp Current
-        {
-            get { return (BaseApp) Application.Current; }
-        }
 
         /// <summary>
-        /// Gets the root frame of the app.
+        /// Infrastructure.
+        /// Gets the root frame of the application.
         /// </summary>
-        public PhoneApplicationFrame RootFrame { get; private set; }
+        internal static PhoneApplicationFrame RootFrame { get; private set; }
+
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApp" /> class.
+        /// Gets the app's language.
         /// </summary>
-        public BaseApp()
+        /// <remarks>
+        /// Usually, this will come from the app resources.
+        /// </remarks>
+        protected abstract string Language { get; }
+
+        /// <summary>
+        /// Gets the app's flow direction, as a string.
+        /// </summary>
+        /// <remarks>
+        /// Usually, this will come from the app resources.
+        /// </remarks>
+        protected abstract string FlowDirection { get; }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AppBase" /> class.
+        /// </summary>
+        /// <param name="args">The application arguments.</param>
+        /// <remarks>
+        /// Additional arguments in implementors' constructors will be injected.
+        /// </remarks>
+        public AppBase()
         {
             UnhandledException += OnUnhandledException;
+            ApplicationLifetimeObjects.Add( new PhoneApplicationService() );
 
             RootFrame = CreateRootFrame();
-            RootFrame.Navigated += OnNavigated;
+            RootFrame.Navigating += OnAppOpening;
             RootFrame.NavigationFailed += OnNavigationFailed;
-
-            ApplicationLifetimeObjects.Add( new PhoneApplicationService() );
 
             InitializeLanguage();
         }
 
+
         /// <summary>
         /// Creates the root frame of the app.
+        /// Override this method to change the root frame's type, e.g. if you need one that supports transitions.
         /// </summary>
         /// <returns>A frame that will be set as the root frame of the app.</returns>
-        protected abstract PhoneApplicationFrame CreateRootFrame();
+        protected virtual PhoneApplicationFrame CreateRootFrame()
+        {
+            return new PhoneApplicationFrame();
+        }
 
         /// <summary>
-        /// Initializes the app, e.g. by binding interfaces to concrete types and ViewModels to Views.
+        /// Called when the app starts.
         /// </summary>
-        protected abstract void Initialize();
+        /// <param name="dependencies">The app dependencies.</param>
+        /// <param name="arguments">The app arguments.</param>
+        protected abstract void Start( AppDependencies dependencies, AppArguments arguments );
+
 
         /// <summary>
-        /// Called when the app runs for the very first time after installation.
+        /// Checks whether this is the first time the application is run.
+        /// Only executions in which this method was called are counted.
         /// </summary>
-        protected abstract void OnFirstRun();
+        /// <remarks>
+        /// This method accesses the isolated storage, which Microsoft defines as "resource-intensive".
+        /// Therefore, implementors should avoid using this method unless they absolutely need it.
+        /// </remarks>
+        protected bool IsFirstRun()
+        {
+            // Do first run stuff now, message boxes (a common use case) can't be displayed before
+            bool dummy;
+            if ( !IsolatedStorageSettings.ApplicationSettings.TryGetValue( FirstRunKey, out dummy ) )
+            {
+                IsolatedStorageSettings.ApplicationSettings.Add( FirstRunKey, false );
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>
-        /// Gets the language and flow direction of the app.
+        /// Occurs before the very first navigation, set by the "Navigation Page" in WMAppManifest, to cancel it.
         /// </summary>
-        /// <returns>A Tuple whose first item is the app language and whose second item is the app flow direction.</returns>
-        protected abstract Tuple<string, string> GetLanguageAndFlowDirection();
+        private void OnAppOpening( object sender, NavigatingCancelEventArgs e )
+        {
+            e.Cancel = true;
+            RootVisual = RootFrame;
+            RootFrame.Navigating -= OnAppOpening;
 
+            // Overlapping navigations aren't allowed, schedule the new navigation for later
+            RootFrame.Dispatcher.BeginInvoke( () =>
+            {
+                var deps = (AppDependencies) Container.Get( typeof( AppDependencies ) );
+                var args = new AppArguments( e.Uri );
+
+                Start( deps, args );
+            } );
+        }
 
         /// <summary>
         /// Occurs when a navigation fails.
@@ -104,9 +154,8 @@ namespace ThinMvvm.WindowsPhone
         {
             try
             {
-                var langAndDirection = GetLanguageAndFlowDirection();
-                RootFrame.Language = XmlLanguage.GetLanguage( langAndDirection.Item1 );
-                RootFrame.FlowDirection = (FlowDirection) Enum.Parse( typeof( FlowDirection ), langAndDirection.Item2 );
+                RootFrame.Language = XmlLanguage.GetLanguage( Language );
+                RootFrame.FlowDirection = (FlowDirection) Enum.Parse( typeof( FlowDirection ), FlowDirection );
             }
             catch
             {
@@ -118,28 +167,6 @@ namespace ThinMvvm.WindowsPhone
                 throw;
             }
         }
-
-        /// <summary>
-        /// Occurs after the first navigation.
-        /// </summary>
-        /// <param name="sender">The event source.</param>
-        /// <param name="e">The event data.</param>
-        private void OnNavigated( object sender, NavigationEventArgs e )
-        {
-            // Set the root visual to allow the application to render
-            RootVisual = RootFrame;
-            Initialize();
-            RootFrame.Navigated -= OnNavigated;
-
-            // Do first run stuff now, message boxes (a common use case) can't be displayed before
-            bool dummy;
-            if ( !IsolatedStorageSettings.ApplicationSettings.TryGetValue( FirstRunKey, out dummy ) )
-            {
-                OnFirstRun();
-                IsolatedStorageSettings.ApplicationSettings.Add( FirstRunKey, false );
-            }
-        }
-
 
         /// <summary>
         /// Settings used when a debugger is attached.

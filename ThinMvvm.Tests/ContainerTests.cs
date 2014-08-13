@@ -53,6 +53,16 @@ namespace ThinMvvm.Tests
             }
         }
 
+        private class NonAbstract
+        {
+            public NonAbstract( IDependency dependency ) { }
+        }
+
+        private sealed class InheritsNonAbstract : NonAbstract
+        {
+            public InheritsNonAbstract( IDependency dependency, IOtherDependency otherDependency ) : base( dependency ) { }
+        }
+
         [TestCleanup]
         public void Cleanup()
         {
@@ -128,6 +138,18 @@ namespace ThinMvvm.Tests
         public void GetFailsOnDuplicateArgument()
         {
             Container.Get( typeof( WithTwoArguments ), 42 );
+        }
+
+        [TestMethod]
+        public void GetResolvesNonAbstractObject()
+        {
+            Container.Bind<IDependency, Dependency>();
+            Container.Bind<IOtherDependency, OtherDependency>();
+            Container.Bind<NonAbstract, InheritsNonAbstract>();
+
+            var obj = Container.Get( typeof( NonAbstract ) );
+
+            Assert.IsInstanceOfType( obj, typeof( InheritsNonAbstract ) );
         }
     }
 }

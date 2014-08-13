@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Solal Pirelli 2014
+// See License.txt file for more details
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ThinMvvm.Tests
