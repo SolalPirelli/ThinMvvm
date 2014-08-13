@@ -5,7 +5,8 @@ namespace ThinMvvm.WindowsPhone
 {
     /// <summary>
     /// Contains dependencies required by an application's entry point.
-    /// If you need additional dependencies, implement this class and add them as constructor arguments.
+    /// If you need additional dependencies, implement this class and add dependencies as constructor arguments, 
+    /// then register your implementation with the <see cref="Container" />.
     /// </summary>
     public class AppDependencies
     {

@@ -47,7 +47,6 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBase" /> class.
         /// </summary>
-        /// <param name="args">The application arguments.</param>
         /// <remarks>
         /// Additional arguments in implementors' constructors will be injected.
         /// </remarks>
