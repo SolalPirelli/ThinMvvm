@@ -17,6 +17,7 @@ namespace ThinMvvm.WindowsPhone
     {
         private const char UriParametersPrefix = '?';
         private const char UriParametersDelimiter = '&';
+        private const char UriParameterKeyValueSeparator = '=';
         private const string UniqueParameter = "ThinMvvm.WindowsPhone.UniqueId";
 
         private static PhoneApplicationFrame Frame
@@ -145,10 +146,11 @@ namespace ThinMvvm.WindowsPhone
         /// </remarks>
         private static Uri MakeUnique( Uri uri )
         {
-            string uniqueParameterValue = Guid.NewGuid().ToString();
+            string uniqueValue = Guid.NewGuid().ToString();
             char separator = uri.ToString().Contains( UriParametersPrefix ) ? UriParametersDelimiter
                                                                             : UriParametersPrefix;
-            return new Uri( uri.ToString() + separator + UniqueParameter + uniqueParameterValue, UriKind.RelativeOrAbsolute );
+            string uniqueUri = uri.ToString() + separator + UniqueParameter + UriParameterKeyValueSeparator + uniqueValue;
+            return new Uri( uniqueUri, UriKind.RelativeOrAbsolute );
         }
 
         /// <summary>
