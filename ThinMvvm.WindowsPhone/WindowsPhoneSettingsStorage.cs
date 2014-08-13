@@ -14,7 +14,7 @@ namespace ThinMvvm.WindowsPhone
 
 
         /// <summary>
-        /// Creates a new instance of the <see cref="WindowsPhoneSettingsStorage" /> class.
+        /// Initializes a new instance of the <see cref="WindowsPhoneSettingsStorage" /> class.
         /// </summary>
         public WindowsPhoneSettingsStorage()
         {

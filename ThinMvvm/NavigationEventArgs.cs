@@ -22,7 +22,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Creates a new instance of the <see cref="NavigatedEventArgs" /> class with the specified parameters.
+        /// Initializes a new instance of the <see cref="NavigatedEventArgs" /> class with the specified parameters.
         /// </summary>
         /// <param name="viewModel">The ViewModel that was navigated to.</param>
         /// <param name="isForward">A value indicating whether the navigation went forwards.</param>

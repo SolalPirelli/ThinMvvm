@@ -28,7 +28,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Creates a new instance of the <see cref="SettingsBase{TSelf}" /> class.
+        /// Initializes a new instance of the <see cref="SettingsBase{TSelf}" /> class.
         /// </summary>
         /// <param name="settings">The settings storage. Implementors' constructors should also take it as a parameter.</param>
         protected SettingsBase( ISettingsStorage settings )
@@ -51,6 +51,7 @@ namespace ThinMvvm
         /// Gets the specified setting's value, as an object of the specified type.
         /// This method is intended to be used from a property's get block.
         /// </summary>
+        /// <param name="propertyName">The property name. This should not be specified; it will be filled in by the compiler.</param>
         protected T Get<T>( [CallerMemberName] string propertyName = "" )
         {
             SetIfUndefined( propertyName );
@@ -61,6 +62,8 @@ namespace ThinMvvm
         /// Sets the specified setting's value.
         /// This method is intended to be used from a property's set block.
         /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyName">The property name. This should not be specified; it will be filled in by the compiler.</param>
         protected void Set( object value, [CallerMemberName] string propertyName = "" )
         {
             string fullKey = GetFullKey( propertyName );
@@ -129,7 +132,7 @@ namespace ThinMvvm
 
 
             /// <summary>
-            /// Creates a new instance of the <see cref="SettingsDefaultValues" /> class.
+            /// Initializes a new instance of the <see cref="SettingsDefaultValues" /> class.
             /// </summary>
             public SettingsDefaultValues()
             {

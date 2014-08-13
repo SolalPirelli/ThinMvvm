@@ -4,7 +4,7 @@
 namespace ThinMvvm.WindowsPhone
 {
     /// <summary>
-    /// Windows Phone specific extension of INavigationService.
+    /// Windows Phone extension of <see cref="INavigationService" />.
     /// </summary>
     public interface IWindowsPhoneNavigationService : INavigationService
     {

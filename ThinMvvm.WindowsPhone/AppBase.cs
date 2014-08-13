@@ -13,7 +13,8 @@ using Microsoft.Phone.Shell;
 namespace ThinMvvm.WindowsPhone
 {
     /// <summary>
-    /// Base application class that does most of the boilerplate, and abstracts away some concepts.
+    /// Base application class that abstracts away some concepts and handles boilerplate 
+    /// such as root visual creation and exception handling.
     /// </summary>
     public abstract class AppBase : Application
     {

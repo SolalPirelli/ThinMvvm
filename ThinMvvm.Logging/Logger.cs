@@ -21,9 +21,9 @@ namespace ThinMvvm.Logging
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Logger" /> class, that will log the specified
-        /// <see cref="INavigationService" />.
+        /// Initializes a new instance of the <see cref="Logger" /> class, that will log the specified <see cref="INavigationService" />.
         /// </summary>
+        /// <param name="navigationService">The navigation service.</param>
         protected Logger( INavigationService navigationService )
         {
             _navigationService = navigationService;

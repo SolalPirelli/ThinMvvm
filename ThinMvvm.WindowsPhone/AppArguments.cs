@@ -12,6 +12,11 @@ namespace ThinMvvm.WindowsPhone
     /// </summary>
     public sealed class AppArguments
     {
+        private const char UriParametersPrefix = '?';
+        private const char UriParametersDelimiter = '&';
+        private const char UriParameterKeyValueSeparator = '=';
+
+
         /// <summary>
         /// Gets the arguments passed in the navigation URI.
         /// </summary>
@@ -33,7 +38,7 @@ namespace ThinMvvm.WindowsPhone
         /// </summary>
         private static IReadOnlyDictionary<string, string> ParseNavigationArguments( string uri )
         {
-            int index = uri.IndexOf( '?' );
+            int index = uri.IndexOf( UriParametersPrefix );
             if ( index == -1 )
             {
                 return new Dictionary<string, string>();
@@ -42,16 +47,16 @@ namespace ThinMvvm.WindowsPhone
             string query = uri.Substring( index + 1 );
 
             var dic = new Dictionary<string, string>();
-            foreach ( var param in query.Split( '&' ) )
+            foreach ( var param in query.Split( UriParametersDelimiter ) )
             {
                 if ( string.IsNullOrWhiteSpace( param ) )
                 {
                     continue;
                 }
 
-                var parts = param.Split( '=' );
+                var parts = param.Split( UriParameterKeyValueSeparator );
                 string key = parts[0].Trim();
-                string value = parts.Length > 1 ? HttpUtility.UrlDecode( parts[1] ).Trim() : "";
+                string value = parts.Length > 1 ? HttpUtility.UrlDecode( parts[1] ).Trim() : string.Empty;
                 dic.Add( key, value );
             }
             return dic;

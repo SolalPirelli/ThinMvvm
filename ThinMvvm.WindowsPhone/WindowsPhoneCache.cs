@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 namespace ThinMvvm
 {
     /// <summary>
-    /// IDataCache implementation for Windows Phone, using isolated storage settings.
+    /// <see cref="ICache" /> implementation for Windows Phone, using isolated storage settings.
     /// </summary>
     public sealed class WindowsPhoneCache : ICache
     {

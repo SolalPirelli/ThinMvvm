@@ -21,9 +21,10 @@ namespace ThinMvvm.Logging
         /// </summary>
         internal const char PathSeparator = '.';
 
+
         /// <summary>
         /// Gets the path to the parameter.
-        /// Use $Param to refer to the command parameter itself.
+        /// Use <c>$Param</c> to refer to the command parameter itself.
         /// </summary>
         public string ParameterPath { get; private set; }
 

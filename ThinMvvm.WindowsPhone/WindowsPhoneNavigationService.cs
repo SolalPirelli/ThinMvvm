@@ -11,7 +11,7 @@ using Microsoft.Phone.Controls;
 namespace ThinMvvm.WindowsPhone
 {
     /// <summary>
-    /// Implementation of IWindowsPhoneNavigationService.
+    /// Implementation of <see cref="IWindowsPhoneNavigationService" />.
     /// </summary>
     public sealed class WindowsPhoneNavigationService : IWindowsPhoneNavigationService
     {
@@ -31,7 +31,7 @@ namespace ThinMvvm.WindowsPhone
 
 
         /// <summary>
-        /// Creates a new WindowsPhoneNavigationService.
+        /// Initializes a new instance of the <see cref="WindowsPhoneNavigationService" /> class.
         /// </summary>
         public WindowsPhoneNavigationService()
         {
@@ -40,6 +40,77 @@ namespace ThinMvvm.WindowsPhone
             _ignored = new Stack<bool>();
 
             AppBase.RootFrame.Navigated += Frame_Navigated;
+        }
+
+
+        /// <summary>
+        /// Navigates to a ViewModel of the specified type.
+        /// </summary>
+        public void NavigateTo<T>()
+            where T : IViewModel<NoParameter>
+        {
+            var vm = Container.Get( typeof( T ), null );
+            NavigateToPrivate( vm );
+        }
+
+        /// <summary>
+        /// Navigates to a ViewModel of the specified type.
+        /// </summary>
+        public void NavigateTo<TViewModel, TArg>( TArg arg )
+            where TViewModel : IViewModel<TArg>
+        {
+            var vm = Container.Get( typeof( TViewModel ), arg );
+            NavigateToPrivate( vm );
+        }
+
+        /// <summary>
+        /// Goes back to the previous ViewModel.
+        /// </summary>
+        public void NavigateBack()
+        {
+            if ( _backStack.Count > 0 )
+            {
+                AppBase.RootFrame.GoBack();
+            }
+            else
+            {
+                Application.Current.Terminate();
+            }
+        }
+
+        /// <summary>
+        /// Pops the ViewModel back-stack, removing the current one so that going backwards will not go to it.
+        /// </summary>
+        public void PopBackStack()
+        {
+            _removeCurrentFromBackstack = true;
+        }
+
+        /// <summary>
+        /// Occurs when the service navigates to a page, forwards or backwards.
+        /// </summary>
+        public event EventHandler<NavigatedEventArgs> Navigated;
+        /// <summary>
+        /// Fires the <see cref="Navigated" /> event.
+        /// </summary>
+        private void OnNavigated( object viewModel, bool isForwards )
+        {
+            var evt = Navigated;
+            if ( evt != null )
+            {
+                evt( this, new NavigatedEventArgs( viewModel, isForwards ) );
+            }
+        }
+
+
+        /// <summary>
+        /// Binds the specified View URI to the specified ViewModel type.
+        /// </summary>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
+        /// <param name="viewUri">The View URI. It needs to be relative to the app root (e.g. /MyApp;Component/Views/MyView.xaml).</param>
+        public void Bind<TViewModel>( string viewUri )
+        {
+            _views.Add( typeof( TViewModel ), new Uri( viewUri, UriKind.Relative ) );
         }
 
 
@@ -167,78 +238,5 @@ namespace ThinMvvm.WindowsPhone
             }
             return uri;
         }
-
-        #region INavigationService implementation
-        /// <summary>
-        /// Navigates to a ViewModel of the specified type.
-        /// </summary>
-        public void NavigateTo<T>()
-            where T : IViewModel<NoParameter>
-        {
-            var vm = Container.Get( typeof( T ), null );
-            NavigateToPrivate( vm );
-        }
-
-        /// <summary>
-        /// Navigates to a ViewModel of the specified type.
-        /// </summary>
-        public void NavigateTo<TViewModel, TArg>( TArg arg )
-            where TViewModel : IViewModel<TArg>
-        {
-            var vm = Container.Get( typeof( TViewModel ), arg );
-            NavigateToPrivate( vm );
-        }
-
-        /// <summary>
-        /// Goes back to the previous ViewModel.
-        /// </summary>
-        public void NavigateBack()
-        {
-            if ( _backStack.Count > 0 )
-            {
-                AppBase.RootFrame.GoBack();
-            }
-            else
-            {
-                Application.Current.Terminate();
-            }
-        }
-
-        /// <summary>
-        /// Pops the ViewModel back-stack, removing the current one so that going backwards will not go to it.
-        /// </summary>
-        public void PopBackStack()
-        {
-            _removeCurrentFromBackstack = true;
-        }
-
-        /// <summary>
-        /// Occurs when the service navigates to a page, forwards or backwards.
-        /// </summary>
-        public event EventHandler<NavigatedEventArgs> Navigated;
-        /// <summary>
-        /// Fires the <see cref="Navigated" /> event.
-        /// </summary>
-        private void OnNavigated( object viewModel, bool isForwards )
-        {
-            var evt = Navigated;
-            if ( evt != null )
-            {
-                evt( this, new NavigatedEventArgs( viewModel, isForwards ) );
-            }
-        }
-        #endregion
-
-        #region IWindowsPhoneNavigationService implementation
-        /// <summary>
-        /// Binds the specified View URI to the specified ViewModel type.
-        /// </summary>
-        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
-        /// <param name="viewUri">The View URI. It needs to be relative to the app root (e.g. /MyApp;Component/Views/MyView.xaml).</param>
-        public void Bind<TViewModel>( string viewUri )
-        {
-            _views.Add( typeof( TViewModel ), new Uri( viewUri, UriKind.Relative ) );
-        }
-        #endregion
     }
 }

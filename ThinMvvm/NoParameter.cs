@@ -9,7 +9,7 @@ namespace ThinMvvm
     public sealed class NoParameter
     {
         /// <summary>
-        /// Prevents the creation of <see cref="NoParameter"/> instances.
+        /// Prevents instances of the <see cref="NoParameter"/> class from being created.
         /// </summary>
         private NoParameter() { }
     }
