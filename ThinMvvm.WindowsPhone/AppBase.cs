@@ -47,9 +47,6 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBase" /> class.
         /// </summary>
-        /// <remarks>
-        /// Additional arguments in implementors' constructors will be injected.
-        /// </remarks>
         public AppBase()
         {
             UnhandledException += OnUnhandledException;
@@ -110,14 +107,10 @@ namespace ThinMvvm.WindowsPhone
             RootVisual = RootFrame;
             RootFrame.Navigating -= OnAppOpening;
 
+            var deps = (AppDependencies) Container.Get( typeof( AppDependencies ) );
+            var args = new AppArguments( e.Uri );
             // Overlapping navigations aren't allowed, schedule the new navigation for later
-            RootFrame.Dispatcher.BeginInvoke( () =>
-            {
-                var deps = (AppDependencies) Container.Get( typeof( AppDependencies ) );
-                var args = new AppArguments( e.Uri );
-
-                Start( deps, args );
-            } );
+            RootFrame.Dispatcher.BeginInvoke( () => Start( deps, args ) );
         }
 
         /// <summary>
