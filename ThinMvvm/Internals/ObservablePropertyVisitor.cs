@@ -29,9 +29,9 @@ namespace ThinMvvm.Internals
 
         protected override Expression VisitMember( MemberExpression node )
         {
-            var ownerAndName = GetPropertyOwnerAndName( node );
-            if ( ownerAndName != null )
+            if ( node.Member is PropertyInfo )
             {
+                var ownerAndName = GetPropertyOwnerAndName( node );
                 var ownerNotif = ownerAndName.Item1 as INotifyPropertyChanged;
                 if ( ownerNotif != null )
                 {
@@ -44,30 +44,17 @@ namespace ThinMvvm.Internals
 
         private static Tuple<object, string> GetPropertyOwnerAndName( MemberExpression propertyExpr )
         {
-            string name = propertyExpr.Member.Name;
-
             var constExpr = propertyExpr.Expression as ConstantExpression;
             if ( constExpr != null )
             {
-                return Tuple.Create( constExpr.Value, name );
+                return Tuple.Create( constExpr.Value, propertyExpr.Member.Name );
             }
 
             // Magic to get the owner/name of a property access not on 'this'
-            var memberExpr = propertyExpr.Expression as MemberExpression;
-            if ( memberExpr != null )
-            {
-                var memberConstExpr = memberExpr.Expression as ConstantExpression;
-                if ( memberConstExpr != null )
-                {
-                    var field = memberExpr.Member as FieldInfo;
-                    if ( field != null )
-                    {
-                        return Tuple.Create( field.GetValue( memberConstExpr.Value ), name );
-                    }
-                }
-            }
-
-            return null;
+            var memberExpr = (MemberExpression) propertyExpr.Expression;
+            var memberConstExpr = (ConstantExpression) memberExpr.Expression;
+            var field = (FieldInfo) memberExpr.Member;
+            return Tuple.Create( field.GetValue( memberConstExpr.Value ), propertyExpr.Member.Name );
         }
     }
 }

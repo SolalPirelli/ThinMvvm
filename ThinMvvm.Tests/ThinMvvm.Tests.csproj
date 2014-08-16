@@ -51,16 +51,16 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="AsyncCommandTests.cs" />
+    <Compile Include="GenericAsyncCommandTests.cs" />
     <Compile Include="CachedDataViewModelTests.cs" />
-    <Compile Include="CommandTests.cs" />
+    <Compile Include="GenericCommandTests.cs" />
     <Compile Include="ContainerTests.cs" />
     <Compile Include="DataViewModelTests.cs" />
     <Compile Include="INotifyPropertyChangedExtensionsTests.cs" />
     <Compile Include="MessengerTests.cs" />
     <Compile Include="ObservableObjectTests.cs" />
-    <Compile Include="ParameterlessAsyncCommandTests.cs" />
-    <Compile Include="ParameterlessCommandTests.cs" />
+    <Compile Include="AsyncCommandTests.cs" />
+    <Compile Include="CommandTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsBaseTests.cs" />
   </ItemGroup>

@@ -13,70 +13,52 @@ namespace ThinMvvm.Tests
         public void ExecuteCallsTheProvidedExecuteMethod()
         {
             int count = 0;
-            bool paramOk = false;
-            object obj = new object();
-            var cmd = new Command<object>( null, o =>
-            {
-                count++;
-                if ( o == obj )
-                {
-                    paramOk = true;
-                }
-            } );
+            var cmd = new Command( null, () => count++ );
 
-            cmd.Execute( obj );
+            cmd.Execute();
 
             Assert.AreEqual( 1, count, "Execute() should call the provided 'execute' parameter exactly once." );
-            Assert.AreEqual( true, paramOk, "Execute() should provide the correct parameter." );
         }
 
         [TestMethod]
         public void ICommandExecuteCallsTheProvidedExecuteMethod()
         {
             int count = 0;
-            bool paramOk = false;
-            object obj = new object();
-            var cmd = new Command<object>( null, o =>
-            {
-                count++;
-                if ( o == obj )
-                {
-                    paramOk = true;
-                }
-            } );
+            var cmd = new Command( null, () => count++ );
 
-            ( (ICommand) cmd ).Execute( obj );
+            ( (ICommand) cmd ).Execute( null );
 
             Assert.AreEqual( 1, count, "ICommand.Execute() should call the provided 'execute' parameter exactly once." );
-            Assert.AreEqual( true, paramOk, "ICommand.Execute() should provide the correct parameter." );
         }
 
         [TestMethod]
         public void CanExecuteIsTrueWhenNotProvided()
         {
-            var cmd = new Command<object>( null, _ => { } );
+            var cmd = new Command( null, () => { } );
 
-            Assert.AreEqual( true, cmd.CanExecute( null ), "CanExecute() should return true when the 'canExecute' parameter is not provided." );
+            Assert.AreEqual( true, cmd.CanExecute(), "CanExecute() should return true when the 'canExecute' parameter is not provided." );
         }
 
         [TestMethod]
         public void CanExecuteCallsTheProvidedCanExecuteMethod()
         {
-            object obj = new object();
-            var cmd = new Command<object>( null, _ => { }, o => o == obj );
+            int n = 0;
+            var cmd = new Command( null, () => { }, () => n == 42 );
 
-            Assert.AreEqual( false, cmd.CanExecute( new object() ), "CanExecute() should call the provided 'canExecute' parameter with the correct parameter." );
-            Assert.AreEqual( true, cmd.CanExecute( obj ), "CanExecute() should call the provided 'canExecute' parameter with the correct parameter." );
+            Assert.AreEqual( false, cmd.CanExecute(), "CanExecute() should call the provided 'canExecute' parameter." );
+            n = 42;
+            Assert.AreEqual( true, cmd.CanExecute(), "CanExecute() should call the provided 'canExecute' parameter." );
         }
 
         [TestMethod]
         public void ICommandCanExecuteCallsTheProvidedCanExecuteMethod()
         {
-            object obj = new object();
-            var cmd = new Command<object>( null, _ => { }, o => o == obj );
+            int n = 0;
+            var cmd = new Command( null, () => { }, () => n == 42 );
 
-            Assert.AreEqual( false, ( (ICommand) cmd ).CanExecute( new object() ), "ICommand.CanExecute() should call the provided 'canExecute' parameter." );
-            Assert.AreEqual( true, ( (ICommand) cmd ).CanExecute( obj ), "ICommand.CanExecute() should call the provided 'canExecute' parameter." );
+            Assert.AreEqual( false, ( (ICommand) cmd ).CanExecute( null ), "ICommand.CanExecute() should call the provided 'canExecute' parameter." );
+            n = 42;
+            Assert.AreEqual( true, ( (ICommand) cmd ).CanExecute( null ), "ICommand.CanExecute() should call the provided 'canExecute' parameter." );
         }
 
         private sealed class InpcExample : ObservableObject
@@ -91,7 +73,7 @@ namespace ThinMvvm.Tests
 
             public void TestAsyncCommand()
             {
-                var cmd = new Command<object>( null, _ => { }, _ => Value == 0 );
+                var cmd = new Command( null, () => { }, () => Value == 0 );
                 int count = 0;
 
                 cmd.CanExecuteChanged += ( s, e ) => count++;
@@ -111,7 +93,7 @@ namespace ThinMvvm.Tests
         public void CanExecuteChangedShouldBeFiredWhenAPropertyOfAFieldChanges()
         {
             var ex = new InpcExample();
-            var cmd = new Command<object>( null, _ => { }, _ => ex.Value == 1 );
+            var cmd = new Command( null, () => { }, () => ex.Value == 1 );
             int count = 0;
 
             cmd.CanExecuteChanged += ( s, e ) => count++;
@@ -123,7 +105,7 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void CanExecuteShouldWorkWithConstants()
         {
-            new Command<object>( null, _ => { }, _ => true );
+            new Command( null, () => { }, () => true );
         }
     }
 }
