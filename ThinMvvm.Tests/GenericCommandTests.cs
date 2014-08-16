@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System;
 using System.Windows.Input;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -132,6 +133,13 @@ namespace ThinMvvm.Tests
             var cmd = new Command<int>( null, _ => { } );
 
             Assert.IsFalse( ( (ICommand) cmd ).CanExecute( "abc" ) );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentException ) )]
+        public void ErrorOnExecuteIfTypeDoesNotMatch()
+        {
+            ( (ICommand) new Command<int>( null, _ => { } ) ).Execute( "abc" );
         }
     }
 }

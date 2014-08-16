@@ -272,5 +272,57 @@ namespace ThinMvvm.Tests
 
             Assert.IsTrue( called );
         }
+
+        [TestMethod]
+        public async Task SeparateTaskIdsAreRespected()
+        {
+            var vm = new TestCachedDataViewModel
+            {
+                GetDataMethod = ( _, __ ) => CachedTask.Create( () => Task.FromResult( 0 ), 0 ),
+                HandleDataMethod = ( _, __ ) => { return true; }
+            };
+
+            await vm.OnNavigatedToAsync();
+
+            var source = new TaskCompletionSource<int>();
+
+            vm.GetDataMethod = ( _, __ ) => CachedTask.Create( () => source.Task, 1 );
+
+            var _unused = vm.RefreshCommand.ExecuteAsync();
+
+            Assert.AreEqual( CacheStatus.Loading, vm.CacheStatus );
+
+            source.SetResult( 0 );
+        }
+
+        [TestMethod]
+        public async Task ExpirationDateIsRespected()
+        {
+            var vm = new TestCachedDataViewModel
+            {
+                GetDataMethod = ( _, __ ) => CachedTask.Create( () => Task.FromResult( 0 ), expirationDate: DateTime.Now.AddMilliseconds( 100 ) ),
+                HandleDataMethod = ( _, __ ) => { return true; }
+            };
+
+            await vm.OnNavigatedToAsync();
+            await Task.Delay( 200 );
+
+            var source = new TaskCompletionSource<int>();
+
+            vm.GetDataMethod = ( _, __ ) => CachedTask.Create( () => source.Task );
+
+            var _unused = vm.RefreshCommand.ExecuteAsync();
+
+            Assert.AreEqual( CacheStatus.Loading, vm.CacheStatus );
+
+            source.SetResult( 0 );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentException ) )]
+        public void ErrorWhenExpirationDateIsInPast()
+        {
+            CachedTask.Create( () => Task.FromResult( 0 ), expirationDate: DateTime.Now.AddSeconds( -1 ) );
+        }
     }
 }

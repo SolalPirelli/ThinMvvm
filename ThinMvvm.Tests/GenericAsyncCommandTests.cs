@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -135,6 +136,27 @@ namespace ThinMvvm.Tests
             var cmd = new AsyncCommand<int>( null, _ => Task.FromResult( 0 ) );
 
             Assert.IsFalse( ( (ICommand) cmd ).CanExecute( "abc" ) );
+        }
+
+        [TestMethod]
+        public async Task ErrorOnExecuteIfTypeDoesNotMatch()
+        {
+            bool threw = false;
+            // required to catch exceptions thrown from async void
+            UnhandledExceptionEventHandler handler = ( _, e ) =>
+            {
+                threw = true;
+                Assert.IsInstanceOfType( e.ExceptionObject, typeof( ArgumentException ) );
+            };
+            AppDomain.CurrentDomain.UnhandledException += handler;
+
+            ( (ICommand) new AsyncCommand<int>( null, _ => Task.FromResult( 0 ) ) ).Execute( "abc" );
+
+            await Task.Delay( 100 );
+
+            Assert.IsTrue( threw );
+
+            AppDomain.CurrentDomain.UnhandledException -= handler;
         }
     }
 }

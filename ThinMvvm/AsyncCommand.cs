@@ -135,10 +135,14 @@ namespace ThinMvvm
         /// <param name="parameter">Data used by the command.</param>
         async void ICommand.Execute( object parameter )
         {
-            if ( parameter is T )
+            if ( !( parameter is T ) )
             {
-                await ExecuteAsync( (T) parameter );
+                throw new ArgumentException( string.Format( "Wrong parameter type. Expected {0}, got {1}.",
+                                                            typeof( T ).FullName, parameter.GetType().FullName ),
+                                             "parameter" );
             }
+
+            await ExecuteAsync( (T) parameter );
         }
         #endregion
     }

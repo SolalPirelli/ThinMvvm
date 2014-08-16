@@ -73,6 +73,11 @@ namespace ThinMvvm
         /// <returns>A <see cref="CachedTask{T}" /> with the specified parameters.</returns>
         public static CachedTask<T> Create<T>( Func<Task<T>> getter, long? id = null, DateTime? expirationDate = null )
         {
+            if ( expirationDate < DateTime.Now )
+            {
+                throw new ArgumentException( "Cannot set the expiration date to a past date." );
+            }
+
             return new CachedTask<T>( getter, id, expirationDate, true, true );
         }
 

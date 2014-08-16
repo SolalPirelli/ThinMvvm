@@ -132,10 +132,14 @@ namespace ThinMvvm
         /// <param name="parameter">Data used by the command.</param>
         void ICommand.Execute( object parameter )
         {
-            if ( parameter is T )
+            if ( !( parameter is T ) )
             {
-                Execute( (T) parameter );
+                throw new ArgumentException( string.Format( "Wrong parameter type. Expected {0}, got {1}.",
+                                                            typeof( T ).FullName, parameter.GetType().FullName ),
+                                             "parameter" );
             }
+
+            Execute( (T) parameter );
         }
         #endregion
     }
