@@ -49,7 +49,7 @@ namespace ThinMvvm.Logging.Tests
 
     public class TestLogger : Logger
     {
-        public List<Tuple<string, SpecialAction>> Actions { get; private set; }
+        public List<Tuple<string, LoggedSpecialAction>> Actions { get; private set; }
 
         public List<Tuple<string, string, string>> Commands { get; private set; }
 
@@ -57,11 +57,11 @@ namespace ThinMvvm.Logging.Tests
         public TestLogger( INavigationService navigationService )
             : base( navigationService )
         {
-            Actions = new List<Tuple<string, SpecialAction>>();
+            Actions = new List<Tuple<string, LoggedSpecialAction>>();
             Commands = new List<Tuple<string, string, string>>();
         }
 
-        protected override void LogAction( string viewModelId, SpecialAction action )
+        protected override void LogAction( string viewModelId, LoggedSpecialAction action )
         {
             Actions.Add( Tuple.Create( viewModelId, action ) );
         }
@@ -121,6 +121,12 @@ namespace ThinMvvm.Logging.Tests
             get { return GetCommand<bool>( _ => { } ); }
         }
 
+        [LogId( "Refresh" )]
+        public AsyncCommand RefreshCommand
+        {
+            get { return GetAsyncCommand( () => Task.FromResult( 0 ) ); }
+        }
+
         private sealed class TestLogValueConverter : ILogValueConverter
         {
             public string Convert( object value )
@@ -142,7 +148,7 @@ namespace ThinMvvm.Logging.Tests
 
             nav.NavigateTo<TestViewModel1>();
 
-            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", SpecialAction.ForwardsNavigation ) }, logger.Actions );
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", LoggedSpecialAction.ForwardsNavigation ) }, logger.Actions );
         }
 
         [TestMethod]
@@ -155,8 +161,8 @@ namespace ThinMvvm.Logging.Tests
             nav.NavigateTo<TestViewModel1>();
             nav.NavigateTo<TestViewModel2>();
 
-            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", SpecialAction.ForwardsNavigation ),
-                                               Tuple.Create( "2", SpecialAction.ForwardsNavigation ) }, logger.Actions );
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", LoggedSpecialAction.ForwardsNavigation ),
+                                               Tuple.Create( "2", LoggedSpecialAction.ForwardsNavigation ) }, logger.Actions );
         }
 
         [TestMethod]
@@ -170,9 +176,9 @@ namespace ThinMvvm.Logging.Tests
             nav.NavigateTo<TestViewModel2>();
             nav.NavigateBack();
 
-            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", SpecialAction.ForwardsNavigation ),
-                                               Tuple.Create( "2", SpecialAction.ForwardsNavigation ),
-                                               Tuple.Create( "1", SpecialAction.BackwardsNavigation ) }, logger.Actions );
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", LoggedSpecialAction.ForwardsNavigation ),
+                                               Tuple.Create( "2", LoggedSpecialAction.ForwardsNavigation ),
+                                               Tuple.Create( "1", LoggedSpecialAction.BackwardsNavigation ) }, logger.Actions );
         }
 
         [TestMethod]
@@ -242,8 +248,8 @@ namespace ThinMvvm.Logging.Tests
             nav.NavigateTo<TestViewModel1>();
             await ( (TestViewModel1) nav.CurrentViewModel ).RefreshCommand.ExecuteAsync();
 
-            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", SpecialAction.ForwardsNavigation ),
-                                               Tuple.Create( "1", SpecialAction.Refresh ) }, logger.Actions );
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "1", LoggedSpecialAction.ForwardsNavigation ),
+                                               Tuple.Create( "1", LoggedSpecialAction.Refresh ) }, logger.Actions );
         }
 
         [TestMethod]
@@ -328,6 +334,20 @@ namespace ThinMvvm.Logging.Tests
 
             CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "C6", "Yes" ), 
                                                Tuple.Create( "2", "C6", "No" ) }, logger.Commands );
+        }
+
+        [TestMethod]
+        public async Task CustomRefreshCommandIsNotSpecial()
+        {
+            var nav = new TestNavigationService();
+            var logger = new TestLogger( nav );
+            logger.Start();
+
+            nav.NavigateTo<TestViewModel2>();
+            await ( (TestViewModel2) nav.CurrentViewModel ).RefreshCommand.ExecuteAsync();
+
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "2", LoggedSpecialAction.ForwardsNavigation ) }, logger.Actions );
+            CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "Refresh", (string) null ) }, logger.Commands );
         }
     }
 }

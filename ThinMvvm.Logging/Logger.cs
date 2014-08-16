@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ThinMvvm.Internals;
 
 namespace ThinMvvm.Logging
 {
@@ -14,6 +13,8 @@ namespace ThinMvvm.Logging
     /// </summary>
     public abstract class Logger
     {
+        private const string RefreshCommandName = "RefreshCommand";
+
         private readonly INavigationService _navigationService;
         private readonly Dictionary<Type, ILogValueConverter> _converters;
 
@@ -39,7 +40,7 @@ namespace ThinMvvm.Logging
             _navigationService.Navigated += NavigationService_Navigated;
 
             Messenger.Register<CommandLoggingRequest>( req => EnableCommandLogging( req.Object ) );
-            Messenger.Register<EventLogRequest>( req => LogCommand( req.ScreenId ?? _currentViewModelId, req.EventId, req.Label ) );
+            Messenger.Register<EventLogRequest>( req => LogCommand( req.ViewModelId ?? _currentViewModelId, req.EventId, req.Label ) );
         }
 
 
@@ -48,7 +49,7 @@ namespace ThinMvvm.Logging
         /// </summary>
         /// <param name="viewModelId">The ViewModel ID.</param>
         /// <param name="action">The action.</param>
-        protected abstract void LogAction( string viewModelId, SpecialAction action );
+        protected abstract void LogAction( string viewModelId, LoggedSpecialAction action );
 
         /// <summary>
         /// Logs a command execution on the specified ViewModel with the specified ID and label.
@@ -68,11 +69,15 @@ namespace ThinMvvm.Logging
             {
                 var command = (CommandBase) prop.GetValue( obj );
 
-                var actionAttr = prop.GetCustomAttribute<SpecialCommandAttribute>();
-                if ( actionAttr != null )
+                if ( prop.Name == RefreshCommandName )
                 {
-                    command.Executed += ( _, e ) => LogAction( _currentViewModelId, actionAttr.Action );
-                    continue;
+                    var declType = prop.DeclaringType;
+                    if ( declType.GenericTypeArguments.Length != 0
+                      && declType.GetGenericTypeDefinition() == typeof( DataViewModel<> ) )
+                    {
+                        command.Executed += ( _, __ ) => LogAction( _currentViewModelId, LoggedSpecialAction.Refresh );
+                        continue;
+                    }
                 }
 
                 var idAttr = prop.GetCustomAttribute<LogIdAttribute>();
@@ -81,7 +86,7 @@ namespace ThinMvvm.Logging
                     var parameterAttr = prop.GetCustomAttribute<LogParameterAttribute>();
                     if ( parameterAttr == null )
                     {
-                        command.Executed += ( _, e ) => LogCommand( _currentViewModelId, idAttr.Id, null );
+                        command.Executed += ( _, __ ) => LogCommand( _currentViewModelId, idAttr.Id, null );
                     }
                     else
                     {
@@ -115,7 +120,7 @@ namespace ThinMvvm.Logging
             {
                 _currentViewModelId = vmLogAttr.Id;
 
-                LogAction( vmLogAttr.Id, e.IsForward ? SpecialAction.ForwardsNavigation : SpecialAction.BackwardsNavigation );
+                LogAction( vmLogAttr.Id, e.IsForward ? LoggedSpecialAction.ForwardsNavigation : LoggedSpecialAction.BackwardsNavigation );
 
                 if ( e.IsForward )
                 {

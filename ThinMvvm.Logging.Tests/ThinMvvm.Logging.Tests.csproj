@@ -51,6 +51,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="LoggerTests.cs" />
+    <Compile Include="LogValueConverterAttributeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

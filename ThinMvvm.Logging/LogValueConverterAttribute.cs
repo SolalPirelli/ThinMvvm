@@ -24,6 +24,7 @@ namespace ThinMvvm.Logging
         /// <param name="converterType">The converter type.</param>
         public LogValueConverterAttribute( Type converterType )
         {
+            // proper null checking provided by GetTypeInfo since it's an extension method
             var converterTypeInfo = converterType.GetTypeInfo();
             if ( converterTypeInfo.IsAbstract || converterTypeInfo.IsInterface )
             {

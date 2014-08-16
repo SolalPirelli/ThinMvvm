@@ -4,8 +4,11 @@
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// A request to log an event that occurred.
+    /// Request message to log an event that occurred.
     /// </summary>
+    /// <remarks>
+    /// To be sent via the <see cref="Messenger" />.
+    /// </remarks>
     public sealed class EventLogRequest
     {
         /// <summary>
@@ -19,9 +22,9 @@ namespace ThinMvvm.Logging
         public string Label { get; private set; }
 
         /// <summary>
-        /// Gets the ID of the screen on which the event should be logged, or null for the current screen.
+        /// Gets the ID of the ViewModel on which the event should be logged, or null for the current ViewModel.
         /// </summary>
-        public string ScreenId { get; private set; }
+        public string ViewModelId { get; private set; }
 
 
         /// <summary>
@@ -29,12 +32,12 @@ namespace ThinMvvm.Logging
         /// </summary>
         /// <param name="eventId">The event ID.</param>
         /// <param name="label">The label.</param>
-        /// <param name="screenId">Optional. The screen ID, if it's different from the current screen.</param>
-        public EventLogRequest( string eventId, string label, string screenId = null )
+        /// <param name="viewModelId">Optional. The ViewModel ID, if it's different from the current ViewModel.</param>
+        public EventLogRequest( string eventId, string label, string viewModelId = null )
         {
             EventId = eventId;
             Label = label;
-            ScreenId = screenId;
+            ViewModelId = viewModelId;
         }
     }
 }

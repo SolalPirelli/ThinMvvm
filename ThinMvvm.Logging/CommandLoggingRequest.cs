@@ -4,8 +4,11 @@
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// A request to enable logging for an object's commands.
+    /// Request message to enable logging for an object's commands.
     /// </summary>
+    /// <remarks>
+    /// To be sent via the <see cref="Messenger" />.
+    /// </remarks>
     public sealed class CommandLoggingRequest
     {
         /// <summary>

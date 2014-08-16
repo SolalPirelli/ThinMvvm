@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-namespace ThinMvvm
+namespace ThinMvvm.Logging
 {
     /// <summary>
     /// Special actions that are logged separately from commands.
     /// </summary>
-    public enum SpecialAction
+    public enum LoggedSpecialAction
     {
         /// <summary>
         /// Forwards navigation to a ViewModel.

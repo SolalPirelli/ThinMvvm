@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using ThinMvvm.Internals;
 
 namespace ThinMvvm
 {
@@ -44,7 +43,6 @@ namespace ThinMvvm
         /// <summary>
         /// Gets the command executed to update all data.
         /// </summary>
-        [SpecialCommand( SpecialAction.Refresh )]
         public AsyncCommand RefreshCommand
         {
             get { return GetAsyncCommand( () => TryRefreshAsync( true ), () => DataStatus != DataStatus.Loading ); }
