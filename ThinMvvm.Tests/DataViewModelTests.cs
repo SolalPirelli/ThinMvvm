@@ -16,6 +16,11 @@ namespace ThinMvvm.Tests
         {
             public Func<bool, CancellationToken, Task> RefreshAsyncMethod { get; set; }
 
+            public CancellationToken PublicCurrentCancellationToken
+            {
+                get { return this.CurrentCancellationToken; }
+            }
+
             protected override Task RefreshAsync( bool force, CancellationToken token )
             {
                 return RefreshAsyncMethod( force, token );
@@ -165,6 +170,27 @@ namespace ThinMvvm.Tests
         public void CannotAddNonExceptionsToNetworkExceptionTypes()
         {
             DataViewModelOptions.AddNetworkExceptionType( typeof( string ) );
+        }
+
+        [TestMethod]
+        public async Task CurrentCancellationTokenExists()
+        {
+            var vm = new TestDataViewModel
+            {
+                RefreshAsyncMethod = ( _, __ ) => Task.FromResult( 0 )
+            };
+
+            Assert.IsNotNull( vm.PublicCurrentCancellationToken );
+
+            await vm.RefreshCommand.ExecuteAsync();
+
+            Assert.IsNotNull( vm.PublicCurrentCancellationToken );
+        }
+
+        [TestMethod]
+        public void DisposeWorks()
+        {
+            new TestDataViewModel().Dispose();
         }
     }
 }

@@ -158,5 +158,26 @@ namespace ThinMvvm.Tests
 
             AppDomain.CurrentDomain.UnhandledException -= handler;
         }
+
+        [TestMethod]
+        public async Task ExecuteThrowsWhenExecuteAsyncThrows()
+        {
+            bool threw = false;
+            UnhandledExceptionEventHandler handler = ( s, e ) =>
+            {
+                threw = true;
+                Assert.IsInstanceOfType( e.ExceptionObject, typeof( InvalidTimeZoneException ) );
+            };
+            AppDomain.CurrentDomain.UnhandledException += handler;
+
+            var cmd = new AsyncCommand<int>( null, n => { throw new InvalidTimeZoneException(); } );
+
+            ( (ICommand) cmd ).Execute( 0 );
+            await Task.Delay( 100 );
+
+            Assert.IsTrue( threw );
+
+            AppDomain.CurrentDomain.UnhandledException -= handler;
+        }
     }
 }

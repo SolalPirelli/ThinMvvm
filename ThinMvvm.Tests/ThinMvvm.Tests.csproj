@@ -63,6 +63,7 @@
     <Compile Include="CommandTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsBaseTests.cs" />
+    <Compile Include="ViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThinMvvm\ThinMvvm.csproj">

@@ -19,6 +19,14 @@
                                 <Source>.*\\NoParameter\.cs</Source>
                             </Exclude>
                         </Sources>
+                        <Functions>
+                            <Exclude>
+                                <!-- Exclude nonsensical non-coverage of AsyncCommand(<T>).Execute(object),
+                                     probably a bug in VS' test coverage analysis -->
+                                <Function>.*AsyncCommand.&lt;System.Windows\.Input\.ICommand\.Execute&gt;d__0.*</Function>
+                                <Function>.*AsyncCommand.&lt;System.Windows\.Input\.ICommand\.Execute&gt;d__0&lt;T&gt;.*</Function>
+                            </Exclude>
+                        </Functions>
                     </CodeCoverage>
                 </Configuration>
             </DataCollector>

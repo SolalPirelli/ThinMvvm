@@ -10,6 +10,7 @@ namespace ThinMvvm.Tests
     public class ContainerTests
     {
         private interface IDependency { }
+        private interface IDependencyEx : IDependency { }
         private abstract class AbstractDependency : IDependency { }
         private class Dependency : IDependency { }
 
@@ -58,9 +59,16 @@ namespace ThinMvvm.Tests
             public NonAbstract( IDependency dependency ) { }
         }
 
-        private sealed class InheritsNonAbstract : NonAbstract
+        private class InheritsNonAbstract : NonAbstract
         {
             public InheritsNonAbstract( IDependency dependency, IOtherDependency otherDependency ) : base( dependency ) { }
+        }
+
+        private class WithTwoConstructors
+        {
+            public WithTwoConstructors( IDependency dep ) { }
+
+            public WithTwoConstructors( IOtherDependency dep ) { }
         }
 
         [TestCleanup]
@@ -82,6 +90,13 @@ namespace ThinMvvm.Tests
         public void BindDoesNotAllowAbstractImplementations()
         {
             Container.Bind<IDependency, AbstractDependency>();
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentException ), "Bind() should not allow binding to an interface." )]
+        public void BindDoesNotAllowInterfaceImplementations()
+        {
+            Container.Bind<IDependency, IDependencyEx>();
         }
 
         [TestMethod]
@@ -147,9 +162,30 @@ namespace ThinMvvm.Tests
             Container.Bind<IOtherDependency, OtherDependency>();
             Container.Bind<NonAbstract, InheritsNonAbstract>();
 
-            var obj = Container.Get( typeof( NonAbstract ) );
+            var obj = Container.Get( typeof( NonAbstract ), null );
 
             Assert.IsInstanceOfType( obj, typeof( InheritsNonAbstract ) );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentException ), "Get() should throw if no implementation was registered for an interface." )]
+        public void ErrorOnInterfaceGetWithoutImplementation()
+        {
+            Container.Get( typeof( IDependency ), null );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentException ), "Get() should throw if no implementation was registered for an abstract class." )]
+        public void ErrorOnAbstractGetWithoutImplementation()
+        {
+            Container.Get( typeof( AbstractDependency ), null );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentException ), "Get() should throw if a class has more than one constructor." )]
+        public void ErrorOnGetWhenMoreThanOneConstructor()
+        {
+            Container.Get( typeof( WithTwoConstructors ), null );
         }
     }
 }

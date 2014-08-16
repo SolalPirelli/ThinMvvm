@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -107,6 +108,27 @@ namespace ThinMvvm.Tests
         public void CanExecuteShouldWorkWithConstants()
         {
             new AsyncCommand( null, () => Task.FromResult( 0 ), () => true );
+        }
+
+        [TestMethod]
+        public async Task ExecuteThrowsWhenExecuteAsyncThrows()
+        {
+            bool threw = false;
+            UnhandledExceptionEventHandler handler = ( s, e ) =>
+            {
+                threw = true;
+                Assert.IsInstanceOfType( e.ExceptionObject, typeof( InvalidTimeZoneException ) );
+            };
+            AppDomain.CurrentDomain.UnhandledException += handler;
+
+            var cmd = new AsyncCommand( null, () => { throw new InvalidTimeZoneException(); } );
+
+            ( (ICommand) cmd ).Execute( null );
+            await Task.Delay( 100 );
+
+            Assert.IsTrue( threw );
+
+            AppDomain.CurrentDomain.UnhandledException -= handler;
         }
     }
 }

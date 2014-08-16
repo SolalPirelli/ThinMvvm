@@ -52,9 +52,9 @@ namespace ThinMvvm
         /// with an optional additional constructor parameter.
         /// </summary>
         /// <param name="type">The type.</param>
-        /// <param name="parameter">Optional. The additional parameter, if any.</param>
+        /// <param name="parameter">The parameter, or null if there is none.</param>
         /// <returns>A concrete instance of the specified type.</returns>
-        internal static object Get( Type type, object parameter = null )
+        internal static object Get( Type type, object parameter )
         {
             var typeInfo = type.GetTypeInfo();
 
@@ -69,12 +69,13 @@ namespace ThinMvvm
                 throw new ArgumentException( "Missing implementation: " + typeInfo.Name );
             }
 
-            var ctor = typeInfo.DeclaredConstructors.SingleOrDefault( ci => !ci.IsStatic );
-            if ( ctor == null )
+            var ctors = typeInfo.DeclaredConstructors.Where( ci => !ci.IsStatic ).ToArray();
+            if ( ctors.Length > 1 )
             {
                 throw new ArgumentException( "Could not find an unique constructor for type {0}", typeInfo.Name );
             }
 
+            var ctor = ctors[0];
             var argTypeInfo = parameter == null ? null : parameter.GetType().GetTypeInfo();
             bool argUsed = false;
 

@@ -108,7 +108,7 @@ namespace ThinMvvm.WindowsPhone
             RootVisual = RootFrame;
             RootFrame.Navigating -= OnAppOpening;
 
-            var deps = (AppDependencies) Container.Get( typeof( AppDependencies ) );
+            var deps = (AppDependencies) Container.Get( typeof( AppDependencies ), null );
             var args = new AppArguments( e.Uri );
             // Overlapping navigations aren't allowed, schedule the new navigation for later
             RootFrame.Dispatcher.BeginInvoke( () => Start( deps, args ) );
