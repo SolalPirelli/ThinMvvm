@@ -12,7 +12,7 @@ namespace ThinMvvm.Tests
     [TestClass]
     public sealed class SettingsBaseTests
     {
-        public sealed class TestSettingsStorage : ISettingsStorage
+        private sealed class TestSettingsStorage : ISettingsStorage
         {
             public Dictionary<string, object> Values = new Dictionary<string, object>();
             public Dictionary<string, int> SetCallsCounts = new Dictionary<string, int>();
@@ -42,7 +42,7 @@ namespace ThinMvvm.Tests
             }
         }
 
-        public sealed class TestObservableObject : INotifyPropertyChanged
+        private sealed class TestObservableObject : INotifyPropertyChanged
         {
             public event PropertyChangedEventHandler PropertyChanged;
             public void FirePropertyChanged()
@@ -52,7 +52,7 @@ namespace ThinMvvm.Tests
         }
 
         // don't use ObservableCollection since it also implements INotifyPropertyChanged
-        public sealed class TestObservableCollection : INotifyCollectionChanged
+        private sealed class TestObservableCollection : INotifyCollectionChanged
         {
             public event NotifyCollectionChangedEventHandler CollectionChanged;
             public void FireCollectionChanged()
@@ -61,7 +61,7 @@ namespace ThinMvvm.Tests
             }
         }
 
-        public sealed class TestSettings : SettingsBase<TestSettings>
+        private sealed class TestSettings : SettingsBase<TestSettings>
         {
             public bool Bool
             {

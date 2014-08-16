@@ -12,10 +12,16 @@ namespace ThinMvvm.Tests
         private sealed class IntWrapper
         {
             public int Value { get; set; }
+            public static int StaticValue { get; set; }
 
             public void Increment( int incr )
             {
                 Value += incr;
+            }
+
+            public void IncrementStatic( int incr )
+            {
+                StaticValue += incr;
             }
         }
 
@@ -109,7 +115,7 @@ namespace ThinMvvm.Tests
         public void RegisterDoesNotKeepStrongReferences()
         {
             var wrapper = new IntWrapper();
-            // N.B. using WeakReference is a terrible idea because of race conditions, but it's useful here
+            // N.B. using the non-generic WeakReference is a terrible idea because of race conditions, but it's useful here
             var wrapperRef = new WeakReference( wrapper );
             Messenger.Register<int>( wrapper.Increment );
             wrapper = null;
@@ -117,6 +123,23 @@ namespace ThinMvvm.Tests
             ForceGC();
 
             Assert.IsFalse( wrapperRef.IsAlive, "Register() should not keep strong references." );
+        }
+
+        [TestMethod]
+        public void DeadHandlersAreRemoved()
+        {
+            var wrapper = new IntWrapper();
+            // same remark on WeakReference as above
+            var wrapperRef = new WeakReference( wrapper );
+
+            Messenger.Register<int>( wrapper.IncrementStatic );
+            wrapper = null;
+
+            ForceGC();
+
+            Messenger.Send( 42 );
+
+            Assert.AreEqual( 0, IntWrapper.StaticValue );
         }
     }
 }

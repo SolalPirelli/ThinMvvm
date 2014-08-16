@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Solal Pirelli 2014
+// See License.txt file for more details
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ThinMvvm.Logging.Tests
@@ -12,7 +15,7 @@ namespace ThinMvvm.Logging.Tests
             new LogValueConverterAttribute( typeof( TestLogValueConverter ) );
         }
 
-        public class TestLogValueConverter : ILogValueConverter
+        private class TestLogValueConverter : ILogValueConverter
         {
             public string Convert( object value )
             {
@@ -44,7 +47,7 @@ namespace ThinMvvm.Logging.Tests
             new LogValueConverterAttribute( typeof( ILogValueConverterEx ) );
         }
 
-        public interface ILogValueConverterEx : ILogValueConverter { }
+        private interface ILogValueConverterEx : ILogValueConverter { }
 
 
         [TestMethod]
@@ -54,7 +57,7 @@ namespace ThinMvvm.Logging.Tests
             new LogValueConverterAttribute( typeof( AbstractLogValueConverter ) );
         }
 
-        public abstract class AbstractLogValueConverter : ILogValueConverter
+        private abstract class AbstractLogValueConverter : ILogValueConverter
         {
             public string Convert( object value )
             {
@@ -70,6 +73,6 @@ namespace ThinMvvm.Logging.Tests
             new LogValueConverterAttribute( typeof( NotLogValueConverter ) );
         }
 
-        public class NotLogValueConverter { }
+        private class NotLogValueConverter { }
     }
 }

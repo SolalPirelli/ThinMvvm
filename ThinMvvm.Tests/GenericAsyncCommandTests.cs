@@ -128,5 +128,13 @@ namespace ThinMvvm.Tests
         {
             new AsyncCommand<object>( null, _ => Task.FromResult( 0 ), _ => true );
         }
+
+        [TestMethod]
+        public void CanExecuteIsAlwaysFalseIfTypeDoesNotMatch()
+        {
+            var cmd = new AsyncCommand<int>( null, _ => Task.FromResult( 0 ) );
+
+            Assert.IsFalse( ( (ICommand) cmd ).CanExecute( "abc" ) );
+        }
     }
 }

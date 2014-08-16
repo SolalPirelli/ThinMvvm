@@ -9,7 +9,7 @@ namespace ThinMvvm.Tests
     [TestClass]
     public sealed class INotifyPropertyChangedExtensionsTests
     {
-        public sealed class TestNotifyPropertyChanged : ObservableObject
+        private sealed class TestNotifyPropertyChanged : ObservableObject
         {
             private int _property;
 
@@ -20,6 +20,10 @@ namespace ThinMvvm.Tests
             }
 
             public int Field;
+            private void IgnoreUnusedField()
+            {
+                Field++;
+            }
         }
 
         [TestMethod]

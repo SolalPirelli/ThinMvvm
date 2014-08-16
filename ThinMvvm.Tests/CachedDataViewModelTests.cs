@@ -13,7 +13,7 @@ namespace ThinMvvm.Tests
     [TestClass]
     public sealed class CachedDataViewModelTests
     {
-        public sealed class TestCache : ICache
+        private sealed class TestCache : ICache
         {
             // pretend it's a static cache, as a real one would be
             public static readonly Dictionary<Type, Dictionary<long, Tuple<object, DateTime>>> Data
@@ -43,7 +43,7 @@ namespace ThinMvvm.Tests
             }
         }
 
-        public sealed class TestCachedDataViewModel : CachedDataViewModel<NoParameter, int>
+        private sealed class TestCachedDataViewModel : CachedDataViewModel<NoParameter, int>
         {
             public Func<bool, CancellationToken, CachedTask<int>> GetDataMethod { get; set; }
 

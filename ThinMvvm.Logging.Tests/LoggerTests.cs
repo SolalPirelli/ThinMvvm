@@ -8,137 +8,138 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ThinMvvm.Logging.Tests
 {
-    public class TestNavigationService : INavigationService
-    {
-        public object CurrentViewModel { get { return _viewModels.Peek(); } }
-
-        private Stack<object> _viewModels = new Stack<object>();
-
-        public void NavigateTo<T>() where T : IViewModel<NoParameter>
-        {
-            _viewModels.Push( Activator.CreateInstance<T>() );
-            OnNavigated( CurrentViewModel, true );
-        }
-
-        public void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : IViewModel<TArg>
-        {
-            throw new NotSupportedException();
-        }
-
-        public void NavigateBack()
-        {
-            _viewModels.Pop();
-            OnNavigated( CurrentViewModel, false );
-        }
-
-        public void PopBackStack()
-        {
-            throw new NotSupportedException();
-        }
-
-        public event EventHandler<NavigatedEventArgs> Navigated;
-        private void OnNavigated( object viewModel, bool isForwards )
-        {
-            var evt = Navigated;
-            if ( evt != null )
-            {
-                evt( this, new NavigatedEventArgs( viewModel, isForwards ) );
-            }
-        }
-    }
-
-    public class TestLogger : Logger
-    {
-        public List<Tuple<string, LoggedSpecialAction>> Actions { get; private set; }
-
-        public List<Tuple<string, string, string>> Commands { get; private set; }
-
-
-        public TestLogger( INavigationService navigationService )
-            : base( navigationService )
-        {
-            Actions = new List<Tuple<string, LoggedSpecialAction>>();
-            Commands = new List<Tuple<string, string, string>>();
-        }
-
-        protected override void LogAction( string viewModelId, LoggedSpecialAction action )
-        {
-            Actions.Add( Tuple.Create( viewModelId, action ) );
-        }
-
-        protected override void LogCommand( string viewModelId, string eventId, string label )
-        {
-            Commands.Add( Tuple.Create( viewModelId, eventId, label ) );
-        }
-    }
-
-    [LogId( "1" )]
-    public class TestViewModel1 : DataViewModel<NoParameter>
-    {
-        [LogId( "C1" )]
-        public Command Command1
-        {
-            get { return GetCommand( () => { } ); }
-        }
-
-        [LogId( "C2" )]
-        public Command Command2
-        {
-            get { return GetCommand( () => { } ); }
-        }
-    }
-
-    [LogId( "2" )]
-    public class TestViewModel2 : ViewModel<NoParameter>
-    {
-        public Tuple<string> SomeValue { get; set; }
-
-        [LogId( "C3" )]
-        public Command Command3
-        {
-            get { return GetCommand( () => { } ); }
-        }
-
-        [LogId( "C4" )]
-        [LogParameter( "SomeValue.Item1" )]
-        public Command Command4
-        {
-            get { return GetCommand( () => { } ); }
-        }
-
-        [LogId( "C5" )]
-        [LogParameter( "$Param" )]
-        public Command<string> Command5
-        {
-            get { return GetCommand<string>( _ => { } ); }
-        }
-
-        [LogId( "C6" )]
-        [LogParameter( "$Param" )]
-        [LogValueConverter( typeof( TestLogValueConverter ) )]
-        public Command<bool> Command6
-        {
-            get { return GetCommand<bool>( _ => { } ); }
-        }
-
-        [LogId( "Refresh" )]
-        public AsyncCommand RefreshCommand
-        {
-            get { return GetAsyncCommand( () => Task.FromResult( 0 ) ); }
-        }
-
-        private sealed class TestLogValueConverter : ILogValueConverter
-        {
-            public string Convert( object value )
-            {
-                return (bool) value ? "Yes" : "No";
-            }
-        }
-    }
-
     [TestClass]
     public class LoggerTests
     {
+        private class TestNavigationService : INavigationService
+        {
+            public object CurrentViewModel { get { return _viewModels.Peek(); } }
+
+            private Stack<object> _viewModels = new Stack<object>();
+
+            public void NavigateTo<T>() where T : IViewModel<NoParameter>
+            {
+                _viewModels.Push( Activator.CreateInstance<T>() );
+                OnNavigated( CurrentViewModel, true );
+            }
+
+            public void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : IViewModel<TArg>
+            {
+                throw new NotSupportedException();
+            }
+
+            public void NavigateBack()
+            {
+                _viewModels.Pop();
+                OnNavigated( CurrentViewModel, false );
+            }
+
+            public void PopBackStack()
+            {
+                throw new NotSupportedException();
+            }
+
+            public event EventHandler<NavigatedEventArgs> Navigated;
+            private void OnNavigated( object viewModel, bool isForwards )
+            {
+                var evt = Navigated;
+                if ( evt != null )
+                {
+                    evt( this, new NavigatedEventArgs( viewModel, isForwards ) );
+                }
+            }
+        }
+
+        private class TestLogger : Logger
+        {
+            public List<Tuple<string, LoggedSpecialAction>> Actions { get; private set; }
+
+            public List<Tuple<string, string, string>> Commands { get; private set; }
+
+
+            public TestLogger( INavigationService navigationService )
+                : base( navigationService )
+            {
+                Actions = new List<Tuple<string, LoggedSpecialAction>>();
+                Commands = new List<Tuple<string, string, string>>();
+            }
+
+            protected override void LogAction( string viewModelId, LoggedSpecialAction action )
+            {
+                Actions.Add( Tuple.Create( viewModelId, action ) );
+            }
+
+            protected override void LogCommand( string viewModelId, string eventId, string label )
+            {
+                Commands.Add( Tuple.Create( viewModelId, eventId, label ) );
+            }
+        }
+
+        [LogId( "1" )]
+        private class TestViewModel1 : DataViewModel<NoParameter>
+        {
+            [LogId( "C1" )]
+            public Command Command1
+            {
+                get { return GetCommand( () => { } ); }
+            }
+
+            [LogId( "C2" )]
+            public Command Command2
+            {
+                get { return GetCommand( () => { } ); }
+            }
+        }
+
+        [LogId( "2" )]
+        private class TestViewModel2 : ViewModel<NoParameter>
+        {
+            public Tuple<string> SomeValue { get; set; }
+
+            [LogId( "C3" )]
+            public Command Command3
+            {
+                get { return GetCommand( () => { } ); }
+            }
+
+            [LogId( "C4" )]
+            [LogParameter( "SomeValue.Item1" )]
+            public Command Command4
+            {
+                get { return GetCommand( () => { } ); }
+            }
+
+            [LogId( "C5" )]
+            [LogParameter( "$Param" )]
+            public Command<string> Command5
+            {
+                get { return GetCommand<string>( _ => { } ); }
+            }
+
+            [LogId( "C6" )]
+            [LogParameter( "$Param" )]
+            [LogValueConverter( typeof( TestLogValueConverter ) )]
+            public Command<bool> Command6
+            {
+                get { return GetCommand<bool>( _ => { } ); }
+            }
+
+            [LogId( "Refresh" )]
+            public AsyncCommand RefreshCommand
+            {
+                get { return GetAsyncCommand( () => Task.FromResult( 0 ) ); }
+            }
+
+            private sealed class TestLogValueConverter : ILogValueConverter
+            {
+                public string Convert( object value )
+                {
+                    return (bool) value ? "Yes" : "No";
+                }
+            }
+        }
+
+
         [TestMethod]
         public void NavigationIsLogged()
         {

@@ -125,5 +125,13 @@ namespace ThinMvvm.Tests
         {
             new Command<object>( null, _ => { }, _ => true );
         }
+
+        [TestMethod]
+        public void CanExecuteIsAlwaysFalseIfTypeDoesNotMatch()
+        {
+            var cmd = new Command<int>( null, _ => { } );
+
+            Assert.IsFalse( ( (ICommand) cmd ).CanExecute( "abc" ) );
+        }
     }
 }
