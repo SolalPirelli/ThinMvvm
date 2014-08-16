@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ThinMvvm.Tests
@@ -13,6 +15,7 @@ namespace ThinMvvm.Tests
         public sealed class TestSettingsStorage : ISettingsStorage
         {
             public Dictionary<string, object> Values = new Dictionary<string, object>();
+            public Dictionary<string, int> SetCallsCounts = new Dictionary<string, int>();
 
             public bool IsDefined( string key )
             {
@@ -26,7 +29,35 @@ namespace ThinMvvm.Tests
 
             public void Set( string key, object value )
             {
-                Values[key] = value;
+                if ( Values.ContainsKey( key ) )
+                {
+                    Values[key] = value;
+                    SetCallsCounts[key]++;
+                }
+                else
+                {
+                    Values.Add( key, value );
+                    SetCallsCounts.Add( key, 1 );
+                }
+            }
+        }
+
+        public sealed class TestObservableObject : INotifyPropertyChanged
+        {
+            public event PropertyChangedEventHandler PropertyChanged;
+            public void FirePropertyChanged()
+            {
+                PropertyChanged( this, new PropertyChangedEventArgs( "" ) );
+            }
+        }
+
+        // don't use ObservableCollection since it also implements INotifyPropertyChanged
+        public sealed class TestObservableCollection : INotifyCollectionChanged
+        {
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
+            public void FireCollectionChanged()
+            {
+                CollectionChanged( this, new NotifyCollectionChangedEventArgs( NotifyCollectionChangedAction.Reset ) );
             }
         }
 
@@ -44,6 +75,18 @@ namespace ThinMvvm.Tests
                 set { Set( value ); }
             }
 
+            public TestObservableObject ObservableObject
+            {
+                get { return Get<TestObservableObject>(); }
+                set { Set( value ); }
+            }
+
+            public TestObservableCollection ObservableCollection
+            {
+                get { return Get<TestObservableCollection>(); }
+                set { Set( value ); }
+            }
+
             public int NoDefault
             {
                 get { return Get<int>(); }
@@ -57,10 +100,13 @@ namespace ThinMvvm.Tests
                 return new SettingsDefaultValues
                 {
                     { x => x.Bool, () => true },
-                    { x => x.String, () => "abc" }
+                    { x => x.String, () => "abc" },
+                    { x => x.ObservableObject, () => null },
+                    { x => x.ObservableCollection, () => null }
                 };
             }
         }
+
 
         [TestMethod]
         public void DefaultValueIsRespected()
@@ -77,8 +123,8 @@ namespace ThinMvvm.Tests
             var storage = new TestSettingsStorage();
             var settings = new TestSettings( storage );
 
-            GC.KeepAlive( settings.Bool );
-            GC.KeepAlive( settings.String );
+            bool b = settings.Bool;
+            string s = settings.String;
 
             Assert.IsTrue( storage.Values.ContainsKey( "ThinMvvm.Tests.SettingsBaseTests+TestSettings.Bool" ) );
             Assert.AreEqual( true, storage.Values["ThinMvvm.Tests.SettingsBaseTests+TestSettings.Bool"] );
@@ -91,7 +137,7 @@ namespace ThinMvvm.Tests
         public void ExceptionThrownWhenNoDefault()
         {
             var settings = new TestSettings( new TestSettingsStorage() );
-            GC.KeepAlive( settings.NoDefault );
+            int n = settings.NoDefault;
         }
 
         [TestMethod]
@@ -102,6 +148,31 @@ namespace ThinMvvm.Tests
             settings.String = "xyz";
 
             Assert.AreEqual( "xyz", settings.String );
+        }
+
+        [TestMethod]
+        public void SettingsAreSavedWhenNestedPropertyChanges()
+        {
+            var storage = new TestSettingsStorage();
+            var settings = new TestSettings( storage );
+
+            settings.ObservableObject = new TestObservableObject();
+            settings.ObservableObject.FirePropertyChanged();
+
+            Assert.AreEqual( 2, storage.SetCallsCounts["ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableObject"] );
+        }
+
+        [TestMethod]
+        public void SettingsAreSavedWhenObservableCollectionChanges()
+        {
+
+            var storage = new TestSettingsStorage();
+            var settings = new TestSettings( storage );
+
+            settings.ObservableCollection = new TestObservableCollection();
+            settings.ObservableCollection.FireCollectionChanged();
+
+            Assert.AreEqual( 2, storage.SetCallsCounts["ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableCollection"] );
         }
     }
 }
