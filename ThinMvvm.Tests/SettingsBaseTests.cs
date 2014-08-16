@@ -105,6 +105,14 @@ namespace ThinMvvm.Tests
                     { x => x.ObservableCollection, () => null }
                 };
             }
+
+            public void EnumerateOverDefaultValues()
+            {
+                foreach ( var o in GetDefaultValues() )
+                {
+                    o.ToString();
+                }
+            }
         }
 
 
@@ -165,7 +173,6 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void SettingsAreSavedWhenObservableCollectionChanges()
         {
-
             var storage = new TestSettingsStorage();
             var settings = new TestSettings( storage );
 
@@ -173,6 +180,13 @@ namespace ThinMvvm.Tests
             settings.ObservableCollection.FireCollectionChanged();
 
             Assert.AreEqual( 2, storage.SetCallsCounts["ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableCollection"] );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( NotSupportedException ) )]
+        public void EnumeratingOverDefaultValuesThrows()
+        {
+            new TestSettings( new TestSettingsStorage() ).EnumerateOverDefaultValues();
         }
     }
 }

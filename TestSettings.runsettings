@@ -9,9 +9,16 @@
                     <CodeCoverage>
                         <ModulePaths>
                             <Exclude>
+                                <!-- Exclude test projects -->
                                 <ModulePath>.*Tests.dll</ModulePath>
                             </Exclude>
                         </ModulePaths>
+                        <Sources>
+                            <Exclude>
+                                <!-- Exclude the NoParameter class, which only has a private constructor -->
+                                <Source>.*\\NoParameter\.cs</Source>
+                            </Exclude>
+                        </Sources>
                     </CodeCoverage>
                 </Configuration>
             </DataCollector>

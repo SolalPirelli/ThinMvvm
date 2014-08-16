@@ -153,7 +153,7 @@ namespace ThinMvvm
             }
 
             /// <summary>
-            /// Not supported. 
+            /// Not supported.
             /// Do not call this method, or try to iterate over an instance of <see cref="SettingsDefaultValues" />.
             /// </summary>
             /// <returns>This method always throws a <see cref="NotSupportedException" />.</returns>
