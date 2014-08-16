@@ -159,5 +159,12 @@ namespace ThinMvvm.Tests
 
             Assert.AreEqual( DataStatus.NetworkError, vm.DataStatus );
         }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentException ) )]
+        public void CannotAddNonExceptionsToNetworkExceptionTypes()
+        {
+            DataViewModelOptions.AddNetworkExceptionType( typeof( string ) );
+        }
     }
 }
