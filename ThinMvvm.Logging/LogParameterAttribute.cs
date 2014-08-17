@@ -39,6 +39,10 @@ namespace ThinMvvm.Logging
             {
                 throw new ArgumentNullException( "parameterPath" );
             }
+            if ( parameterPath.Trim() == string.Empty )
+            {
+                throw new ArgumentException( "parameterPath must not be empty or consist only of white space.", "parameterPath" );
+            }
 
             ParameterPath = parameterPath;
         }

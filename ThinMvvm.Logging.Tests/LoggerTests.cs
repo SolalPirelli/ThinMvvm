@@ -350,5 +350,12 @@ namespace ThinMvvm.Logging.Tests
             CollectionAssert.AreEqual( new[] { Tuple.Create( "2", LoggedSpecialAction.ForwardsNavigation ) }, logger.Actions );
             CollectionAssert.AreEqual( new[] { Tuple.Create( "2", "Refresh", (string) null ) }, logger.Commands );
         }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void Constructor_ErrorOnNullNavigationService()
+        {
+            new TestLogger( null );
+        }
     }
 }

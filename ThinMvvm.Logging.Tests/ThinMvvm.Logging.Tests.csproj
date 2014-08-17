@@ -50,7 +50,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CommandLoggingRequestTests.cs" />
     <Compile Include="LoggerTests.cs" />
+    <Compile Include="LogParameterAttributeTests.cs" />
     <Compile Include="LogValueConverterAttributeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
