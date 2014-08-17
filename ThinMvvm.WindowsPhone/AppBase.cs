@@ -48,7 +48,7 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Initializes a new instance of the <see cref="AppBase" /> class.
         /// </summary>
-        public AppBase()
+        protected AppBase()
         {
             UnhandledException += OnUnhandledException;
             ApplicationLifetimeObjects.Add( new PhoneApplicationService() );

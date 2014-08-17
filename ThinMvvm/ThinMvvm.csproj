@@ -55,7 +55,7 @@
     <Compile Include="ISettingsStorage.cs" />
     <Compile Include="IViewModel.cs" />
     <Compile Include="Messenger.cs" />
-    <Compile Include="NavigationEventArgs.cs" />
+    <Compile Include="NavigatedEventArgs.cs" />
     <Compile Include="NoParameter.cs" />
     <Compile Include="ObservableObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

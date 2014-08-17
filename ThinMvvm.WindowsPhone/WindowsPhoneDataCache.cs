@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -150,7 +151,7 @@ namespace ThinMvvm
         /// </summary>
         private static string GetKey( string key, long id )
         {
-            return string.Format( DataKeyFormat, key, id );
+            return string.Format( CultureInfo.InvariantCulture, DataKeyFormat, key, id );
         }
 
 

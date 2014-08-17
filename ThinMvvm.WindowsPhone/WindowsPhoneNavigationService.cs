@@ -234,7 +234,7 @@ namespace ThinMvvm.WindowsPhone
         {
             if ( uri.Contains( UriParametersPrefix ) )
             {
-                return uri.ToString().Substring( 0, uri.ToString().IndexOf( UriParametersPrefix ) );
+                return uri.Substring( 0, uri.IndexOf( UriParametersPrefix ) );
             }
             return uri;
         }

@@ -2,6 +2,7 @@
 // See License.txt file for more details
 
 using System;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Windows.Input;
 using ThinMvvm.Internals;
@@ -135,7 +136,8 @@ namespace ThinMvvm
         {
             if ( !( parameter is T ) )
             {
-                throw new ArgumentException( string.Format( "Wrong parameter type. Expected {0}, got {1}.",
+                throw new ArgumentException( string.Format( CultureInfo.InvariantCulture,
+                                                            "Wrong parameter type. Expected {0}, got {1}.",
                                                             typeof( T ).FullName, parameter.GetType().FullName ),
                                              "parameter" );
             }
