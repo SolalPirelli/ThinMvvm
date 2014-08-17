@@ -64,7 +64,7 @@ namespace ThinMvvm
         /// <param name="parameter">Ignored parameter.</param>
         void ICommand.Execute( object parameter )
         {
-            OnExecuted();
+            OnExecuted( null );
             _execute();
         }
         #endregion

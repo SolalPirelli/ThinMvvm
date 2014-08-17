@@ -9,11 +9,12 @@ using System.Reflection;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Simple container for dependency injection (DI).
+    /// Simple container for dependency injection.
     /// </summary>
     public static class Container
     {
         private static readonly Dictionary<Type, object> _impls = new Dictionary<Type, object>();
+
 
         /// <summary>
         /// Binds an abstract type to a concrete type.
@@ -21,31 +22,15 @@ namespace ThinMvvm
         /// <returns>The instance of the implementation.</returns>
         /// <typeparam name="TAbstract">The abstract type (or interface).</typeparam>
         /// <typeparam name="TImpl">The concrete type.</typeparam>
-        public static TImpl Bind<TAbstract, TImpl>()
+        public static void Bind<TAbstract, TImpl>()
             where TImpl : TAbstract
         {
-            var key = typeof( TAbstract );
-            var implInfo = typeof( TImpl ).GetTypeInfo();
-
-            if ( typeof( TAbstract ) == typeof( TImpl ) )
-            {
-                throw new ArgumentException( "Cannot bind a type to itself." );
-            }
-
-            if ( implInfo.IsInterface || implInfo.IsAbstract )
-            {
-                throw new ArgumentException( "The implementation type must be concrete." );
-            }
-
-            if ( _impls.ContainsKey( key ) )
-            {
-                throw new InvalidOperationException( "Cannot override an implementation." );
-            }
+            CheckBindArguments<TAbstract, TImpl>();
 
             var implementation = Get( typeof( TImpl ), null );
-            _impls.Add( key, implementation );
-            return (TImpl) implementation;
+            _impls.Add( typeof( TAbstract ), implementation );
         }
+
 
         /// <summary>
         /// Gets a concrete instance of the specified type, resolving constructor parameters as needed,
@@ -58,7 +43,7 @@ namespace ThinMvvm
         {
             var typeInfo = type.GetTypeInfo();
 
-            var existingImpl = _impls.FirstOrDefault( pair => typeInfo.IsAssignableFrom( pair.Key.GetTypeInfo() ) ).Value;
+            var existingImpl = GetImplementation( typeInfo );
             if ( existingImpl != null )
             {
                 return existingImpl;
@@ -66,42 +51,48 @@ namespace ThinMvvm
 
             if ( typeInfo.IsInterface || typeInfo.IsAbstract )
             {
-                throw new ArgumentException( "Missing implementation: " + typeInfo.Name );
+                throw new ArgumentException( string.Format( "Missing implementation: {0}.", typeInfo.Name ) );
             }
 
             var ctors = typeInfo.DeclaredConstructors.Where( ci => !ci.IsStatic ).ToArray();
             if ( ctors.Length > 1 )
             {
-                throw new ArgumentException( "Could not find an unique constructor for type {0}", typeInfo.Name );
+                throw new ArgumentException( string.Format( "Could not find an unique constructor for type {0}.", typeInfo.Name ) );
             }
 
             var ctor = ctors[0];
             var argTypeInfo = parameter == null ? null : parameter.GetType().GetTypeInfo();
             bool argUsed = false;
 
-            var ctorArgs =
-                ctor.GetParameters()
-                    .Select( param =>
+            var ctorParams = ctor.GetParameters();
+            var ctorArgs = new object[ctorParams.Length];
+
+            for ( int n = 0; n < ctorArgs.Length; n++ )
+            {
+                var paramTypeInfo = ctorParams[n].ParameterType.GetTypeInfo();
+                if ( parameter != null && paramTypeInfo.IsAssignableFrom( argTypeInfo ) )
+                {
+                    if ( GetImplementation( paramTypeInfo ) != null )
                     {
-                        if ( parameter != null && param.ParameterType.GetTypeInfo().IsAssignableFrom( argTypeInfo ) )
-                        {
-                            if ( _impls.ContainsKey( param.ParameterType ) )
-                            {
-                                throw new ArgumentException( "Ambiguous match for constructor parameter of type {0} between a dependency and the additional parameter.",
-                                                             param.ParameterType.FullName );
-                            }
+                        throw new ArgumentException(
+                            string.Format( "Ambiguous match for constructor parameter of type {0} between a dependency and the additional parameter.",
+                                           ctorParams[n].ParameterType.FullName ) );
+                    }
 
-                            if ( argUsed )
-                            {
-                                throw new InvalidOperationException( "Cannot use the argument twice in a constructor." );
-                            }
+                    if ( argUsed )
+                    {
+                        throw new InvalidOperationException( "Cannot use the argument twice in a constructor." );
+                    }
 
-                            argUsed = true;
-                            return parameter;
-                        }
-                        return Get( param.ParameterType, null );
-                    } )
-                    .ToArray();
+                    argUsed = true;
+                    ctorArgs[n] = parameter;
+                }
+                else
+                {
+                    ctorArgs[n] = Get( ctorParams[n].ParameterType, null );
+                }
+            }
+
             return ctor.Invoke( ctorArgs );
         }
 
@@ -112,6 +103,49 @@ namespace ThinMvvm
         internal static void Clear()
         {
             _impls.Clear();
+        }
+
+
+        /// <summary>
+        /// Checks the arguments provided to the <see cref="Bind{TAbstract, TImpl}" /> method, ensuring they are valid.
+        /// </summary>
+        private static void CheckBindArguments<TAbstract, TImpl>()
+        {
+            if ( typeof( TAbstract ) == typeof( TImpl ) )
+            {
+                throw new ArgumentException(
+                    string.Format( "Cannot bind the type {0} to itself.",
+                                    typeof( TAbstract ).FullName ) );
+            }
+
+            var implInfo = typeof( TImpl ).GetTypeInfo();
+            if ( implInfo.IsInterface )
+            {
+                throw new ArgumentException(
+                    string.Format( "Implementation types must be concrete; the given implementation for {0}, {1}, is an interface.",
+                                    typeof( TAbstract ).FullName, typeof( TImpl ).FullName ) );
+            }
+            if ( implInfo.IsAbstract )
+            {
+                throw new ArgumentException(
+                    string.Format( "Implementation types must be concrete; the given implementation for {0}, {1}, is abstract.",
+                                    typeof( TAbstract ).FullName, typeof( TImpl ).FullName ) );
+            }
+
+            if ( _impls.ContainsKey( typeof( TAbstract ) ) )
+            {
+                throw new InvalidOperationException(
+                    string.Format( "Cannot override an implementation. Type name: {0}.",
+                                   typeof( TAbstract ).FullName ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the implementation for the specified type, or null if none was registered. 
+        /// </summary>
+        private static object GetImplementation( TypeInfo typeInfo )
+        {
+            return _impls.FirstOrDefault( pair => typeInfo.IsAssignableFrom( pair.Key.GetTypeInfo() ) ).Value;
         }
     }
 }

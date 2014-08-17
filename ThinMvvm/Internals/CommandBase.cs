@@ -44,7 +44,6 @@ namespace ThinMvvm.Internals
         }
 
 
-        #region Partial ICommand implementation
         /// <summary>
         /// Occurs when changes occur that affect whether or not the command should execute.
         /// </summary>
@@ -61,7 +60,7 @@ namespace ThinMvvm.Internals
                 evt( this, EventArgs.Empty );
             }
         }
-        #endregion
+
 
         /// <summary>
         /// Occurs when the command is executed.
@@ -72,7 +71,7 @@ namespace ThinMvvm.Internals
         /// Fires the Executed event.
         /// </summary>
         /// <param name="parameter">The parameter given to the command's Execute method, if any.</param>
-        protected void OnExecuted( object parameter = null )
+        protected void OnExecuted( object parameter )
         {
             var evt = Executed;
             if ( evt != null )

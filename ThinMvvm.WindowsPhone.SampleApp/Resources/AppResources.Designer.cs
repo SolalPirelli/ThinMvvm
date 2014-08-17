@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ThinMvvm.WindowsPhone.SampleApp.Resources {
-    using System;
-    
-    
+namespace ThinMvvm.WindowsPhone.SampleApp.Resources
+{
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>

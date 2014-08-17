@@ -37,7 +37,7 @@ namespace ThinMvvm
         /// <returns>The task object representing the asynchronous operation.</returns>
         public Task ExecuteAsync()
         {
-            OnExecuted();
+            OnExecuted( null );
             return _execute();
         }
 

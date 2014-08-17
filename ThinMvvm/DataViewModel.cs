@@ -139,7 +139,7 @@ namespace ThinMvvm
             }
         }
 
-        #region ViewModel overrides
+
         /// <summary>
         /// Occurs when the user navigates to the ViewModel.
         /// Do not call this method from a derived class.
@@ -148,7 +148,7 @@ namespace ThinMvvm
         {
             await OnNavigatedToAsync();
         }
-        #endregion
+
 
         #region IDisposable implementation
         /// <summary>
