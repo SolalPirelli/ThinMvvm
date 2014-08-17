@@ -28,6 +28,11 @@ namespace ThinMvvm.Logging
         /// <param name="navigationService">The navigation service.</param>
         protected Logger( INavigationService navigationService )
         {
+            if ( navigationService == null )
+            {
+                throw new ArgumentNullException( "navigationService" );
+            }
+
             _navigationService = navigationService;
             _converters = new Dictionary<Type, ILogValueConverter>();
         }

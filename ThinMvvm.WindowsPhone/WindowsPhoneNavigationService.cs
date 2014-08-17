@@ -59,6 +59,11 @@ namespace ThinMvvm.WindowsPhone
         public void NavigateTo<TViewModel, TArg>( TArg arg )
             where TViewModel : ViewModel<TArg>
         {
+            if ( arg == null )
+            {
+                throw new ArgumentNullException( "arg" );
+            }
+
             var vm = Container.Get( typeof( TViewModel ), arg );
             NavigateToPrivate( vm );
         }
@@ -110,6 +115,11 @@ namespace ThinMvvm.WindowsPhone
         /// <param name="viewUri">The View URI. It needs to be relative to the app root (e.g. /MyApp;Component/Views/MyView.xaml).</param>
         public void Bind<TViewModel>( string viewUri )
         {
+            if ( viewUri == null )
+            {
+                throw new ArgumentNullException( "viewUri" );
+            }
+
             _views.Add( typeof( TViewModel ), new Uri( viewUri, UriKind.Relative ) );
         }
 

@@ -24,6 +24,15 @@ namespace ThinMvvm
         /// <param name="name">Optional. Should not be provided as it uses compiler functionality. The command name.</param>
         public static Command GetCommand( this ICommandOwner owner, Action execute, Expression<Func<bool>> canExecute = null, [CallerMemberName] string name = "" )
         {
+            if ( owner == null )
+            {
+                throw new ArgumentNullException( "owner" );
+            }
+            if ( execute == null )
+            {
+                throw new ArgumentNullException( "execute" );
+            }
+
             var ownerCommands = _commands.GetOrCreateValue( owner );
             if ( !ownerCommands.ContainsKey( name ) )
             {
@@ -43,6 +52,15 @@ namespace ThinMvvm
         /// <param name="name">Optional. Should not be provided as it uses compiler functionality. The command name.</param>
         public static Command<T> GetCommand<T>( this ICommandOwner owner, Action<T> execute, Expression<Func<T, bool>> canExecute = null, [CallerMemberName] string name = "" )
         {
+            if ( owner == null )
+            {
+                throw new ArgumentNullException( "owner" );
+            }
+            if ( execute == null )
+            {
+                throw new ArgumentNullException( "execute" );
+            }
+
             var ownerCommands = _commands.GetOrCreateValue( owner );
             if ( !ownerCommands.ContainsKey( name ) )
             {
@@ -61,6 +79,15 @@ namespace ThinMvvm
         /// <param name="name">Optional. Should not be provided as it uses compiler functionality. The command name.</param>
         public static AsyncCommand GetAsyncCommand( this ICommandOwner owner, Func<Task> execute, Expression<Func<bool>> canExecute = null, [CallerMemberName] string name = "" )
         {
+            if ( owner == null )
+            {
+                throw new ArgumentNullException( "owner" );
+            }
+            if ( execute == null )
+            {
+                throw new ArgumentNullException( "execute" );
+            }
+
             var ownerCommands = _commands.GetOrCreateValue( owner );
             if ( !ownerCommands.ContainsKey( name ) )
             {
@@ -80,6 +107,15 @@ namespace ThinMvvm
         /// <param name="name">Optional. Should not be provided as it uses compiler functionality. The command name.</param>
         public static AsyncCommand<T> GetAsyncCommand<T>( this ICommandOwner owner, Func<T, Task> execute, Expression<Func<T, bool>> canExecute = null, [CallerMemberName] string name = "" )
         {
+            if ( owner == null )
+            {
+                throw new ArgumentNullException( "owner" );
+            }
+            if ( execute == null )
+            {
+                throw new ArgumentNullException( "execute" );
+            }
+
             var ownerCommands = _commands.GetOrCreateValue( owner );
             if ( !ownerCommands.ContainsKey( name ) )
             {

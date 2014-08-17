@@ -8,7 +8,7 @@ using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace ThinMvvm
+namespace ThinMvvm.WindowsPhone
 {
     /// <summary>
     /// <see cref="IDataCache" /> implementation for Windows Phone, using isolated storage settings.
@@ -46,6 +46,11 @@ namespace ThinMvvm
         /// <returns>A value indicating whether a value was found.</returns>
         public bool TryGet<T>( Type owner, long id, out T value )
         {
+            if ( owner == null )
+            {
+                throw new ArgumentNullException( "owner" );
+            }
+
             string key = GetKey( owner.FullName, id );
             bool? upToDate = _metadata.IsUpToDate( owner.FullName, id );
 
@@ -72,6 +77,11 @@ namespace ThinMvvm
         /// <param name="value">The value.</param>
         public void Set( Type owner, long id, DateTime expirationDate, object value )
         {
+            if ( owner == null )
+            {
+                throw new ArgumentNullException( "owner" );
+            }
+
             _data[GetKey( owner.FullName, id )] = value;
             _metadata.Add( owner.FullName, id, expirationDate );
 

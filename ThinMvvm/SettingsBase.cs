@@ -33,6 +33,11 @@ namespace ThinMvvm
         /// <param name="settings">The settings storage. Implementors' constructors should also take it as a parameter.</param>
         protected SettingsBase( ISettingsStorage settings )
         {
+            if ( settings == null )
+            {
+                throw new ArgumentNullException( "settings" );
+            }
+
             _settings = settings;
             // Make sure that different settings types don't collide
             // e.g. if SettingsA and SettingsB both inherit from SettingsBase and have a property named X,
@@ -128,21 +133,12 @@ namespace ThinMvvm
         /// </summary>
         protected sealed class SettingsDefaultValues : IEnumerable
         {
-            internal Dictionary<string, Func<object>> AsDictionary { get; private set; }
-
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="SettingsDefaultValues" /> class.
-            /// </summary>
-            public SettingsDefaultValues()
-            {
-                AsDictionary = new Dictionary<string, Func<object>>();
-            }
+            internal readonly Dictionary<string, Func<object>> AsDictionary = new Dictionary<string, Func<object>>();
 
 
             /// <summary>
             /// Adds the specified key-value mapping.
-            /// This function is not intended to be called from your code; use the collection initializer syntax instead.
+            /// This function is not intended to be called explicitly; use the collection initializer syntax instead.
             /// </summary>
             /// <typeparam name="TProp">The type of the property.</typeparam>
             /// <param name="expr">The property expression.</param>

@@ -35,6 +35,11 @@ namespace ThinMvvm.Logging
         /// <param name="parameterPath">The parameter path.</param>
         public LogParameterAttribute( string parameterPath )
         {
+            if ( parameterPath == null )
+            {
+                throw new ArgumentNullException( "parameterPath" );
+            }
+
             ParameterPath = parameterPath;
         }
     }

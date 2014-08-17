@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace ThinMvvm
 {
     /// <summary>
-    /// DataViewModel that can cache data.
+    /// <see cref="DataViewModel{TArg}" /> that can cache data.
     /// </summary>
     /// <typeparam name="TParameter">The type of the ViewModel's constructor parameter, or <see cref="NoParameter" /> if it does not have one.</typeparam>
     /// <typeparam name="TData">The type of the cached data.</typeparam>
@@ -66,6 +66,11 @@ namespace ThinMvvm
         /// <returns>The task object representing the asynchronous operation.</returns>
         protected override sealed async Task RefreshAsync( bool force, CancellationToken token )
         {
+            if ( token == null )
+            {
+                throw new ArgumentNullException( "token" );
+            }
+
             var cachedData = GetData( force, token );
 
             TData data = default( TData );

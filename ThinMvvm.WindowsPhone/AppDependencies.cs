@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System;
 namespace ThinMvvm.WindowsPhone
 {
     /// <summary>
@@ -22,6 +23,11 @@ namespace ThinMvvm.WindowsPhone
         /// <param name="navigationService">A navigation service for the app.</param>
         public AppDependencies( IWindowsPhoneNavigationService navigationService )
         {
+            if ( navigationService == null )
+            {
+                throw new ArgumentNullException( "navigationService" );
+            }
+
             NavigationService = navigationService;
         }
     }

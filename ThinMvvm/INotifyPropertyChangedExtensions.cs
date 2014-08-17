@@ -24,6 +24,15 @@ namespace ThinMvvm
         public static void ListenToProperty<TNotifier, TProp>( this TNotifier item, Expression<Func<TNotifier, TProp>> propertyExpr, Action listener )
             where TNotifier : INotifyPropertyChanged
         {
+            if ( item == null )
+            {
+                throw new ArgumentNullException( "item" );
+            }
+            if ( propertyExpr == null )
+            {
+                throw new ArgumentNullException( "propertyExpr" );
+            }
+
             ListenToProperty( item, ExpressionHelper.GetPropertyName( propertyExpr ), listener );
         }
 

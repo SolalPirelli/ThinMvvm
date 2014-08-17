@@ -28,6 +28,11 @@ namespace ThinMvvm
         /// <param name="isForward">A value indicating whether the navigation went forwards.</param>
         public NavigatedEventArgs( object viewModel, bool isForward )
         {
+            if ( viewModel == null )
+            {
+                throw new ArgumentNullException( "viewModel" );
+            }
+
             ViewModel = viewModel;
             IsForward = isForward;
         }

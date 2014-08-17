@@ -22,6 +22,10 @@ namespace ThinMvvm
         /// <param name="type">The type, which must inherit from <see cref="Exception" />.</param>
         public static void AddNetworkExceptionType( Type type )
         {
+            if ( type == null )
+            {
+                throw new ArgumentNullException( "type" );
+            }
             if ( type != typeof( Exception ) && !type.GetTypeInfo().IsSubclassOf( typeof( Exception ) ) )
             {
                 throw new ArgumentException( "The type must inherit from System.Exception." );

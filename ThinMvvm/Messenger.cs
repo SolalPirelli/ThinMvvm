@@ -23,6 +23,11 @@ namespace ThinMvvm
         /// <param name="handler">The handler.</param>
         public static void Register<T>( Action<T> handler )
         {
+            if ( handler == null )
+            {
+                throw new ArgumentNullException( "handler" );
+            }
+
             _handlers.Add( new Handler<T>( handler ) );
         }
 

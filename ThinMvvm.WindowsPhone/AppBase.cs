@@ -54,6 +54,11 @@ namespace ThinMvvm.WindowsPhone
             ApplicationLifetimeObjects.Add( new PhoneApplicationService() );
 
             RootFrame = CreateRootFrame();
+            if ( RootFrame == null )
+            {
+                throw new InvalidOperationException( "RootFrame cannot be null." );
+            }
+
             RootFrame.Navigating += OnAppOpening;
             RootFrame.NavigationFailed += OnNavigationFailed;
 
@@ -121,6 +126,11 @@ namespace ThinMvvm.WindowsPhone
         /// <param name="e">The event data.</param>
         protected virtual void OnNavigationFailed( object sender, NavigationFailedEventArgs e )
         {
+            if ( e == null )
+            {
+                throw new ArgumentNullException( "e" );
+            }
+
             if ( !e.Handled && Debugger.IsAttached )
             {
                 Debugger.Break();
@@ -134,6 +144,11 @@ namespace ThinMvvm.WindowsPhone
         /// <param name="e">The event data.</param>
         protected virtual void OnUnhandledException( object sender, ApplicationUnhandledExceptionEventArgs e )
         {
+            if ( e == null )
+            {
+                throw new ArgumentNullException( "e" );
+            }
+
             if ( !e.Handled && Debugger.IsAttached )
             {
                 Debugger.Break();

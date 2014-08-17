@@ -2,13 +2,14 @@
 // See License.txt file for more details
 
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ThinMvvm
 {
     /// <summary>
-    /// ViewModel that loads data.
+    /// <see cref="ViewModel{TArg}" /> that loads data.
     /// </summary>
     /// <typeparam name="TParameter">The type of the ViewModel's constructor parameter, or <see cref="NoParameter" /> if it does not have one.</typeparam>
     public abstract class DataViewModel<TParameter> : ViewModel<TParameter>, IDisposable
@@ -100,6 +101,11 @@ namespace ThinMvvm
         /// <returns>The task object representing the asynchronous operation.</returns>
         protected async Task TryExecuteAsync( Func<CancellationToken, Task> action )
         {
+            if ( action == null )
+            {
+                throw new ArgumentNullException( "action" );
+            }
+
             lock ( _lock )
             {
                 if ( !_cancellationSource.IsCancellationRequested )
@@ -141,9 +147,10 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Occurs when the user navigates to the ViewModel.
-        /// Do not call this method from a derived class.
+        /// Occurs when the user navigates to the <see cref="DataViewModel{TArg}" />.
+        /// Do not call this method explicitly.
         /// </summary>
+        [EditorBrowsable( EditorBrowsableState.Never )]
         public async override void OnNavigatedTo()
         {
             await OnNavigatedToAsync();

@@ -1,6 +1,7 @@
 // Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System;
 namespace ThinMvvm.Logging
 {
     /// <summary>
@@ -22,6 +23,11 @@ namespace ThinMvvm.Logging
         /// <param name="obj">The object.</param>
         public CommandLoggingRequest( object obj )
         {
+            if ( obj == null )
+            {
+                throw new ArgumentNullException( "obj" );
+            }
+
             Object = obj;
         }
     }
