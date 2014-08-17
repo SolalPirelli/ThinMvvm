@@ -43,6 +43,27 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void ExceptionThrownOnNullObject()
+        {
+            INotifyPropertyChangedExtensions.ListenToProperty<TestNotifyPropertyChanged, int>( null, x => x.Property, () => { } );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void ExceptionThrownOnNullExpression()
+        {
+            new TestNotifyPropertyChanged().ListenToProperty<TestNotifyPropertyChanged, int>( null, () => { } );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void ExceptionThrownOnNullListener()
+        {
+            new TestNotifyPropertyChanged().ListenToProperty( x => x.Property, null );
+        }
+
+        [TestMethod]
         public void ListenToPropertyWorks()
         {
             var inpc = new TestNotifyPropertyChanged();

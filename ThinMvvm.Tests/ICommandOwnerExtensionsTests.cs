@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ThinMvvm.Tests
 {
     [TestClass]
-    public sealed class ICommandOwnerTests
+    public sealed class ICommandOwnerExtensionsTests
     {
         private class TestCommandOwner : ICommandOwner
         {
@@ -104,6 +105,62 @@ namespace ThinMvvm.Tests
             var owner = new TestCommandOwner();
 
             Assert.AreEqual( owner.AsyncIncrementByCommand, owner.AsyncIncrementByCommand );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void GetCommandValidatesOwnerParameter()
+        {
+            ICommandOwnerExtensions.GetCommand( null, () => { } );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void GetCommandValidatesActionParameter()
+        {
+            ICommandOwnerExtensions.GetCommand( new TestCommandOwner(), null );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void GenericGetCommandValidatesOwnerParameter()
+        {
+            ICommandOwnerExtensions.GetCommand<int>( null, n => { } );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void GenericGetCommandValidatesActionParameter()
+        {
+            ICommandOwnerExtensions.GetCommand<int>( new TestCommandOwner(), null );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void GetAsyncCommandValidatesOwnerParameter()
+        {
+            ICommandOwnerExtensions.GetAsyncCommand( null, () => Task.FromResult( 0 ) );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void GetAsyncCommandValidatesActionParameter()
+        {
+            ICommandOwnerExtensions.GetAsyncCommand( new TestCommandOwner(), null );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void GenericGetAsyncCommandValidatesOwnerParameter()
+        {
+            ICommandOwnerExtensions.GetAsyncCommand<int>( null, n => Task.FromResult( 0 ) );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void GenericGetAsyncCommandValidatesActionParameter()
+        {
+            ICommandOwnerExtensions.GetAsyncCommand<int>( new TestCommandOwner(), null );
         }
     }
 }

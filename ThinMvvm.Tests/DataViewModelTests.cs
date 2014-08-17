@@ -30,6 +30,11 @@ namespace ThinMvvm.Tests
             {
                 return base.TryRefreshAsync( force );
             }
+
+            public Task TryExecuteNull()
+            {
+                return TryExecuteAsync( null );
+            }
         }
 
         [TestInitialize]
@@ -205,6 +210,21 @@ namespace ThinMvvm.Tests
         public void DisposeWorks()
         {
             new TestDataViewModel().Dispose();
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void ErrorOnAddingNullNetworkExceptionType()
+        {
+            DataViewModelOptions.AddNetworkExceptionType( null );
+        }
+
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public async Task ErrorOnTryExecuteNullAction()
+        {
+            await new TestDataViewModel().TryExecuteNull();
         }
     }
 }

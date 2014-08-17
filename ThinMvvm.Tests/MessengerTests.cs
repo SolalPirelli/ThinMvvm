@@ -141,5 +141,12 @@ namespace ThinMvvm.Tests
 
             Assert.AreEqual( 0, IntWrapper.StaticValue );
         }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void ErrorOnNullHandler()
+        {
+            Messenger.Register<int>( null );
+        }
     }
 }

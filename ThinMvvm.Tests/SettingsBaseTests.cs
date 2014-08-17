@@ -188,5 +188,12 @@ namespace ThinMvvm.Tests
         {
             new TestSettings( new TestSettingsStorage() ).EnumerateOverDefaultValues();
         }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentNullException ) )]
+        public void ErrorOnNullStorage()
+        {
+            new TestSettings( null );
+        }
     }
 }

@@ -53,14 +53,16 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CachedTaskTests.cs" />
     <Compile Include="GenericAsyncCommandTests.cs" />
     <Compile Include="CachedDataViewModelTests.cs" />
     <Compile Include="GenericCommandTests.cs" />
     <Compile Include="ContainerTests.cs" />
     <Compile Include="DataViewModelTests.cs" />
-    <Compile Include="ICommandOwnerTests.cs" />
+    <Compile Include="ICommandOwnerExtensionsTests.cs" />
     <Compile Include="INotifyPropertyChangedExtensionsTests.cs" />
     <Compile Include="MessengerTests.cs" />
+    <Compile Include="NavigatedEventArgsTests.cs" />
     <Compile Include="ObservableObjectTests.cs" />
     <Compile Include="AsyncCommandTests.cs" />
     <Compile Include="CommandTests.cs" />

@@ -32,6 +32,10 @@ namespace ThinMvvm
             {
                 throw new ArgumentNullException( "propertyExpr" );
             }
+            if ( listener == null )
+            {
+                throw new ArgumentNullException( "listener" );
+            }
 
             ListenToProperty( item, ExpressionHelper.GetPropertyName( propertyExpr ), listener );
         }
