@@ -166,6 +166,20 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
+        public async Task NetworkExceptionsIncludeSubtypesOfRegisteredExceptions()
+        {
+            DataViewModelOptions.AddNetworkExceptionType( typeof( Exception ) );
+            var vm = new TestDataViewModel
+            {
+                RefreshAsyncMethod = ( _, __ ) => { throw new InvalidOperationException(); }
+            };
+
+            await vm.OnNavigatedToAsync();
+
+            Assert.AreEqual( DataStatus.NetworkError, vm.DataStatus );
+        }
+
+        [TestMethod]
         [ExpectedException( typeof( ArgumentException ) )]
         public void CannotAddNonExceptionsToNetworkExceptionTypes()
         {

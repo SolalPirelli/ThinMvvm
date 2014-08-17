@@ -9,27 +9,25 @@ using System.Reflection;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Options for DataViewModel.
+    /// Options for <see cref="DataViewModel{TArg}" />.
     /// </summary>
     public static class DataViewModelOptions
     {
-        private static readonly HashSet<TypeInfo> _networkExceptionTypes = new HashSet<TypeInfo>();
+        private static readonly HashSet<Type> _networkExceptionTypes = new HashSet<Type>();
 
 
         /// <summary>
         /// Adds the specified type as a network exception type.
         /// </summary>
-        /// <param name="type">The type, which must inherit from System.Exception.</param>
+        /// <param name="type">The type, which must inherit from <see cref="Exception" />.</param>
         public static void AddNetworkExceptionType( Type type )
         {
-            var typeInfo = type.GetTypeInfo();
-
-            if ( !typeInfo.IsSubclassOf( typeof( Exception ) ) )
+            if ( type != typeof( Exception ) && !type.GetTypeInfo().IsSubclassOf( typeof( Exception ) ) )
             {
-                throw new ArgumentException( "NetworkExceptionTypes must inherit from System.Exception." );
+                throw new ArgumentException( "The type must inherit from System.Exception." );
             }
 
-            _networkExceptionTypes.Add( typeInfo );
+            _networkExceptionTypes.Add( type );
         }
 
 
@@ -47,7 +45,7 @@ namespace ThinMvvm
         /// </summary>
         internal static bool IsNetworkException( Exception e )
         {
-            return _networkExceptionTypes.Any( ne => ne.IsAssignableFrom( e.GetType().GetTypeInfo() ) );
+            return _networkExceptionTypes.Any( ne => e.GetType() == ne || e.GetType().GetTypeInfo().IsSubclassOf( ne ) );
         }
     }
 }
