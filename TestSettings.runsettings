@@ -21,10 +21,10 @@
                         </Sources>
                         <Functions>
                             <Exclude>
-                                <!-- Exclude nonsensical non-coverage of AsyncCommand(<T>)'s explicit implementation of
+                                <!-- Exclude nonsensical "partial" coverage of AsyncCommand(<T>)'s explicit implementation of
                                      ICommand.Execute(object), probably a bug in VS' test coverage analysis -->
-                                <Function>.*AsyncCommand.&lt;System.Windows\.Input\.ICommand\.Execute&gt;d__0.*</Function>
-                                <Function>.*AsyncCommand.&lt;System.Windows\.Input\.ICommand\.Execute&gt;d__0&lt;T&gt;.*</Function>
+                                <Function>.*AsyncCommand\.&lt;System.Windows\.Input\.ICommand\.Execute&gt;d__0.*</Function>
+                                <Function>.*AsyncCommand\.&lt;System.Windows\.Input\.ICommand\.Execute&gt;d__0&lt;T&gt;.*</Function>
                             </Exclude>
                         </Functions>
                     </CodeCoverage>
