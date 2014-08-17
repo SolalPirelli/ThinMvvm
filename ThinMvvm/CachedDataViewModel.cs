@@ -17,7 +17,7 @@ namespace ThinMvvm
         private const long DefaultId = 0;
         private static readonly DateTime DefaultExpirationDate = DateTime.MaxValue;
 
-        private readonly ICache _cache;
+        private readonly IDataCache _cache;
 
         private CacheStatus _cacheStatus;
 
@@ -35,7 +35,7 @@ namespace ThinMvvm
         /// Initializes a new instance of the <see cref="CachedDataViewModel{TParameter, TData}" /> class with the specified cache.
         /// </summary>
         /// <param name="cache">The cache used by the ViewModel.</param>
-        protected CachedDataViewModel( ICache cache )
+        protected CachedDataViewModel( IDataCache cache )
         {
             _cache = cache;
         }

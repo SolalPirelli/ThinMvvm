@@ -13,17 +13,7 @@ namespace ThinMvvm
     /// </summary>
     public static class DataViewModelOptions
     {
-        private static readonly HashSet<TypeInfo> _networkExceptionTypes;
-
-
-        /// <summary>
-        /// Initializes static members of the DataViewModelOptions class.
-        /// By default, there are no network exception types.
-        /// </summary>
-        static DataViewModelOptions()
-        {
-            _networkExceptionTypes = new HashSet<TypeInfo>();
-        }
+        private static readonly HashSet<TypeInfo> _networkExceptionTypes = new HashSet<TypeInfo>();
 
 
         /// <summary>
@@ -34,7 +24,7 @@ namespace ThinMvvm
         {
             var typeInfo = type.GetTypeInfo();
 
-            if ( !typeof( Exception ).GetTypeInfo().IsAssignableFrom( typeInfo ) )
+            if ( !typeInfo.IsSubclassOf( typeof( Exception ) ) )
             {
                 throw new ArgumentException( "NetworkExceptionTypes must inherit from System.Exception." );
             }
@@ -46,9 +36,7 @@ namespace ThinMvvm
         /// <summary>
         /// Clears the network exception types.
         /// </summary>
-        /// <remarks>
-        /// For use in unit tests.
-        /// </remarks>
+        [Obsolete( "For unit tests only." )]
         internal static void ClearNetworkExceptionTypes()
         {
             _networkExceptionTypes.Clear();

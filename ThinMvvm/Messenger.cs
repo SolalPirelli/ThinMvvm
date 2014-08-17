@@ -42,9 +42,7 @@ namespace ThinMvvm
         /// <summary>
         /// Clears the registered handlers.
         /// </summary>
-        /// <remarks>
-        /// For use in unit tests.
-        /// </remarks>
+        [Obsolete( "For unit tests only." )]
         internal static void Clear()
         {
             _handlers.Clear();

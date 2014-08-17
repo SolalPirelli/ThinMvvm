@@ -10,9 +10,9 @@ using System.Runtime.Serialization;
 namespace ThinMvvm
 {
     /// <summary>
-    /// <see cref="ICache" /> implementation for Windows Phone, using isolated storage settings.
+    /// <see cref="IDataCache" /> implementation for Windows Phone, using isolated storage settings.
     /// </summary>
-    public sealed class WindowsPhoneCache : ICache
+    public sealed class WindowsPhoneDataCache : IDataCache
     {
         private const string MetadataKey = "ThinMvvm.WindowsPhone.CacheMetadata";
         private const string DataKeyFormat = "ThinMvvm.WindowsPhone.Cache.{0}_{1}";
@@ -23,9 +23,9 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WindowsPhoneCache" /> class.
+        /// Initializes a new instance of the <see cref="WindowsPhoneDataCache" /> class.
         /// </summary>
-        public WindowsPhoneCache()
+        public WindowsPhoneDataCache()
         {
             _settings = IsolatedStorageSettings.ApplicationSettings;
             _metadata = LoadMetadata( _settings );
@@ -78,15 +78,6 @@ namespace ThinMvvm
             SaveData( _data, _settings );
         }
 
-
-        /// <summary>
-        /// Removes the values stored by the specified owner type, with the specified ID.
-        /// </summary>
-        private void Remove( Type owner, long id )
-        {
-            _data.Remove( GetKey( owner.FullName, id ) );
-            _metadata.Remove( owner.FullName, id );
-        }
 
         /// <summary>
         /// Cleans up the old values in the cache.

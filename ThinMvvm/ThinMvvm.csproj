@@ -41,12 +41,12 @@
     <Compile Include="CachedTask.cs" />
     <Compile Include="CacheStatus.cs" />
     <Compile Include="Command.cs" />
-    <Compile Include="CommandBase.cs" />
+    <Compile Include="Internals\CommandBase.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="DataStatus.cs" />
     <Compile Include="DataViewModel.cs" />
     <Compile Include="DataViewModelOptions.cs" />
-    <Compile Include="ICache.cs" />
+    <Compile Include="IDataCache.cs" />
     <Compile Include="INavigationService.cs" />
     <Compile Include="INotifyPropertyChangedExtensions.cs" />
     <Compile Include="Internals\CommandExecutedEventArgs.cs" />

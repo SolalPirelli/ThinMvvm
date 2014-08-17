@@ -2,10 +2,10 @@
 // See License.txt file for more details
 
 using System;
+using System.ComponentModel;
 using System.Linq.Expressions;
-using ThinMvvm.Internals;
 
-namespace ThinMvvm
+namespace ThinMvvm.Internals
 {
     /// <summary>
     /// The base class for Commands.
@@ -14,6 +14,7 @@ namespace ThinMvvm
     /// ICommand is implemented partially to let implementers implement it explicitly
     /// so that the parameters can be ignored or of the correct type.
     /// </remarks>
+    [EditorBrowsable( EditorBrowsableState.Never )]
     public abstract class CommandBase
     {
         /// <summary>

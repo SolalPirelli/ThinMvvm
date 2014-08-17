@@ -94,7 +94,7 @@
     <Compile Include="AppDependencies.cs" />
     <Compile Include="IWindowsPhoneNavigationService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WindowsPhoneCache.cs" />
+    <Compile Include="WindowsPhoneDataCache.cs" />
     <Compile Include="WindowsPhoneNavigationService.cs" />
     <Compile Include="WindowsPhoneSettingsStorage.cs" />
   </ItemGroup>

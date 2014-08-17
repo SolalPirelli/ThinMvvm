@@ -108,9 +108,7 @@ namespace ThinMvvm
         /// <summary>
         /// Clears the container.
         /// </summary>
-        /// <remarks>
-        /// For use in unit tests.
-        /// </remarks>
+        [Obsolete( "For use in unit tests only." )]
         internal static void Clear()
         {
             _impls.Clear();

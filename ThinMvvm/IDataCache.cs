@@ -8,7 +8,7 @@ namespace ThinMvvm
     /// <summary>
     /// Caches one ID -> Data map per Type.
     /// </summary>
-    public interface ICache
+    public interface IDataCache
     {
         /// <summary>
         /// Attempts to get the value stored by the specified owner type, with the specified ID.
