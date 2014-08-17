@@ -10,23 +10,27 @@ using System.Reflection;
 namespace ThinMvvm.Internals
 {
     /// <summary>
-    /// Visits expressions and builds sequences of (object, property name) tuples for observable properties found in the expressions.
+    /// Visits expressions and builds sequences of (object, property name) tuples 
+    /// for observable properties found in the expressions.
     /// </summary>
     internal sealed class ObservablePropertyVisitor : ExpressionVisitor
     {
-        private List<Tuple<INotifyPropertyChanged, string>> _propertyAccesses;
+        private readonly List<Tuple<INotifyPropertyChanged, string>> _propertyAccesses = new List<Tuple<INotifyPropertyChanged, string>>();
 
-        private ObservablePropertyVisitor( Expression expr )
-        {
-            _propertyAccesses = new List<Tuple<INotifyPropertyChanged, string>>();
-            Visit( expr );
-        }
-
+        /// <summary>
+        /// Gets (object, property name) tuples for all accesses of observable properties in the specified expression.
+        /// </summary>
         public static IEnumerable<Tuple<INotifyPropertyChanged, string>> GetObservablePropertyAccesses( Expression expr )
         {
-            return new ObservablePropertyVisitor( expr )._propertyAccesses;
+            var visitor = new ObservablePropertyVisitor();
+            visitor.Visit( expr );
+            return visitor._propertyAccesses;
         }
 
+
+        /// <summary>
+        /// Visits either a field or a property.
+        /// </summary>
         protected override Expression VisitMember( MemberExpression node )
         {
             if ( node.Member is PropertyInfo )
@@ -42,6 +46,10 @@ namespace ThinMvvm.Internals
             return base.VisitMember( node );
         }
 
+
+        /// <summary>
+        /// Extracts the owner and name of the property represented by the specified expression.
+        /// </summary>
         private static Tuple<object, string> GetPropertyOwnerAndName( MemberExpression propertyExpr )
         {
             var constExpr = propertyExpr.Expression as ConstantExpression;

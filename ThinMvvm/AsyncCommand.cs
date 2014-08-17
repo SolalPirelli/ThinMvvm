@@ -11,7 +11,7 @@ using ThinMvvm.Internals;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Asynchronous ICommand without a parameter.
+    /// Asynchronous <see cref="ICommand" /> without a parameter.
     /// </summary>
     public sealed class AsyncCommand : CommandBase, ICommand
     {
@@ -24,7 +24,7 @@ namespace ThinMvvm
         /// <param name="owner">The command's owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
         /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
-        public AsyncCommand( object owner, Func<Task> execute, Expression<Func<bool>> canExecute = null )
+        internal AsyncCommand( object owner, Func<Task> execute, Expression<Func<bool>> canExecute = null )
             : base( owner, canExecute )
         {
             _execute = execute;
@@ -73,7 +73,7 @@ namespace ThinMvvm
     }
 
     /// <summary>
-    /// Asynchronous ICommand with a parameter.
+    /// Asynchronous <see cref="ICommand" /> with a parameter.
     /// </summary>
     /// <typeparam name="T">The parameter type.</typeparam>
     public sealed class AsyncCommand<T> : CommandBase, ICommand
@@ -87,7 +87,7 @@ namespace ThinMvvm
         /// <param name="owner">The command's owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
         /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
-        public AsyncCommand( object owner, Func<T, Task> execute, Expression<Func<T, bool>> canExecute = null )
+        internal AsyncCommand( object owner, Func<T, Task> execute, Expression<Func<T, bool>> canExecute = null )
             : base( owner, canExecute )
         {
             _execute = execute;

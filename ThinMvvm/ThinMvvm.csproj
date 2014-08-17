@@ -41,6 +41,8 @@
     <Compile Include="CachedTask.cs" />
     <Compile Include="CacheStatus.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="ICommandOwner.cs" />
+    <Compile Include="ICommandOwnerExtensions.cs" />
     <Compile Include="Internals\CommandBase.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="DataStatus.cs" />
@@ -53,7 +55,6 @@
     <Compile Include="Internals\ExpressionHelper.cs" />
     <Compile Include="Internals\ObservablePropertyVisitor.cs" />
     <Compile Include="ISettingsStorage.cs" />
-    <Compile Include="IViewModel.cs" />
     <Compile Include="Messenger.cs" />
     <Compile Include="NavigatedEventArgs.cs" />
     <Compile Include="NoParameter.cs" />

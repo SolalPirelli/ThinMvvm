@@ -10,7 +10,7 @@ using ThinMvvm.Internals;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Synchronous ICommand without a parameter.
+    /// Synchronous <see cref="ICommand"/> without a parameter.
     /// </summary>
     public sealed class Command : CommandBase, ICommand
     {
@@ -23,7 +23,7 @@ namespace ThinMvvm
         /// <param name="owner">The command's owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
         /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
-        public Command( object owner, Action execute, Expression<Func<bool>> canExecute = null )
+        internal Command( object owner, Action execute, Expression<Func<bool>> canExecute = null )
             : base( owner, canExecute )
         {
             _execute = execute;
@@ -71,7 +71,7 @@ namespace ThinMvvm
     }
 
     /// <summary>
-    /// Synchronous ICommand with a parameter.
+    /// Synchronous <see cref="ICommand"/> with a parameter.
     /// </summary>
     /// <typeparam name="T">The parameter type.</typeparam>
     public sealed class Command<T> : CommandBase, ICommand
@@ -85,7 +85,7 @@ namespace ThinMvvm
         /// <param name="owner">The command's owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
         /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
-        public Command( object owner, Action<T> execute, Expression<Func<T, bool>> canExecute = null )
+        internal Command( object owner, Action<T> execute, Expression<Func<T, bool>> canExecute = null )
             : base( owner, canExecute )
         {
             _execute = execute;

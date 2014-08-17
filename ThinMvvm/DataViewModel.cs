@@ -45,7 +45,7 @@ namespace ThinMvvm
         /// </summary>
         public AsyncCommand RefreshCommand
         {
-            get { return GetAsyncCommand( () => TryRefreshAsync( true ), () => DataStatus != DataStatus.Loading ); }
+            get { return this.GetAsyncCommand( () => TryRefreshAsync( true ), () => DataStatus != DataStatus.Loading ); }
         }
 
 

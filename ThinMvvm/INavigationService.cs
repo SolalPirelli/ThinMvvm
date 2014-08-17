@@ -14,14 +14,14 @@ namespace ThinMvvm
         /// Navigates to a ViewModel of the specified type.
         /// </summary>
         /// <typeparam name="T">The ViewModel type.</typeparam>
-        void NavigateTo<T>() where T : IViewModel<NoParameter>;
+        void NavigateTo<T>() where T : ViewModel<NoParameter>;
 
         /// <summary>
         /// Navigates to a ViewModel of the specified type, with the specified constructor argument.
         /// </summary>
         /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
         /// <typeparam name="TArg">The argument type.</typeparam>
-        void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : IViewModel<TArg>;
+        void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : ViewModel<TArg>;
 
         /// <summary>
         /// Goes back to the previous ViewModel.

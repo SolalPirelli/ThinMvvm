@@ -17,13 +17,13 @@ namespace ThinMvvm.Logging.Tests
 
             private Stack<object> _viewModels = new Stack<object>();
 
-            public void NavigateTo<T>() where T : IViewModel<NoParameter>
+            public void NavigateTo<T>() where T : ViewModel<NoParameter>
             {
                 _viewModels.Push( Activator.CreateInstance<T>() );
                 OnNavigated( CurrentViewModel, true );
             }
 
-            public void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : IViewModel<TArg>
+            public void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : ViewModel<TArg>
             {
                 throw new NotSupportedException();
             }
@@ -81,13 +81,13 @@ namespace ThinMvvm.Logging.Tests
             [LogId( "C1" )]
             public Command Command1
             {
-                get { return GetCommand( () => { } ); }
+                get { return this.GetCommand( () => { } ); }
             }
 
             [LogId( "C2" )]
             public Command Command2
             {
-                get { return GetCommand( () => { } ); }
+                get { return this.GetCommand( () => { } ); }
             }
         }
 
@@ -99,21 +99,21 @@ namespace ThinMvvm.Logging.Tests
             [LogId( "C3" )]
             public Command Command3
             {
-                get { return GetCommand( () => { } ); }
+                get { return this.GetCommand( () => { } ); }
             }
 
             [LogId( "C4" )]
             [LogParameter( "SomeValue.Item1" )]
             public Command Command4
             {
-                get { return GetCommand( () => { } ); }
+                get { return this.GetCommand( () => { } ); }
             }
 
             [LogId( "C5" )]
             [LogParameter( "$Param" )]
             public Command<string> Command5
             {
-                get { return GetCommand<string>( _ => { } ); }
+                get { return this.GetCommand<string>( _ => { } ); }
             }
 
             [LogId( "C6" )]
@@ -121,13 +121,13 @@ namespace ThinMvvm.Logging.Tests
             [LogValueConverter( typeof( TestLogValueConverter ) )]
             public Command<bool> Command6
             {
-                get { return GetCommand<bool>( _ => { } ); }
+                get { return this.GetCommand<bool>( _ => { } ); }
             }
 
             [LogId( "Refresh" )]
             public AsyncCommand RefreshCommand
             {
-                get { return GetAsyncCommand( () => Task.FromResult( 0 ) ); }
+                get { return this.GetAsyncCommand( () => Task.FromResult( 0 ) ); }
             }
 
             private sealed class TestLogValueConverter : ILogValueConverter

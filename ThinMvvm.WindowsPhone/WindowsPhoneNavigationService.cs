@@ -47,7 +47,7 @@ namespace ThinMvvm.WindowsPhone
         /// Navigates to a ViewModel of the specified type.
         /// </summary>
         public void NavigateTo<T>()
-            where T : IViewModel<NoParameter>
+            where T : ViewModel<NoParameter>
         {
             var vm = Container.Get( typeof( T ), null );
             NavigateToPrivate( vm );
@@ -57,7 +57,7 @@ namespace ThinMvvm.WindowsPhone
         /// Navigates to a ViewModel of the specified type.
         /// </summary>
         public void NavigateTo<TViewModel, TArg>( TArg arg )
-            where TViewModel : IViewModel<TArg>
+            where TViewModel : ViewModel<TArg>
         {
             var vm = Container.Get( typeof( TViewModel ), arg );
             NavigateToPrivate( vm );

@@ -6,12 +6,12 @@ using System;
 namespace ThinMvvm.Internals
 {
     /// <summary>
-    /// Provides data for the CommandBase.Executed event.
+    /// Provides data for the <see cref="CommandBase.Executed" /> event.
     /// </summary>
     internal sealed class CommandExecutedEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets the argument given to command's Execute method was called.
+        /// Gets the argument given to the command.
         /// </summary>
         public object Argument { get; private set; }
 

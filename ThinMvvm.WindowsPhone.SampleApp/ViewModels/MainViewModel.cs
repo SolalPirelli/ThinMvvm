@@ -23,12 +23,12 @@ namespace ThinMvvm.WindowsPhone.SampleApp.ViewModels
 
         public Command<string> SaveCommand
         {
-            get { return GetCommand<string>( Save ); }
+            get { return this.GetCommand<string>( Save ); }
         }
 
         public Command ShowAboutViewCommand
         {
-            get { return GetCommand( _navigationService.NavigateTo<AboutViewModel> ); }
+            get { return this.GetCommand( _navigationService.NavigateTo<AboutViewModel> ); }
         }
 
 

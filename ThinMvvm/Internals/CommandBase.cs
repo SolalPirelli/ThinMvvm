@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 namespace ThinMvvm.Internals
 {
     /// <summary>
-    /// The base class for Commands.
+    /// The base class for commands.
     /// </summary>
     /// <remarks>
     /// ICommand is implemented partially to let implementers implement it explicitly
