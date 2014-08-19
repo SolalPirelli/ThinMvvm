@@ -18,6 +18,11 @@ namespace ThinMvvm.WindowsPhone
 
 
         /// <summary>
+        /// Gets the navigation URI.
+        /// </summary>
+        public Uri NavigationUri { get; private set; }
+
+        /// <summary>
         /// Gets the arguments passed in the navigation URI.
         /// </summary>
         public IReadOnlyDictionary<string, string> NavigationArguments { get; private set; }
@@ -29,6 +34,7 @@ namespace ThinMvvm.WindowsPhone
         /// <param name="navigationUri">The navigation URI.</param>
         internal AppArguments( Uri navigationUri )
         {
+            NavigationUri = navigationUri;
             NavigationArguments = ParseNavigationArguments( navigationUri.ToString() );
         }
 
