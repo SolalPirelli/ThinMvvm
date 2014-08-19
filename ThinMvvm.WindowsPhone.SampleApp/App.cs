@@ -6,7 +6,7 @@ using ThinMvvm.WindowsPhone.SampleApp.ViewModels;
 
 namespace ThinMvvm.WindowsPhone.SampleApp
 {
-    public partial class App : AppBase
+    public sealed class App : AppBase
     {
         protected override string Language
         {
