@@ -103,6 +103,8 @@
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="ViewModels\AboutViewModel.cs" />
+    <Compile Include="ViewModels\Design\DesignAboutViewModel.cs" />
+    <Compile Include="ViewModels\Design\DesignMainViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Views\AboutView.xaml.cs">
       <DependentUpon>AboutView.xaml</DependentUpon>
