@@ -12,28 +12,24 @@
                             d:DataContext="{myDesign:DesignAboutViewModel}"
                             mc:Ignorable="d">
     <Grid>
-        <Grid.Resources>
-            <my:LocalizedStrings x:Key="Strings" />
-        </Grid.Resources>
-        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        
-        <TextBlock Text="{Binding Resources.AboutViewTitle, Source={StaticResource Strings}}"
+
+        <TextBlock Text="{my:Text AboutViewTitle}"
                    Style="{StaticResource PhoneTextTitle1Style}" />
         
         <TextBlock Grid.Row="1"
-                   Text="{Binding Resources.AboutText, Source={StaticResource Strings}}"
+                   Text="{my:Text AboutText}"
                    TextWrapping="Wrap"
                    Style="{StaticResource PhoneTextNormalStyle}" />
         
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal">
-            <TextBlock Text="{Binding Resources.AppVersion, Source={StaticResource Strings}}"
+            <TextBlock Text="{my:Text AppVersion}"
                        Style="{StaticResource PhoneTextSmallStyle}"
                        Margin="12,0,0,0" />
 

@@ -11,11 +11,7 @@
                             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                             d:DataContext="{myDesign:DesignMainViewModel}"
                             mc:Ignorable="d">
-    <Grid>
-        <Grid.Resources>
-            <my:LocalizedStrings x:Key="Strings" />
-        </Grid.Resources>
-        
+    <Grid>      
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -25,12 +21,12 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <TextBlock Text="{Binding Resources.MainViewTitle, Source={StaticResource Strings}}"
+        <TextBlock Text="{my:Text MainViewTitle}"
                    Style="{StaticResource PhoneTextTitle1Style}" />
 
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal">
-            <TextBlock Text="{Binding Resources.MainViewModelInvokedWithArg, Source={StaticResource Strings}}"
+            <TextBlock Text="{my:Text MainViewModelInvokedWithArg}"
                        Style="{StaticResource PhoneTextNormalStyle}"
                        Margin="12,0,0,0" />
 
@@ -48,14 +44,14 @@
             <TextBox x:Name="InputBox" />
             
             <Button Grid.Column="1"
-                    Content="{Binding Resources.Save, Source={StaticResource Strings}}"
+                    Content="{my:Text Save}"
                     Command="{Binding SaveCommand}"
                     CommandParameter="{Binding Text, ElementName=InputBox}" />
         </Grid>
         
         <StackPanel Grid.Row="3"
                     Orientation="Horizontal">
-            <TextBlock Text="{Binding Resources.SavedText, Source={StaticResource Strings}}"
+            <TextBlock Text="{my:Text SavedText}"
                        Style="{StaticResource PhoneTextNormalStyle}"
                        Margin="12,0,0,0" />
             
@@ -65,7 +61,7 @@
         </StackPanel>
         
         <Button Grid.Row="5"
-                Content="{Binding Resources.ShowAboutView, Source={StaticResource Strings}}"
+                Content="{my:Text ShowAboutView}"
                 Command="{Binding ShowAboutViewCommand}" />
     </Grid>
 </phone:PhoneApplicationPage>
