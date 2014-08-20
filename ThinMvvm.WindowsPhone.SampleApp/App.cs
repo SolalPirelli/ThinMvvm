@@ -8,6 +8,8 @@ namespace ThinMvvm.WindowsPhone.SampleApp
 {
     public sealed class App : AppBase
     {
+        private readonly IWindowsPhoneNavigationService _navigationService;
+
         protected override string Language
         {
             get { return AppResources.ResourceLanguage; }
@@ -21,21 +23,21 @@ namespace ThinMvvm.WindowsPhone.SampleApp
 
         public App()
         {
-            Container.Bind<IWindowsPhoneNavigationService, WindowsPhoneNavigationService>();
+            _navigationService = Container.Bind<IWindowsPhoneNavigationService, WindowsPhoneNavigationService>();
             Container.Bind<ISettingsStorage, WindowsPhoneSettingsStorage>();
 
             Container.Bind<ISettings, Settings>();
         }
 
 
-        protected override void Start( AppDependencies dependencies, AppArguments arguments )
+        protected override void Start( AppArguments arguments )
         {
             // simple app, no additional dependencies or arguments
 
-            dependencies.NavigationService.Bind<MainViewModel>( "/Views/MainView.xaml" );
-            dependencies.NavigationService.Bind<AboutViewModel>( "/Views/AboutView.xaml" );
+            _navigationService.Bind<MainViewModel>( "/Views/MainView.xaml" );
+            _navigationService.Bind<AboutViewModel>( "/Views/AboutView.xaml" );
 
-            dependencies.NavigationService.NavigateTo<MainViewModel, int>( 42 );
+            _navigationService.NavigateTo<MainViewModel, int>( 42 );
         }
     }
 }
