@@ -91,7 +91,6 @@
   <ItemGroup>
     <Compile Include="AppArguments.cs" />
     <Compile Include="AppBase.cs" />
-    <Compile Include="AppDependencies.cs" />
     <Compile Include="Design\DesignNavigationService.cs" />
     <Compile Include="Design\DesignViewModel.cs" />
     <Compile Include="IWindowsPhoneNavigationService.cs" />

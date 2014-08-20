@@ -79,9 +79,8 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Called when the app starts.
         /// </summary>
-        /// <param name="dependencies">The app dependencies.</param>
         /// <param name="arguments">The app arguments.</param>
-        protected abstract void Start( AppDependencies dependencies, AppArguments arguments );
+        protected abstract void Start( AppArguments arguments );
 
 
         /// <summary>
@@ -113,10 +112,9 @@ namespace ThinMvvm.WindowsPhone
             RootVisual = RootFrame;
             RootFrame.Navigating -= OnAppOpening;
 
-            var deps = (AppDependencies) Container.Get( typeof( AppDependencies ), null );
             var args = new AppArguments( e.Uri );
             // Overlapping navigations aren't allowed, schedule the new navigation for later
-            RootFrame.Dispatcher.BeginInvoke( () => Start( deps, args ) );
+            RootFrame.Dispatcher.BeginInvoke( () => Start( args ) );
         }
 
         /// <summary>

@@ -17,18 +17,20 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Binds an abstract type to a concrete type.
+        /// Binds an abstract type to a concrete type, and returns an instance of the concrete type.
         /// </summary>
         /// <returns>The instance of the implementation.</returns>
         /// <typeparam name="TAbstract">The abstract type (or interface).</typeparam>
         /// <typeparam name="TImpl">The concrete type.</typeparam>
-        public static void Bind<TAbstract, TImpl>()
+        /// <returns>An instance of the concrete type.</returns>
+        public static TImpl Bind<TAbstract, TImpl>()
             where TImpl : TAbstract
         {
             CheckBindArguments<TAbstract, TImpl>();
 
             var implementation = Get( typeof( TImpl ), null );
             _impls.Add( typeof( TAbstract ), implementation );
+            return (TImpl) implementation;
         }
 
 
