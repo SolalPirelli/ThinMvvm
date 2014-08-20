@@ -61,8 +61,19 @@ namespace ThinMvvm.Internals
             // Magic to get the owner/name of a property access not on 'this'
             var memberExpr = (MemberExpression) propertyExpr.Expression;
             var memberConstExpr = (ConstantExpression) memberExpr.Expression;
-            var field = (FieldInfo) memberExpr.Member;
-            return Tuple.Create( field.GetValue( memberConstExpr.Value ), propertyExpr.Member.Name );
+            object value;
+            var field = memberExpr.Member as FieldInfo;
+            if ( field != null )
+            {
+                value = field.GetValue( memberConstExpr.Value );
+            }
+            else
+            {
+                var prop = memberExpr.Member as PropertyInfo;
+                value = prop.GetValue( memberConstExpr.Value );
+            }
+
+            return Tuple.Create( value, propertyExpr.Member.Name );
         }
     }
 }

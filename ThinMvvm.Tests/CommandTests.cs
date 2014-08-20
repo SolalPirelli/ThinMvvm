@@ -71,7 +71,9 @@ namespace ThinMvvm.Tests
                 set { SetProperty( ref _value, value ); }
             }
 
-            public void TestAsyncCommand()
+            public InpcExample Other { get; set; }
+
+            public void TestCommand()
             {
                 var cmd = new Command( null, () => { }, () => Value == 0 );
                 int count = 0;
@@ -81,12 +83,30 @@ namespace ThinMvvm.Tests
 
                 Assert.AreEqual( 1, count, "CanExecuteChanged should be fired exactly once when a property it uses changes." );
             }
+
+            public void TestCommand2()
+            {
+                Other = new InpcExample();
+                var cmd = new Command( null, () => { }, () => Other.Value == 0 );
+                int count = 0;
+
+                cmd.CanExecuteChanged += ( s, e ) => count++;
+                Other.Value++;
+
+                Assert.AreEqual( 1, count, "CanExecuteChanged should be fired exactly once when a property it uses changes." );
+            }
         }
 
         [TestMethod]
         public void CanExecuteChangedShouldBeFiredWhenAPropertyChanges()
         {
-            new InpcExample().TestAsyncCommand();
+            new InpcExample().TestCommand();
+        }
+
+        [TestMethod]
+        public void CanExecuteChangedShouldBeFiredWhenNestedAPropertyChanges()
+        {
+            new InpcExample().TestCommand2();
         }
 
         [TestMethod]
