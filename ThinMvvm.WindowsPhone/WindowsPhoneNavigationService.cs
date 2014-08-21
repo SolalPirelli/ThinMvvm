@@ -142,9 +142,7 @@ namespace ThinMvvm.WindowsPhone
         {
             var page = (PhoneApplicationPage) AppBase.RootFrame.Content;
 
-            // need to check IsNavigationInitiator to avoid doing stuff when the user
-            // long-presses the Back button to multitask
-            if ( e.NavigationMode == NavigationMode.Back && e.IsNavigationInitiator )
+            if ( e.NavigationMode == NavigationMode.Back )
             {
                 if ( _shouldIgnore.Pop() )
                 {

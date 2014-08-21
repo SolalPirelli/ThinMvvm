@@ -24,7 +24,7 @@ namespace ThinMvvm.WindowsPhone.SampleApp.ViewModels
 
         public Command<string> SaveCommand
         {
-            get { return this.GetCommand<string>( Save ); }
+            get { return this.GetCommand<string>( Save, s => !string.IsNullOrWhiteSpace( s ) ); }
         }
 
         public Command ShowAboutViewCommand
