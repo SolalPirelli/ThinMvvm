@@ -10,12 +10,12 @@ namespace ThinMvvm.WindowsPhone.Design
     /// This class can be used as a markup extension in XAML, e.g. <c>{my:DesignViewModel}</c>.
     /// </summary>
     /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
-    /// <typeparam name="TArg">The ViewModel's argument type.</typeparam>
-    public abstract class DesignViewModel<TViewModel, TArg> : Binding
-        where TViewModel : ViewModel<TArg>
+    /// <typeparam name="TParameter">The ViewModel's parameter type.</typeparam>
+    public abstract class DesignViewModel<TViewModel, TParameter> : Binding
+        where TViewModel : ViewModel<TParameter>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DesignViewModel{TViewModel}" /> class.
+        /// Initializes a new instance of the <see cref="DesignViewModel{TViewModel, TParameter}" /> class.
         /// </summary>
         public DesignViewModel()
         {

@@ -28,9 +28,9 @@ namespace ThinMvvm.WindowsPhone.Design
         /// Does nothing.
         /// </summary>
         /// <typeparam name="TViewModel">Unused.</typeparam>
-        /// <typeparam name="TArg">Unused.</typeparam>
+        /// <typeparam name="TParameter">Unused.</typeparam>
         /// <param name="arg">Unused.</param>
-        public void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : ViewModel<TArg> { }
+        public void NavigateTo<TViewModel, TParameter>( TParameter arg ) where TViewModel : ViewModel<TParameter> { }
 
         /// <summary>
         /// Does nothing.

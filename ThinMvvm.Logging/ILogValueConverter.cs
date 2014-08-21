@@ -4,12 +4,12 @@
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// Converts command logging parameters to strings reported to the logging mechanism.
+    /// Converts command logging parameters to strings for logging purposes.
     /// </summary>
     public interface ILogValueConverter
     {
         /// <summary>
-        /// Converts the specified value to a string.
+        /// Converts the specified value to a string that will be reported to the logging mechanism.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>A string representing the value.</returns>

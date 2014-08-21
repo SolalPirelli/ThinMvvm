@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace ThinMvvm
 {
     /// <summary>
-    /// <see cref="DataViewModel{TArg}" /> that can cache data.
+    /// <see cref="DataViewModel{TParameter}" /> that can cache data.
     /// </summary>
     /// <typeparam name="TParameter">The type of the ViewModel's constructor parameter, or <see cref="NoParameter" /> if it does not have one.</typeparam>
     /// <typeparam name="TData">The type of the cached data.</typeparam>

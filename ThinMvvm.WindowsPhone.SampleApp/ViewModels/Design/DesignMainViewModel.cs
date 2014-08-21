@@ -2,7 +2,9 @@
 // See License.txt file for more details
 
 using ThinMvvm.WindowsPhone.Design;
+#if DEBUG
 using ThinMvvm.WindowsPhone.SampleApp.Services.Design;
+#endif
 
 namespace ThinMvvm.WindowsPhone.SampleApp.ViewModels.Design
 {

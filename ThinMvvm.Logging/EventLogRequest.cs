@@ -22,7 +22,7 @@ namespace ThinMvvm.Logging
         public string Label { get; private set; }
 
         /// <summary>
-        /// Gets the ID of the ViewModel on which the event should be logged, or null for the current ViewModel.
+        /// Gets the ID of the <see cref="ViewModel{TParameter}" /> on which the event should be logged, or null for the current one.
         /// </summary>
         public string ViewModelId { get; private set; }
 
@@ -32,7 +32,7 @@ namespace ThinMvvm.Logging
         /// </summary>
         /// <param name="eventId">The event ID.</param>
         /// <param name="label">The label.</param>
-        /// <param name="viewModelId">Optional. The ViewModel ID, if it's different from the current ViewModel.</param>
+        /// <param name="viewModelId">Optional. The <see cref="ViewModel{TParameter}" /> ID, if it's different from the current one.</param>
         public EventLogRequest( string eventId, string label, string viewModelId = null )
         {
             EventId = eventId;

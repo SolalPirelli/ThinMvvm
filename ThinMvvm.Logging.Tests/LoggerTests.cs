@@ -23,7 +23,7 @@ namespace ThinMvvm.Logging.Tests
                 OnNavigated( CurrentViewModel, true );
             }
 
-            public void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : ViewModel<TArg>
+            public void NavigateTo<TViewModel, TParameter>( TParameter arg ) where TViewModel : ViewModel<TParameter>
             {
                 throw new NotSupportedException();
             }

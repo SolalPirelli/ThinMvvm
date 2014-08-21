@@ -21,7 +21,7 @@ namespace ThinMvvm.WindowsPhone
         private const string UniqueParameter = "ThinMvvm.WindowsPhone.UniqueId";
 
         private readonly Dictionary<Type, Uri> _views;
-        // HACK: IViewModel can't be covariant because it would forbid value types as TArgs,
+        // HACK: IViewModel can't be covariant because it would forbid value types as TParameters,
         //       and having a non-generic IViewModel that shouldn't be implemented is a terrible idea
         //       so we use dynamic to call OnNavigatedTo/From
         private readonly Stack<dynamic> _backStack;
@@ -56,8 +56,8 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Navigates to a ViewModel of the specified type.
         /// </summary>
-        public void NavigateTo<TViewModel, TArg>( TArg arg )
-            where TViewModel : ViewModel<TArg>
+        public void NavigateTo<TViewModel, TParameter>( TParameter arg )
+            where TViewModel : ViewModel<TParameter>
         {
             if ( arg == null )
             {

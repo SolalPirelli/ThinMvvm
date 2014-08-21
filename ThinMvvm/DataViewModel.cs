@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace ThinMvvm
 {
     /// <summary>
-    /// <see cref="ViewModel{TArg}" /> that loads data.
+    /// <see cref="ViewModel{TParameter}" /> that loads data.
     /// </summary>
     /// <typeparam name="TParameter">The type of the ViewModel's constructor parameter, or <see cref="NoParameter" /> if it does not have one.</typeparam>
     public abstract class DataViewModel<TParameter> : ViewModel<TParameter>, IDisposable
@@ -25,7 +25,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Gets the data status of the ViewModel.
+        /// Gets the data status of the <see cref="DataViewModel{TParameter}" />.
         /// </summary>
         public DataStatus DataStatus
         {
@@ -34,7 +34,7 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Gets the cancellation token currently used by the ViewModel.
+        /// Gets the cancellation token currently used by the <see cref="DataViewModel{TParameter}" />.
         /// </summary>
         protected CancellationToken CurrentCancellationToken
         {
@@ -51,7 +51,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataViewModel{TArg}" /> class.
+        /// Initializes a new instance of the <see cref="DataViewModel{TParameter}" /> class.
         /// </summary>
         protected DataViewModel()
         {
@@ -61,7 +61,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Occurs after the user navigated to the ViewModel.
+        /// Occurs after the user navigated to the <see cref="DataViewModel{TParameter}" />.
         /// </summary>
         /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual async Task OnNavigatedToAsync()
@@ -147,7 +147,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Occurs when the user navigates to the <see cref="DataViewModel{TArg}" />.
+        /// Occurs when the user navigates to the <see cref="DataViewModel{TParameter}" />.
         /// Do not call this method explicitly.
         /// </summary>
         [EditorBrowsable( EditorBrowsableState.Never )]
@@ -167,7 +167,7 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Disposes of the DataViewModel.
+        /// Disposes of the <see cref="DataViewModel{TParameter}" />.
         /// </summary>
         public void Dispose()
         {
@@ -176,7 +176,7 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Disposes of the DataViewModel.
+        /// Disposes of the <see cref="DataViewModel{TParameter}" />.
         /// </summary>
         /// <param name="alsoManaged">A value indicating whether managed resources should be disposed.</param>
         protected virtual void Dispose( bool alsoManaged )

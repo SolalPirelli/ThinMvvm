@@ -2,6 +2,7 @@
 // See License.txt file for more details
 
 using System;
+
 namespace ThinMvvm.Logging
 {
     /// <summary>

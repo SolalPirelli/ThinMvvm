@@ -45,7 +45,7 @@ namespace ThinMvvm
         /// <summary>
         /// Gets or creates a <see cref="Command{T}" /> with the specified action and optional condition.
         /// </summary>
-        /// <typeparam name="T">The command's argument type.</typeparam>
+        /// <typeparam name="T">The command's parameter type.</typeparam>
         /// <param name="owner">The command owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
         /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>
@@ -100,7 +100,7 @@ namespace ThinMvvm
         /// <summary>
         /// Gets or creates an <see cref="AsyncCommand{T}" /> with the specified action and optional condition.
         /// </summary>
-        /// <typeparam name="T">The command's argument type.</typeparam>
+        /// <typeparam name="T">The command's parameter type.</typeparam>
         /// <param name="owner">The command owner.</param>
         /// <param name="execute">The action to execute when the command is executed.</param>
         /// <param name="canExecute">Optional. The predicate indicating whether the command can be executed.</param>

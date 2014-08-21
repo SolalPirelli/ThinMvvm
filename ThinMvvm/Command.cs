@@ -51,7 +51,7 @@ namespace ThinMvvm
         /// <summary>
         /// Defines the method that determines whether the command can execute in its current state.
         /// </summary>
-        /// <param name="parameter">Ignored parameter.</param>
+        /// <param name="parameter">Ignored.</param>
         /// <returns>True if this command can be executed; otherwise, false.</returns>
         bool ICommand.CanExecute( object parameter )
         {
@@ -61,7 +61,7 @@ namespace ThinMvvm
         /// <summary>
         /// Defines the method to be called when the command is invoked.
         /// </summary>
-        /// <param name="parameter">Ignored parameter.</param>
+        /// <param name="parameter">Ignored.</param>
         void ICommand.Execute( object parameter )
         {
             OnExecuted( null );

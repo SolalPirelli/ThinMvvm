@@ -9,7 +9,7 @@ using System.Reflection;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Options for <see cref="DataViewModel{TArg}" />.
+    /// Options for <see cref="DataViewModel{TParameter}" />.
     /// </summary>
     public static class DataViewModelOptions
     {
