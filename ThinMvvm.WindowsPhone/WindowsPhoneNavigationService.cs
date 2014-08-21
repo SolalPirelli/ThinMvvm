@@ -25,7 +25,7 @@ namespace ThinMvvm.WindowsPhone
         //       and having a non-generic IViewModel that shouldn't be implemented is a terrible idea
         //       so we use dynamic to call OnNavigatedTo/From
         private readonly Stack<dynamic> _backStack;
-        private readonly Stack<bool> _ignored;
+        private readonly Stack<bool> _shouldIgnore;
 
         private bool _removeCurrentFromBackstack;
 
@@ -37,7 +37,7 @@ namespace ThinMvvm.WindowsPhone
         {
             _views = new Dictionary<Type, Uri>();
             _backStack = new Stack<dynamic>();
-            _ignored = new Stack<bool>();
+            _shouldIgnore = new Stack<bool>();
 
             AppBase.RootFrame.Navigated += Frame_Navigated;
         }
@@ -84,7 +84,7 @@ namespace ThinMvvm.WindowsPhone
         }
 
         /// <summary>
-        /// Pops the ViewModel back-stack, removing the current one so that going backwards will not go to it.
+        /// Pops the ViewModel back-stack, removing the current one so that going backwards later will not go to it.
         /// </summary>
         public void PopBackStack()
         {
@@ -146,7 +146,7 @@ namespace ThinMvvm.WindowsPhone
             // long-presses the Back button to multitask
             if ( e.NavigationMode == NavigationMode.Back && e.IsNavigationInitiator )
             {
-                if ( _ignored.Pop() )
+                if ( _shouldIgnore.Pop() )
                 {
                     return;
                 }
@@ -182,14 +182,7 @@ namespace ThinMvvm.WindowsPhone
 
                 if ( e.Uri.ToString().Contains( UniqueParameter ) ) // can't check for IsNavigationInitiator as it's false for the first navigation
                 {
-                    // Ignore pages we don't know about
-                    if ( !_views.Any( p => UriEquals( p.Value, e.Uri ) ) )
-                    {
-                        _ignored.Push( true );
-                        return;
-                    }
-                    _ignored.Push( false );
-
+                    _shouldIgnore.Push( false );
 
                     if ( _backStack.Count > 0 )
                     {
@@ -198,6 +191,10 @@ namespace ThinMvvm.WindowsPhone
                         page.DataContext = currentViewModel;
                         OnNavigated( currentViewModel, false );
                     }
+                }
+                else
+                {
+                    _shouldIgnore.Push( true );
                 }
             }
         }
@@ -227,26 +224,6 @@ namespace ThinMvvm.WindowsPhone
                                                                             : UriParametersPrefix;
             string uniqueUri = uri.ToString() + separator + UniqueParameter + UriParameterKeyValueSeparator + uniqueValue;
             return new Uri( uniqueUri, UriKind.RelativeOrAbsolute );
-        }
-
-        /// <summary>
-        /// Indicates whether the two specified URIs are considered to be equal.
-        /// </summary>
-        private static bool UriEquals( Uri uri1, Uri uri2 )
-        {
-            return GetUriPath( uri1.ToString() ) == GetUriPath( uri2.ToString() );
-        }
-
-        /// <summary>
-        /// Gets the path section of the specified URI.
-        /// </summary>
-        private static string GetUriPath( string uri )
-        {
-            if ( uri.Contains( UriParametersPrefix ) )
-            {
-                return uri.Substring( 0, uri.IndexOf( UriParametersPrefix ) );
-            }
-            return uri;
         }
     }
 }

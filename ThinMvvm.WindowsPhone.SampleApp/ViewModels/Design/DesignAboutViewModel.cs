@@ -5,7 +5,7 @@ using ThinMvvm.WindowsPhone.Design;
 
 namespace ThinMvvm.WindowsPhone.SampleApp.ViewModels.Design
 {
-    public sealed class DesignAboutViewModel : DesignViewModel<AboutViewModel>
+    public sealed class DesignAboutViewModel : DesignViewModel<AboutViewModel, NoParameter>
     {
 #if DEBUG
         protected override AboutViewModel ViewModel

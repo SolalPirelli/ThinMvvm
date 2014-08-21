@@ -2,10 +2,11 @@
 // See License.txt file for more details
 
 using System;
+using ThinMvvm.WindowsPhone.SampleApp.Services;
 
 namespace ThinMvvm.WindowsPhone.SampleApp.ViewModels
 {
-    public sealed class MainViewModel : DataViewModel<int>
+    public sealed class MainViewModel : ViewModel<int>
     {
         private readonly ISettings _settings;
         private readonly INavigationService _navigationService;
@@ -39,6 +40,11 @@ namespace ThinMvvm.WindowsPhone.SampleApp.ViewModels
             _navigationService = navigationService;
 
             Argument = arg;
+        }
+
+
+        public override void OnNavigatedTo()
+        {
             SavedText = _settings.SavedText;
         }
 

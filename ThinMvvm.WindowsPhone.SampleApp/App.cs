@@ -2,6 +2,7 @@
 // See License.txt file for more details
 
 using ThinMvvm.WindowsPhone.SampleApp.Resources;
+using ThinMvvm.WindowsPhone.SampleApp.Services;
 using ThinMvvm.WindowsPhone.SampleApp.ViewModels;
 
 namespace ThinMvvm.WindowsPhone.SampleApp
@@ -32,7 +33,7 @@ namespace ThinMvvm.WindowsPhone.SampleApp
 
         protected override void Start( AppArguments arguments )
         {
-            // simple app, no additional dependencies or arguments
+            // simple app, no arguments necessary
 
             _navigationService.Bind<MainViewModel>( "/Views/MainView.xaml" );
             _navigationService.Bind<AboutViewModel>( "/Views/AboutView.xaml" );
