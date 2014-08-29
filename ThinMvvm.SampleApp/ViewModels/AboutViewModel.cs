@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 
-namespace ThinMvvm.WindowsPhone.SampleApp.ViewModels
+namespace ThinMvvm.SampleApp.WindowsPhone.ViewModels
 {
     public sealed class AboutViewModel : ViewModel<NoParameter>
     {
@@ -13,7 +13,7 @@ namespace ThinMvvm.WindowsPhone.SampleApp.ViewModels
 
         public AboutViewModel()
         {
-            AppVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            AppVersion = this.GetType().GetTypeInfo().Assembly.GetName().Version;
         }
     }
 }

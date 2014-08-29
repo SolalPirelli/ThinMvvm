@@ -3,7 +3,7 @@
 
 using System;
 
-namespace ThinMvvm.WindowsPhone.Design
+namespace ThinMvvm.Design
 {
     /// <summary>
     /// <see cref="IDataCache" /> implementation for design-time data.

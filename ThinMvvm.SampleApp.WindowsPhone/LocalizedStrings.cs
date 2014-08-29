@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-using ThinMvvm.WindowsPhone.SampleApp.Resources;
+using ThinMvvm.SampleApp.Resources;
 
-namespace ThinMvvm.WindowsPhone.SampleApp
+namespace ThinMvvm.SampleApp.WindowsPhone
 {
     public sealed class LocalizedStrings
     {

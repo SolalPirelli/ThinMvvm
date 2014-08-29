@@ -5,15 +5,16 @@
     <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CAAC84D9-3E69-4E83-BD1D-8EDBE01298A0}</ProjectGuid>
+    <ProjectGuid>{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinMvvm</RootNamespace>
-    <AssemblyName>ThinMvvm</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
+    <RootNamespace>ThinMvvm.SampleApp</RootNamespace>
+    <AssemblyName>ThinMvvm.SampleApp</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,7 +24,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,38 +32,26 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Release\ThinMvvm.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AsyncCommand.cs" />
-    <Compile Include="CachedDataViewModel.cs" />
-    <Compile Include="CachedTask.cs" />
-    <Compile Include="CacheStatus.cs" />
-    <Compile Include="Command.cs" />
-    <Compile Include="Design\DesignDataCache.cs" />
-    <Compile Include="Design\DesignNavigationService.cs" />
-    <Compile Include="ICommandOwner.cs" />
-    <Compile Include="ICommandOwnerExtensions.cs" />
-    <Compile Include="Internals\CommandBase.cs" />
-    <Compile Include="Container.cs" />
-    <Compile Include="DataStatus.cs" />
-    <Compile Include="DataViewModel.cs" />
-    <Compile Include="DataViewModelOptions.cs" />
-    <Compile Include="IDataCache.cs" />
-    <Compile Include="INavigationService.cs" />
-    <Compile Include="INotifyPropertyChangedExtensions.cs" />
-    <Compile Include="Internals\CommandExecutedEventArgs.cs" />
-    <Compile Include="Internals\ExpressionHelper.cs" />
-    <Compile Include="Internals\ObservablePropertyVisitor.cs" />
-    <Compile Include="ISettingsStorage.cs" />
-    <Compile Include="Messenger.cs" />
-    <Compile Include="NavigatedEventArgs.cs" />
-    <Compile Include="NoParameter.cs" />
-    <Compile Include="ObservableObject.cs" />
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\ThinMvvm.Logging\ThinMvvm.Logging.csproj">
+      <Project>{4e255288-94ea-4ffb-a6a3-11a03513a664}</Project>
+      <Name>ThinMvvm.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ThinMvvm\ThinMvvm.csproj">
+      <Project>{caac84d9-3e69-4e83-bd1d-8edbe01298a0}</Project>
+      <Name>ThinMvvm</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SettingsBase.cs" />
-    <Compile Include="ViewModel.cs" />
+    <Compile Include="Services\Design\DesignSettings.cs" />
+    <Compile Include="Services\ISettings.cs" />
+    <Compile Include="Services\Settings.cs" />
+    <Compile Include="ViewModels\AboutViewModel.cs" />
+    <Compile Include="ViewModels\Design\Design.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

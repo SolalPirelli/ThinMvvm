@@ -13,12 +13,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Logging", "ThinMvv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Logging.Tests", "ThinMvvm.Logging.Tests\ThinMvvm.Logging.Tests.csproj", "{B7059682-8FC1-453D-9407-CC2D24EAE6A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.WindowsPhone.SampleApp", "ThinMvvm.WindowsPhone.SampleApp\ThinMvvm.WindowsPhone.SampleApp.csproj", "{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.SampleApp.WindowsPhone", "ThinMvvm.SampleApp.WindowsPhone\ThinMvvm.SampleApp.WindowsPhone.csproj", "{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{47E8F70A-F6BA-455C-A28E-214417049335}"
 	ProjectSection(SolutionItems) = preProject
 		TestSettings.runsettings = TestSettings.runsettings
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.SampleApp", "ThinMvvm.SampleApp\ThinMvvm.SampleApp.csproj", "{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -108,6 +110,14 @@ Global
 		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|x86.ActiveCfg = Release|x86
 		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|x86.Build.0 = Release|x86
 		{B01F9924-39B4-4E6D-AC47-BA68D56BB9DA}.Release|x86.Deploy.0 = Release|x86
+		{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}.Release|Any CPU.Build.0 = Release|Any CPU
+		{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}.Release|ARM.ActiveCfg = Release|Any CPU
+		{276407FB-3D67-4B1B-BC12-6F9AEC2FE928}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

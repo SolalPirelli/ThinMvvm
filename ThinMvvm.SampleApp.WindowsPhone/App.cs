@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-using ThinMvvm.WindowsPhone.SampleApp.Resources;
-using ThinMvvm.WindowsPhone.SampleApp.Services;
-using ThinMvvm.WindowsPhone.SampleApp.ViewModels;
+using ThinMvvm.SampleApp.Resources;
+using ThinMvvm.SampleApp.WindowsPhone.Services;
+using ThinMvvm.SampleApp.WindowsPhone.ViewModels;
+using ThinMvvm.WindowsPhone;
 
-namespace ThinMvvm.WindowsPhone.SampleApp
+namespace ThinMvvm.SampleApp.WindowsPhone
 {
     public sealed class App : AppBase
     {

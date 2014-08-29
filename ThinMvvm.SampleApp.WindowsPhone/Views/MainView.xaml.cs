@@ -3,7 +3,7 @@
 
 using Microsoft.Phone.Controls;
 
-namespace ThinMvvm.WindowsPhone.SampleApp.Views
+namespace ThinMvvm.SampleApp.WindowsPhone.Views
 {
     public partial class MainView : PhoneApplicationPage
     {

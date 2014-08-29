@@ -3,21 +3,14 @@
 
 using System;
 
-namespace ThinMvvm.WindowsPhone.Design
+namespace ThinMvvm.Design
 {
     /// <summary>
-    /// <see cref="IWindowsPhoneNavigationService" /> implementation for design-time ViewModel construction.
+    /// <see cref="INavigationService" /> implementation for design-time ViewModel construction.
     /// Does nothing.
     /// </summary>
-    public sealed class DesignNavigationService : IWindowsPhoneNavigationService
+    public sealed class DesignNavigationService : INavigationService
     {
-        /// <summary>
-        /// Does nothing.
-        /// </summary>
-        /// <typeparam name="TViewModel">Unused.</typeparam>
-        /// <param name="viewUri">Unused.</param>
-        public void Bind<TViewModel>( string viewUri ) { }
-
         /// <summary>
         /// Does nothing.
         /// </summary>

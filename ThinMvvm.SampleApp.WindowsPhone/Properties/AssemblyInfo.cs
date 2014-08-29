@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle( "ThinMvvm.WindowsPhone.SampleApp" )]
+[assembly: AssemblyTitle( "ThinMvvm.SampleApp.WindowsPhone" )]
 [assembly: AssemblyDescription( "ThinMVVM sample app for Windows Phone Silverlight 8.x." )]
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
