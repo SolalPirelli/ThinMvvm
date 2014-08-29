@@ -17,6 +17,8 @@
                             <Exclude>
                                 <!-- Exclude the NoParameter class, which only has a private constructor -->
                                 <Source>.*\\NoParameter\.cs</Source>
+                                <!-- Exclude design service implementations, they're not supposed to do anything -->
+                                <Source>.*\\Design\\.*</Source>
                             </Exclude>
                         </Sources>
                         <Functions>
