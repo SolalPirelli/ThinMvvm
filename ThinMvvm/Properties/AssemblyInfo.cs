@@ -15,10 +15,9 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible( false )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "0.9.12" )]
+[assembly: AssemblyVersion( "0.9.13" )]
 
 [assembly: InternalsVisibleTo( "ThinMvvm.Logging" )]
 [assembly: InternalsVisibleTo( "ThinMvvm.WindowsPhone" )]
 
-[assembly: InternalsVisibleTo( "ThinMvvm.Benchmarking" )]
 [assembly: InternalsVisibleTo( "ThinMvvm.Tests" )]
