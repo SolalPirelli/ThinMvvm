@@ -166,10 +166,12 @@ namespace ThinMvvm.WindowsPhone
 
 
         /// <summary>
+        /// Infrastructure. 
         /// Serializable metadata for the cache.
+        /// Do not use this type from your code.
         /// </summary>
         [DataContract]
-        private sealed class CacheMetadata
+        public sealed class CacheMetadata
         {
             /// <summary>
             /// Gets (or sets, but only for serialization) the serialized data.
