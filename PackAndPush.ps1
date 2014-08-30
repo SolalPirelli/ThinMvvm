@@ -13,3 +13,9 @@ ForEach ($pkg in $pkgs) {
 }
 
 Write-Host "`nPushed all packages.`n" -ForegroundColor Green
+
+$pkgs = dir | where { $_.Extension -eq ".nupkg" }
+
+ForEach ($pkg in $pkgs) {
+  $pkg.Delete()
+}
