@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 
-namespace ThinMvvm.SampleApp.WindowsPhone.ViewModels
+namespace ThinMvvm.SampleApp.ViewModels
 {
     public sealed class AboutViewModel : ViewModel<NoParameter>
     {

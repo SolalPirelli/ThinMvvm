@@ -22,12 +22,12 @@ namespace ThinMvvm.WindowsPhone
 
         private readonly Dictionary<Type, Uri> _views;
         // HACK: IViewModel can't be covariant because it would forbid value types as TParameters,
-        //       and having a non-generic IViewModel that shouldn't be implemented is a terrible idea
+        //       and having a non-generic ViewModel that shouldn't be implemented is a terrible idea
         //       so we use dynamic to call OnNavigatedTo/From
         private readonly Stack<dynamic> _backStack;
         private readonly Stack<bool> _shouldIgnore;
 
-        private bool _removeCurrentFromBackstack;
+        private bool _removeCurrentFromBackStack;
 
 
         /// <summary>
@@ -59,11 +59,6 @@ namespace ThinMvvm.WindowsPhone
         public void NavigateTo<TViewModel, TParameter>( TParameter arg )
             where TViewModel : ViewModel<TParameter>
         {
-            if ( arg == null )
-            {
-                throw new ArgumentNullException( "arg" );
-            }
-
             var vm = Container.Get( typeof( TViewModel ), arg );
             NavigateToPrivate( vm );
         }
@@ -73,14 +68,12 @@ namespace ThinMvvm.WindowsPhone
         /// </summary>
         public void NavigateBack()
         {
-            if ( _backStack.Count > 0 )
-            {
-                AppBase.RootFrame.GoBack();
-            }
-            else
+            if ( _backStack.Count == 0 )
             {
                 Application.Current.Terminate();
             }
+
+            AppBase.RootFrame.GoBack();
         }
 
         /// <summary>
@@ -88,7 +81,16 @@ namespace ThinMvvm.WindowsPhone
         /// </summary>
         public void PopBackStack()
         {
-            _removeCurrentFromBackstack = true;
+            if ( _backStack.Count == 0 )
+            {
+                throw new InvalidOperationException( "Cannot pop an empty back stack." );
+            }
+            if ( _removeCurrentFromBackStack )
+            {
+                throw new InvalidOperationException( "PopBackStack was already called in this ViewModel." );
+            }
+
+            _removeCurrentFromBackStack = true;
         }
 
         /// <summary>
@@ -129,10 +131,14 @@ namespace ThinMvvm.WindowsPhone
         /// </summary>
         private void NavigateToPrivate( object viewModel )
         {
-            var viewModelType = viewModel.GetType();
-            OnNavigated( viewModel, true );
+            Uri viewUri;
+            if ( !_views.TryGetValue( viewModel.GetType(), out viewUri ) )
+            {
+                throw new ArgumentException( string.Format( "The ViewModel type {0} has no registered View type.", viewModel.GetType() ) );
+            }
+
             _backStack.Push( viewModel );
-            AppBase.RootFrame.Navigate( MakeUnique( _views[viewModelType] ) );
+            AppBase.RootFrame.Navigate( MakeUnique( viewUri ) );
         }
 
         /// <summary>
@@ -165,7 +171,7 @@ namespace ThinMvvm.WindowsPhone
             }
             else if ( e.NavigationMode == NavigationMode.Forward || e.NavigationMode == NavigationMode.New )
             {
-                if ( _removeCurrentFromBackstack )
+                if ( _removeCurrentFromBackStack )
                 {
                     AppBase.RootFrame.RemoveBackEntry();
 
@@ -175,7 +181,7 @@ namespace ThinMvvm.WindowsPhone
 
                     DisposeIfNeeded( currentTop );
 
-                    _removeCurrentFromBackstack = false;
+                    _removeCurrentFromBackStack = false;
                 }
 
                 if ( e.Uri.ToString().Contains( UniqueParameter ) ) // can't check for IsNavigationInitiator as it's false for the first navigation
@@ -187,7 +193,7 @@ namespace ThinMvvm.WindowsPhone
                         var currentViewModel = _backStack.Peek();
                         currentViewModel.OnNavigatedTo();
                         page.DataContext = currentViewModel;
-                        OnNavigated( currentViewModel, false );
+                        OnNavigated( currentViewModel, true );
                     }
                 }
                 else

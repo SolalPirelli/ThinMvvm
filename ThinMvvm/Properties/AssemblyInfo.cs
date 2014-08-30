@@ -19,5 +19,6 @@ using System.Runtime.InteropServices;
 
 [assembly: InternalsVisibleTo( "ThinMvvm.Logging" )]
 [assembly: InternalsVisibleTo( "ThinMvvm.WindowsPhone" )]
+[assembly: InternalsVisibleTo( "ThinMvvm.WindowsRuntime" )]
 
 [assembly: InternalsVisibleTo( "ThinMvvm.Tests" )]

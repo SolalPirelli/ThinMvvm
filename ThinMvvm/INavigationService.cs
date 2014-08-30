@@ -29,7 +29,7 @@ namespace ThinMvvm
         void NavigateBack();
 
         /// <summary>
-        /// Pops the ViewModel back-stack, removing the current one so that going backwards will not go to it.
+        /// Pops the ViewModel back-stack, removing the current one so that going backwards later will not go to it.
         /// </summary>
         void PopBackStack();
 

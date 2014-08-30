@@ -1,7 +1,6 @@
 ﻿#if DEBUG
 using ThinMvvm.Design;
-using ThinMvvm.SampleApp.WindowsPhone.Services.Design;
-using ThinMvvm.SampleApp.WindowsPhone.ViewModels;
+using ThinMvvm.SampleApp.Services.Design;
 #endif
 
 namespace ThinMvvm.SampleApp.ViewModels.Design

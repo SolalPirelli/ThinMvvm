@@ -2,7 +2,7 @@
 // See License.txt file for more details
 
 #if DEBUG
-namespace ThinMvvm.SampleApp.WindowsPhone.Services.Design
+namespace ThinMvvm.SampleApp.Services.Design
 {
     public sealed class DesignSettings : ISettings
     {

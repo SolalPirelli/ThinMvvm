@@ -1,16 +1,17 @@
-// Copyright (c) Solal Pirelli 2014
+﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-using System.IO.IsolatedStorage;
+using ThinMvvm.WindowsRuntime.Internals;
+using Windows.Storage;
 
-namespace ThinMvvm.WindowsPhone
+namespace ThinMvvm.WindowsRuntime
 {
     /// <summary>
-    /// Windows Phone implementation of <see cref="ISettingsStorage" />.
+    /// <see cref="ISettingsStorage" /> implementation for the Windows Runtime.
     /// </summary>
-    public sealed class WindowsPhoneSettingsStorage : ISettingsStorage
+    public sealed class WindowsRuntimeSettingsStorage : ISettingsStorage
     {
-        private readonly IsolatedStorageSettings _settings = IsolatedStorageSettings.ApplicationSettings;
+        private readonly ApplicationDataContainer _settings = ApplicationData.Current.LocalSettings;
 
         /// <summary>
         /// Gets a value indicating whether the setting with the specified key is defined.
@@ -19,7 +20,7 @@ namespace ThinMvvm.WindowsPhone
         /// <returns>A value indicating whether the setting with the specified key is defined.</returns>
         public bool IsDefined( string key )
         {
-            return _settings.Contains( key );
+            return _settings.Values.ContainsKey( key );
         }
 
         /// <summary>
@@ -30,9 +31,10 @@ namespace ThinMvvm.WindowsPhone
         /// <returns>The setting value.</returns>
         public T Get<T>( string key )
         {
-            if ( _settings.Contains( key ) )
+            if ( IsDefined( key ) )
             {
-                return (T) _settings[key];
+                string serializedValue = (string) _settings.Values[key];
+                return Serializer.Deserialize<T>( serializedValue );
             }
             return default( T );
         }
@@ -44,16 +46,7 @@ namespace ThinMvvm.WindowsPhone
         /// <param name="value">The value.</param>
         public void Set( string key, object value )
         {
-            if ( !_settings.Contains( key ) )
-            {
-                _settings.Add( key, value );
-            }
-            else
-            {
-                _settings[key] = value;
-            }
-
-            _settings.Save();
+            _settings.Values[key] = Serializer.Serialize( value );
         }
     }
 }

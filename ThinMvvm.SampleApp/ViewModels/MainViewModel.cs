@@ -2,9 +2,9 @@
 // See License.txt file for more details
 
 using System;
-using ThinMvvm.SampleApp.WindowsPhone.Services;
+using ThinMvvm.SampleApp.Services;
 
-namespace ThinMvvm.SampleApp.WindowsPhone.ViewModels
+namespace ThinMvvm.SampleApp.ViewModels
 {
     public sealed class MainViewModel : ViewModel<int>
     {

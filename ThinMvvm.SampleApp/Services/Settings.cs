@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-namespace ThinMvvm.SampleApp.WindowsPhone.Services
+namespace ThinMvvm.SampleApp.Services
 {
     public sealed class Settings : SettingsBase<Settings>, ISettings
     {
