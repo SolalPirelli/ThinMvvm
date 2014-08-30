@@ -6,7 +6,7 @@ using System;
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// Marks Commands to specify the parameter to be used with their event.
+    /// Marks Commands to indicate the logging parameter that will be passed to the logger when they get executed.
     /// </summary>
     [AttributeUsage( AttributeTargets.Property )]
     public sealed class LogParameterAttribute : Attribute

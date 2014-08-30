@@ -14,7 +14,7 @@ namespace ThinMvvm
     public static class INotifyPropertyChangedExtensions
     {
         /// <summary>
-        /// Adds a listener to changes on the specified property of the item.
+        /// Adds the specified listener to changes on the specified property of the item.
         /// </summary>
         /// <typeparam name="TNotifier">The type of the item.</typeparam>
         /// <typeparam name="TProp">The type of the property.</typeparam>
@@ -41,7 +41,7 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Adds a listener to changes on the property with the specified name of the item.
+        /// Adds the specified listener to changes on the property with the specified name of the item.
         /// </summary>
         internal static void ListenToProperty<TNotifier>( this TNotifier item, string propertyName, Action listener )
             where TNotifier : INotifyPropertyChanged

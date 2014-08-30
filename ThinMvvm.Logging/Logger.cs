@@ -10,7 +10,7 @@ using ThinMvvm.Internals;
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// Logs navigations and events.
+    /// Logs actions and commands.
     /// </summary>
     public abstract class Logger
     {
@@ -67,7 +67,7 @@ namespace ThinMvvm.Logging
 
 
         /// <summary>
-        /// Enables logging of commands on the specified object.
+        /// Enables the logging of commands on the specified object.
         /// </summary>
         private void EnableCommandLogging( object obj )
         {

@@ -35,7 +35,7 @@ namespace ThinMvvm
         /// <summary>
         /// Fires a property changed event.
         /// </summary>
-        /// <param name="propertyName">The property's name.</param>
+        /// <param name="propertyName">Optional. The property's name. If unset, the compiler will fill this parameter in.</param>
         protected void OnPropertyChanged( [CallerMemberName] string propertyName = "" )
         {
             var evt = this.PropertyChanged;
@@ -55,6 +55,9 @@ namespace ThinMvvm
         /// <summary>
         /// Sets the specified field to the specified value and raises <see cref="PropertyChanged"/>.
         /// </summary>
+        /// <param name="field">The field.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyName">Optional. The property's name. If unset, the compiler will fill this parameter in.</param>
         protected void SetProperty<T>( ref T field, T value, [CallerMemberName] string propertyName = "" )
         {
             if ( !object.Equals( field, value ) )

@@ -9,17 +9,17 @@ namespace ThinMvvm.Logging
     public enum LoggedSpecialAction
     {
         /// <summary>
-        /// Forwards navigation to a ViewModel.
+        /// Forwards navigation to a <see cref="ViewModel{TParameter}" />.
         /// </summary>
         ForwardsNavigation,
 
         /// <summary>
-        /// Backwards navigation to a ViewModel.
+        /// Backwards navigation to a <see cref="ViewModel{TParameter}" />.
         /// </summary>
         BackwardsNavigation,
 
         /// <summary>
-        /// "Refresh" command execution on a ViewModel.
+        /// "Refresh" command execution on a <see cref="DataViewModel{TParameter}" />.
         /// </summary>
         Refresh
     }

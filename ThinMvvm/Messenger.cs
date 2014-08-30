@@ -9,9 +9,11 @@ using System.Reflection;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Simple messenger implementation.
-    /// Unregistering functionality is not provided.
+    /// Sends messages to and from objects.
     /// </summary>
+    /// <remarks>
+    /// Unregistering functionality is not provided.
+    /// </remarks>
     public static class Messenger
     {
         private static readonly List<object> _handlers = new List<object>();
