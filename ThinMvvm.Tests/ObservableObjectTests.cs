@@ -23,17 +23,17 @@ namespace ThinMvvm.Tests
 
         private sealed class TestSynchronizationContext : SynchronizationContext
         {
-            public int SendCount;
+            public int PostCount;
 
             public override void Send( SendOrPostCallback d, object state )
             {
-                base.Send( d, state );
-                SendCount++;
+                throw new InvalidOperationException( "Send(SendOrPostCallback, object) should not be used." );
             }
 
             public override void Post( SendOrPostCallback d, object state )
             {
-                throw new InvalidOperationException( "Post(SendOrPostCallback, object) should not be used." );
+                base.Post( d, state );
+                PostCount++;
             }
         }
 
@@ -90,7 +90,7 @@ namespace ThinMvvm.Tests
                 obj.PropertyChanged += ( s, e ) => { };
                 obj.Value = 42;
 
-                Assert.AreEqual( 1, myContext.SendCount );
+                Assert.AreEqual( 1, myContext.PostCount );
             }
             finally
             {

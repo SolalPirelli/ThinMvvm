@@ -12,6 +12,9 @@ namespace ThinMvvm.WindowsPhone
     /// </summary>
     public sealed class WindowsPhoneDataCache : IDataCache
     {
+        // N.B.: The default serializer does nonsense with DateTimeOffsets, 
+        //       so they have to be converted to and from DateTimes
+
         private const string DataKeyFormat = "ThinMvvm.WindowsPhone.DataCache.{0}_{1}";
         private const string ExpirationDateKeyFormat = "ThinMvvm.WindowsPhone.ExpirationDateCache.{0}_{1}";
 
@@ -42,12 +45,13 @@ namespace ThinMvvm.WindowsPhone
             }
 
             string dateKey = GetDateKey( owner.FullName, id );
-            var expirationDate = (DateTimeOffset) _settings[dateKey];
+            var expirationDate = (DateTime) _settings[dateKey];
 
-            if ( expirationDate < DateTimeOffset.UtcNow )
+            if ( expirationDate < DateTime.UtcNow )
             {
                 _settings.Remove( key );
                 _settings.Remove( dateKey );
+                _settings.Save();
                 value = default( T );
                 return false;
             }
@@ -71,7 +75,8 @@ namespace ThinMvvm.WindowsPhone
             }
 
             _settings[GetKey( owner.FullName, id )] = value;
-            _settings[GetDateKey( owner.FullName, id )] = expirationDate;
+            _settings[GetDateKey( owner.FullName, id )] = expirationDate.UtcDateTime;
+            _settings.Save();
         }
 
 
