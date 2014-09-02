@@ -10,7 +10,7 @@ namespace ThinMvvm.WindowsRuntime.Internals
     public static class Serializer
     {
         // DO NOT CHANGE
-        private static readonly Encoding Encoding = Encoding.Unicode;
+        private static readonly Encoding Encoding = Encoding.UTF8;
 
 
         public static string Serialize( object value )

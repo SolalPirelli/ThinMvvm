@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Deployment xmlns="http://schemas.microsoft.com/windowsphone/2012/deployment" AppPlatformVersion="8.0">
   <DefaultLanguage xmlns="" code="en-US" />
-  <App xmlns="" ProductID="{b01f9924-39b4-4e6d-ac47-ba68d56bb9da}" Title="_ ThinMvvm Sample App" RuntimeType="Silverlight" Version="1.0.0.0" Genre="apps.normal" Author="Solal Pirelli" Description="" Publisher="Solal Pirelli" PublisherID="{b757389e-067a-4e54-b132-4ee2f1279385}">
+  <App xmlns="" ProductID="{b01f9924-39b4-4e6d-ac47-ba68d56bb9da}" Title="_ ThinMvvm WP sample" RuntimeType="Silverlight" Version="1.0.0.0" Genre="apps.normal" Author="Solal Pirelli" Description="" Publisher="Solal Pirelli" PublisherID="{b757389e-067a-4e54-b132-4ee2f1279385}">
     <IconPath IsRelative="true" IsResource="false">Assets\ApplicationIcon.png</IconPath>
     <Capabilities>
     </Capabilities>

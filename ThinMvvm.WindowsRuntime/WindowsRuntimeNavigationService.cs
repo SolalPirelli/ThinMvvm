@@ -90,6 +90,7 @@ namespace ThinMvvm.WindowsRuntime
                 throw new ArgumentException( string.Format( "The ViewModel type {0} has no registered View type.", viewModel.GetType() ) );
             }
 
+            _backStack.Push( viewModel );
             AppBase.RootFrame.Navigate( _views[viewModel.GetType()] );
         }
 
@@ -105,7 +106,7 @@ namespace ThinMvvm.WindowsRuntime
                     return;
                 }
 
-                if ( AppBase.RootFrame.BackStackDepth > 0 )
+                if ( _backStack.Count > 0 )
                 {
                     var currentTop = _backStack.Pop();
                     currentTop.OnNavigatedFrom();

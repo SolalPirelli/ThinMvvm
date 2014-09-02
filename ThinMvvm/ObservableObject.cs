@@ -47,7 +47,7 @@ namespace ThinMvvm
                 }
                 else
                 {
-                    _context.Send( _ => evt( this, new PropertyChangedEventArgs( propertyName ) ), null );
+                    _context.Post( _ => evt( this, new PropertyChangedEventArgs( propertyName ) ), null );
                 }
             }
         }
