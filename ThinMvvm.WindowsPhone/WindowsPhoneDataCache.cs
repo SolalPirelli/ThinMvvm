@@ -2,11 +2,8 @@
 // See License.txt file for more details
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO.IsolatedStorage;
-using System.Linq;
-using System.Runtime.Serialization;
 
 namespace ThinMvvm.WindowsPhone
 {
@@ -15,25 +12,10 @@ namespace ThinMvvm.WindowsPhone
     /// </summary>
     public sealed class WindowsPhoneDataCache : IDataCache
     {
-        private const string MetadataKey = "ThinMvvm.WindowsPhone.CacheMetadata";
-        private const string DataKeyFormat = "ThinMvvm.WindowsPhone.Cache.{0}_{1}";
+        private const string DataKeyFormat = "ThinMvvm.WindowsPhone.DataCache.{0}_{1}";
+        private const string ExpirationDateKeyFormat = "ThinMvvm.WindowsPhone.ExpirationDateCache.{0}_{1}";
 
-        private readonly IsolatedStorageSettings _settings;
-        private Dictionary<string, object> _data;
-        private CacheMetadata _metadata;
-
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WindowsPhoneDataCache" /> class.
-        /// </summary>
-        public WindowsPhoneDataCache()
-        {
-            _settings = IsolatedStorageSettings.ApplicationSettings;
-            _metadata = LoadMetadata( _settings );
-            _data = LoadData( _metadata, _settings );
-
-            Cleanup();
-        }
+        private readonly IsolatedStorageSettings _settings = IsolatedStorageSettings.ApplicationSettings;
 
 
         /// <summary>
@@ -52,20 +34,26 @@ namespace ThinMvvm.WindowsPhone
             }
 
             string key = GetKey( owner.FullName, id );
-            bool? upToDate = _metadata.IsUpToDate( owner.FullName, id );
 
-            if ( upToDate == true )
+            if ( !_settings.Contains( key ) )
             {
-                value = (T) _data[key];
-                return true;
-            }
-            else if ( upToDate == null )
-            {
-                _metadata.Remove( key, id );
+                value = default( T );
+                return false;
             }
 
-            value = default( T );
-            return false;
+            string dateKey = GetDateKey( owner.FullName, id );
+            var expirationDate = (DateTimeOffset) _settings[dateKey];
+
+            if ( expirationDate < DateTimeOffset.UtcNow )
+            {
+                _settings.Remove( key );
+                _settings.Remove( dateKey );
+                value = default( T );
+                return false;
+            }
+
+            value = (T) _settings[key];
+            return true;
         }
 
         /// <summary>
@@ -82,79 +70,10 @@ namespace ThinMvvm.WindowsPhone
                 throw new ArgumentNullException( "owner" );
             }
 
-            _data[GetKey( owner.FullName, id )] = value;
-            _metadata.Add( owner.FullName, id, expirationDate );
-
-            SaveMetadata( _metadata, _settings );
-            SaveData( _data, _settings );
+            _settings[GetKey( owner.FullName, id )] = value;
+            _settings[GetDateKey( owner.FullName, id )] = expirationDate;
         }
 
-
-        /// <summary>
-        /// Cleans up the old values in the cache.
-        /// </summary>
-        private void Cleanup()
-        {
-            foreach ( var tup in _metadata.Cleanup() )
-            {
-                _data.Remove( GetKey( tup.Item1, tup.Item2 ) );
-            }
-
-            SaveData( _data, _settings );
-            SaveMetadata( _metadata, _settings );
-        }
-
-
-        /// <summary>
-        /// Loads the metadata from isolated storage.
-        /// </summary>
-        private static CacheMetadata LoadMetadata( IsolatedStorageSettings settings )
-        {
-            CacheMetadata metadata;
-            if ( !settings.TryGetValue( MetadataKey, out metadata ) )
-            {
-                metadata = new CacheMetadata();
-            }
-
-            return metadata;
-        }
-
-        /// <summary>
-        /// Loads the data from isolated storage.
-        /// </summary>
-        private static Dictionary<string, object> LoadData( CacheMetadata metadata, IsolatedStorageSettings settings )
-        {
-            var data = new Dictionary<string, object>();
-
-            foreach ( string key in metadata.Data.SelectMany( p1 => p1.Value.Select( p2 => GetKey( p1.Key, p2.Key ) ) ) )
-            {
-                data[key] = settings[key];
-            }
-
-            return data;
-        }
-
-        /// <summary>
-        /// Saves the metadata to isolated storage.
-        /// </summary>
-        private static void SaveMetadata( CacheMetadata metadata, IsolatedStorageSettings settings )
-        {
-            settings[MetadataKey] = metadata;
-            settings.Save();
-        }
-
-        /// <summary>
-        /// Saves the data to isolated storage.
-        /// </summary>
-        private static void SaveData( Dictionary<string, object> data, IsolatedStorageSettings settings )
-        {
-            foreach ( var pair in data )
-            {
-                settings[pair.Key] = pair.Value;
-            }
-
-            settings.Save();
-        }
 
         /// <summary>
         /// Gets the setting key associated with the specified key and ID.
@@ -164,86 +83,9 @@ namespace ThinMvvm.WindowsPhone
             return string.Format( CultureInfo.InvariantCulture, DataKeyFormat, key, id );
         }
 
-
-        /// <summary>
-        /// Infrastructure. 
-        /// Serializable metadata for the cache.
-        /// Do not use this type from your code.
-        /// </summary>
-        [DataContract]
-        public sealed class CacheMetadata
+        private static string GetDateKey( string key, long id )
         {
-            /// <summary>
-            /// Gets (or sets, but only for serialization) the serialized data.
-            /// </summary>
-            [DataMember]
-            public Dictionary<string, Dictionary<long, DateTimeOffset>> Data { get; set; }
-
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CacheMetadata" /> class.
-            /// </summary>
-            public CacheMetadata()
-            {
-                Data = new Dictionary<string, Dictionary<long, DateTimeOffset>>();
-            }
-
-            /// <summary>
-            /// Adds the specified expiration date, associated with the specified key and ID, in the metadata.
-            /// </summary>
-            public void Add( string key, long id, DateTimeOffset expirationDate )
-            {
-                if ( !Data.ContainsKey( key ) )
-                {
-                    Data.Add( key, new Dictionary<long, DateTimeOffset>() );
-                }
-                Data[key][id] = expirationDate;
-            }
-
-            /// <summary>
-            /// Removes the specified key and ID from the metadata.
-            /// </summary>
-            public void Remove( string key, long id )
-            {
-                if ( Data.ContainsKey( key ) )
-                {
-                    Data[key].Remove( id );
-                    if ( Data[key].Count == 0 )
-                    {
-                        Data.Remove( key );
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Gets a value indicating whether the data associated with the specified key and ID is up to date, or null if it's not present.
-            /// </summary>
-            public bool? IsUpToDate( string key, long id )
-            {
-                if ( !Data.ContainsKey( key ) || !Data[key].ContainsKey( id ) )
-                {
-                    return null;
-                }
-
-                return DateTime.Now <= Data[key][id];
-            }
-
-            /// <summary>
-            /// Removes and returns all entries whose expiration date is in the past.
-            /// </summary>
-            public IEnumerable<Tuple<string, long>> Cleanup()
-            {
-                var tooOld = Data.SelectMany( p => p.Value.Where( p2 => p2.Value < DateTime.Now )
-                                                          .Select( p2 => Tuple.Create( p.Key, p2.Key ) ) )
-                                 .ToArray();
-
-                foreach ( var tuple in tooOld )
-                {
-                    Remove( tuple.Item1, tuple.Item2 );
-                }
-
-                return tooOld;
-            }
+            return string.Format( CultureInfo.InvariantCulture, ExpirationDateKeyFormat, key, id );
         }
     }
 }

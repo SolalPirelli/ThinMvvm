@@ -10,6 +10,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace ThinMvvm.WindowsRuntime
 {
+    /// <summary>
+    /// Implementation of <see cref="IWindowsRuntimeNavigationService" />.
+    /// </summary>
     public sealed class WindowsRuntimeNavigationService : IWindowsRuntimeNavigationService
     {
         private readonly Dictionary<Type, Type> _views;
@@ -20,6 +23,9 @@ namespace ThinMvvm.WindowsRuntime
         private readonly Stack<bool> _shouldIgnore;
         private bool _removeCurrentFromBackStack;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WindowsRuntimeNavigationService" /> class.
+        /// </summary>
         public WindowsRuntimeNavigationService()
         {
             _views = new Dictionary<Type, Type>();
@@ -29,24 +35,40 @@ namespace ThinMvvm.WindowsRuntime
             AppBase.RootFrame.Navigated += RootFrame_Navigated;
         }
 
-
+        /// <summary>
+        /// Binds the specified ViewModel type to the specified View type.
+        /// </summary>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
+        /// <typeparam name="TView">The View type.</typeparam>
         public void Bind<TViewModel, TView>() where TView : Windows.UI.Xaml.Controls.Page
         {
             _views.Add( typeof( TViewModel ), typeof( TView ) );
         }
 
+        /// <summary>
+        /// Navigates to a <see cref="ViewModel{NoParameter}" /> of the specified type.
+        /// </summary>
+        /// <typeparam name="T">The ViewModel type.</typeparam>
         public void NavigateTo<T>() where T : ViewModel<NoParameter>
         {
             var vm = Container.Get( typeof( T ), null );
             NavigateToPrivate( vm );
         }
 
+        /// <summary>
+        /// Navigates to a <see cref="ViewModel{TArg}"/> of the specified type, with the specified constructor argument.
+        /// </summary>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
+        /// <typeparam name="TArg">The argument type.</typeparam>
         public void NavigateTo<TViewModel, TArg>( TArg arg ) where TViewModel : ViewModel<TArg>
         {
             var vm = Container.Get( typeof( TViewModel ), arg );
             NavigateToPrivate( vm );
         }
 
+        /// <summary>
+        /// Goes back to the previous ViewModel.
+        /// </summary>
         public void NavigateBack()
         {
             if ( AppBase.RootFrame.CanGoBack )
@@ -59,6 +81,9 @@ namespace ThinMvvm.WindowsRuntime
             }
         }
 
+        /// <summary>
+        /// Removes the current ViewModel from the back stack.
+        /// </summary>
         public void RemoveCurrentFromBackStack()
         {
             if ( _removeCurrentFromBackStack )
@@ -69,6 +94,9 @@ namespace ThinMvvm.WindowsRuntime
             _removeCurrentFromBackStack = true;
         }
 
+        /// <summary>
+        /// Occurs when the service navigates to a page, forwards or backwards.
+        /// </summary>
         public event EventHandler<NavigatedEventArgs> Navigated;
         private void OnNavigated( object viewModel, bool isForward )
         {

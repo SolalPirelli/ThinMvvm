@@ -15,7 +15,8 @@ namespace ThinMvvm
     public abstract class CachedDataViewModel<TParameter, TData> : DataViewModel<TParameter>
     {
         private const long DefaultId = 0;
-        private static readonly DateTimeOffset DefaultExpirationDate = DateTimeOffset.MaxValue;
+        // HACK: WinRT has a bug with serializing MaxValue when the timezone is positive relative to UTC since it overflows into year 10000
+        private static readonly DateTimeOffset DefaultExpirationDate = new DateTimeOffset( 9999, 12, 31, 00, 00, 00, TimeSpan.Zero );
 
         private readonly IDataCache _cache;
 
@@ -100,7 +101,8 @@ namespace ThinMvvm
                 {
                     if ( cachedData.HasNewData )
                     {
-                        _cache.Set( this.GetType(), cachedData.Id ?? DefaultId, cachedData.ExpirationDate ?? DefaultExpirationDate, data );
+                        var expirationDate = ( cachedData.ExpirationDate ?? DefaultExpirationDate ).ToUniversalTime();
+                        _cache.Set( this.GetType(), cachedData.Id ?? DefaultId, expirationDate, data );
                     }
 
                     CacheStatus = CacheStatus.Unused;

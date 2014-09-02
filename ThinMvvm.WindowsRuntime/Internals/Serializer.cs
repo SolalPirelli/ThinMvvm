@@ -7,12 +7,18 @@ using System.Text;
 
 namespace ThinMvvm.WindowsRuntime.Internals
 {
-    public static class Serializer
+    /// <summary>
+    /// Serializes classes to and from strings, for storage in Windows Runtime settings.
+    /// </summary>
+    internal static class Serializer
     {
         // DO NOT CHANGE
         private static readonly Encoding Encoding = Encoding.UTF8;
 
 
+        /// <summary>
+        /// Serializes the specified object into a string.
+        /// </summary>
         public static string Serialize( object value )
         {
             using ( var stream = new MemoryStream() )
@@ -22,6 +28,9 @@ namespace ThinMvvm.WindowsRuntime.Internals
             }
         }
 
+        /// <summary>
+        /// Deserializes the specified object type from a string.
+        /// </summary>
         public static T Deserialize<T>( string serialized )
         {
             byte[] serializedBytes = Encoding.GetBytes( serialized );

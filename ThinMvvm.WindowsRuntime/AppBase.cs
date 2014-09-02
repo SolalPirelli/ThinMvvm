@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-using System.Diagnostics;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
@@ -11,11 +10,25 @@ using Windows.UI.Xaml.Navigation;
 
 namespace ThinMvvm.WindowsRuntime
 {
+    /// <summary>
+    /// Base application class that abstracts away some concepts and handles boilerplate 
+    /// such as root frame creation.
+    /// </summary>
+    /// <remarks>
+    /// On Windows Phone, do not forget to handle the Windows.Phone.UI.Input.HardwareButtons.BackPressed 
+    /// event to handle back button presses (e.g. by going back using the navigation service).
+    /// </remarks>
     public abstract class AppBase : Application
     {
+        // Holds the frame's transitions, since they must be removed prior to the first navigation and re-added afterwards
+        private TransitionCollection _frametransitions;
+
+
+        /// <summary>
+        /// Gets the root frame of the application.
+        /// </summary>
         internal static Frame RootFrame { get; private set; }
 
-        private TransitionCollection transitions;
 
         /// <summary>
         /// Initializes the singleton application object.
@@ -25,22 +38,35 @@ namespace ThinMvvm.WindowsRuntime
             Suspending += OnSuspending;
         }
 
+
         /// <summary>
         /// Creates the root frame of the app.
-        /// Override this method to change the root frame's type.
+        /// Override this method to change the root frame's type, or to use different parameters for e.g. the cache size.
+        /// By default, returns a <see cref="Frame" /> with a cache size of 5.
         /// </summary>
         /// <returns>A frame that will be set as the root frame of the app.</returns>
         protected virtual Frame CreateRootFrame()
         {
-            // TODO: say something about cache size in the doc
             return new Frame { CacheSize = 5 };
         }
 
-        // TODO: Say something about handling Windows.Phone.UI.Input.HardwareButtons.BackPressed for WP
-        protected abstract void Initialize( LaunchActivatedEventArgs e );
+        /// <summary>
+        /// Launches the app.
+        /// This is only invoked when the end user launched the app normally;
+        /// other endpoints (e.g. opening files or displaying search results)
+        /// should be handled separately by overriding the associated methods.
+        /// </summary>
+        /// <param name="e">Details about the launch request and process.</param>
+        protected abstract void Launch( LaunchActivatedEventArgs e );
 
+        /// <summary>
+        /// Save state when the application is about to be set to the background (but will not always be terminated).
+        /// </summary>
         protected virtual void SaveState() { }
 
+        /// <summary>
+        /// Reload state, after the application was terminated.
+        /// </summary>
         protected virtual void ReloadState() { }
 
         /// <summary>
@@ -49,13 +75,8 @@ namespace ThinMvvm.WindowsRuntime
         /// open a specific file, display search results, and so forth.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched( LaunchActivatedEventArgs e )
+        protected override sealed void OnLaunched( LaunchActivatedEventArgs e )
         {
-            if ( Debugger.IsAttached )
-            {
-                DebugSettings.EnableFrameRateCounter = true;
-            }
-
             RootFrame = (Frame) Window.Current.Content;
 
             // Do not repeat app initialization when the Window already has content,
@@ -77,17 +98,18 @@ namespace ThinMvvm.WindowsRuntime
                 // Removes the turnstile navigation for startup.
                 if ( RootFrame.ContentTransitions != null )
                 {
-                    this.transitions = RootFrame.ContentTransitions;
+                    this._frametransitions = RootFrame.ContentTransitions;
                     RootFrame.ContentTransitions = null;
                 }
 
                 RootFrame.Navigated += RootFrame_FirstNavigated;
 
-                Initialize( e );
+                Launch( e );
             }
 
             Window.Current.Activate();
         }
+
 
         /// <summary>
         /// Restores the content transitions after the app has launched.
@@ -96,7 +118,7 @@ namespace ThinMvvm.WindowsRuntime
         /// <param name="e">Details about the navigation event.</param>
         private void RootFrame_FirstNavigated( object sender, NavigationEventArgs e )
         {
-            RootFrame.ContentTransitions = this.transitions ?? new TransitionCollection();
+            RootFrame.ContentTransitions = this._frametransitions ?? new TransitionCollection();
             RootFrame.Navigated -= this.RootFrame_FirstNavigated;
         }
 
@@ -110,9 +132,7 @@ namespace ThinMvvm.WindowsRuntime
         private void OnSuspending( object sender, SuspendingEventArgs e )
         {
             var deferral = e.SuspendingOperation.GetDeferral();
-
             SaveState();
-
             deferral.Complete();
         }
     }

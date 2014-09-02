@@ -17,7 +17,7 @@ namespace ThinMvvm.SampleApp.WindowsRuntime
             InitializeComponent();
         }
 
-        protected override void Initialize( LaunchActivatedEventArgs e )
+        protected override void Launch( LaunchActivatedEventArgs e )
         {
             // simple app, no arguments necessary
 
@@ -36,13 +36,6 @@ namespace ThinMvvm.SampleApp.WindowsRuntime
             };
 
             navigationService.NavigateTo<MainViewModel, int>( 42 );
-        }
-
-        public class X
-        {
-            public int N { get; set; }
-            public X Xx { get; set; }
-            public string S { get; set; }
         }
     }
 }
