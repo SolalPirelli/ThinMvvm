@@ -153,18 +153,16 @@ namespace ThinMvvm.WindowsPhone
                     return;
                 }
 
+                var currentTop = _backStack.Pop();
+                currentTop.OnNavigatedFrom();
+                DisposeIfNeeded( currentTop );
+
                 if ( _backStack.Count > 0 )
                 {
-                    var currentTop = _backStack.Pop();
-                    currentTop.OnNavigatedFrom();
-                    DisposeIfNeeded( currentTop );
-                }
-                if ( _backStack.Count > 0 )
-                {
-                    var currentViewModel = _backStack.Peek();
-                    currentViewModel.OnNavigatedTo();
-                    page.DataContext = currentViewModel;
-                    OnNavigated( currentViewModel, false );
+                    var newTop = _backStack.Peek();
+                    newTop.OnNavigatedTo();
+                    page.DataContext = newTop;
+                    OnNavigated( newTop, false );
                 }
             }
             else if ( e.NavigationMode == NavigationMode.Forward || e.NavigationMode == NavigationMode.New )
@@ -185,14 +183,10 @@ namespace ThinMvvm.WindowsPhone
                 if ( e.Uri.ToString().Contains( UniqueParameter ) ) // can't check for IsNavigationInitiator as it's false for the first navigation
                 {
                     _shouldIgnore.Push( false );
-
-                    if ( _backStack.Count > 0 )
-                    {
-                        var currentViewModel = _backStack.Peek();
-                        currentViewModel.OnNavigatedTo();
-                        page.DataContext = currentViewModel;
-                        OnNavigated( currentViewModel, true );
-                    }
+                    var currentViewModel = _backStack.Peek();
+                    currentViewModel.OnNavigatedTo();
+                    page.DataContext = currentViewModel;
+                    OnNavigated( currentViewModel, true );
                 }
                 else
                 {
