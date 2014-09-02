@@ -33,7 +33,7 @@ namespace ThinMvvm.Design
         /// <summary>
         /// Does nothing.
         /// </summary>
-        public void PopBackStack() { }
+        public void RemoveCurrentFromBackStack() { }
 
         /// <summary>
         /// Never occurs.

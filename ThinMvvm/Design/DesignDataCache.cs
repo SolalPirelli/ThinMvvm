@@ -32,6 +32,6 @@ namespace ThinMvvm.Design
         /// <param name="id">Ignored.</param>
         /// <param name="expirationDate">Ignored.</param>
         /// <param name="value">Ignored.</param>
-        public void Set( Type owner, long id, DateTime expirationDate, object value ) { }
+        public void Set( Type owner, long id, DateTimeOffset expirationDate, object value ) { }
     }
 }

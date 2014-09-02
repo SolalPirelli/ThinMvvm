@@ -49,23 +49,21 @@ namespace ThinMvvm.WindowsRuntime
 
         public void NavigateBack()
         {
-            if ( !AppBase.RootFrame.CanGoBack )
+            if ( AppBase.RootFrame.CanGoBack )
+            {
+                AppBase.RootFrame.GoBack();
+            }
+            else
             {
                 Application.Current.Exit();
             }
-
-            AppBase.RootFrame.GoBack();
         }
 
-        public void PopBackStack()
+        public void RemoveCurrentFromBackStack()
         {
-            if ( !AppBase.RootFrame.CanGoBack )
-            {
-                throw new InvalidOperationException( "Cannot pop an empty back stack." );
-            }
             if ( _removeCurrentFromBackStack )
             {
-                throw new InvalidOperationException( "PopBackStack was already called in this ViewModel." );
+                throw new InvalidOperationException( "RemoveCurrentFromBackStack was already called in this ViewModel." );
             }
 
             _removeCurrentFromBackStack = true;
@@ -87,7 +85,7 @@ namespace ThinMvvm.WindowsRuntime
             Type viewType;
             if ( !_views.TryGetValue( viewModel.GetType(), out viewType ) )
             {
-                throw new ArgumentException( string.Format( "The ViewModel type {0} has no registered View type.", viewModel.GetType() ) );
+                throw new ArgumentException( string.Format( "{0} has no registered View.", viewModel.GetType().FullName ) );
             }
 
             _backStack.Push( viewModel );

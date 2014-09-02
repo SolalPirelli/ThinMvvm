@@ -22,7 +22,7 @@ namespace ThinMvvm
         /// <summary>
         /// Gets the task's result's expiration date, if it has one.
         /// </summary>
-        public DateTime? ExpirationDate { get; private set; }
+        public DateTimeOffset? ExpirationDate { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the task has any new data.
@@ -38,7 +38,7 @@ namespace ThinMvvm
         /// <summary>
         /// Initializes a new instance of the <see cref="CachedTask{T}" /> class with the specified parameters.
         /// </summary>
-        internal CachedTask( Func<Task<T>> getter, long? id, DateTime? expirationDate, bool hasNewData, bool shouldBeCached )
+        internal CachedTask( Func<Task<T>> getter, long? id, DateTimeOffset? expirationDate, bool hasNewData, bool shouldBeCached )
         {
             _getter = getter;
             Id = id;
@@ -71,13 +71,13 @@ namespace ThinMvvm
         /// <param name="id">The ID, if any.</param>
         /// <param name="expirationDate">The expiration date, if any.</param>
         /// <returns>A <see cref="CachedTask{T}" /> with the specified parameters.</returns>
-        public static CachedTask<T> Create<T>( Func<Task<T>> getter, long? id = null, DateTime? expirationDate = null )
+        public static CachedTask<T> Create<T>( Func<Task<T>> getter, long? id = null, DateTimeOffset? expirationDate = null )
         {
             if ( getter == null )
             {
                 throw new ArgumentNullException( "getter" );
             }
-            if ( expirationDate < DateTime.Now )
+            if ( expirationDate < DateTimeOffset.Now )
             {
                 throw new ArgumentException( "Cannot set the expiration date to a past date." );
             }

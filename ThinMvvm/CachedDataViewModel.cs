@@ -15,7 +15,7 @@ namespace ThinMvvm
     public abstract class CachedDataViewModel<TParameter, TData> : DataViewModel<TParameter>
     {
         private const long DefaultId = 0;
-        private static readonly DateTime DefaultExpirationDate = DateTime.MaxValue;
+        private static readonly DateTimeOffset DefaultExpirationDate = DateTimeOffset.MaxValue;
 
         private readonly IDataCache _cache;
 

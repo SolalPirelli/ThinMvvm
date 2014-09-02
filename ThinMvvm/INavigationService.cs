@@ -29,9 +29,10 @@ namespace ThinMvvm
         void NavigateBack();
 
         /// <summary>
-        /// Pops the ViewModel back-stack, removing the current one so that going backwards later will not go to it.
+        /// Removes the current ViewModel from the back stack.
+        /// For instance, if A navigates to B, B calls this method, and B navigates to C, going back will go to A.
         /// </summary>
-        void PopBackStack();
+        void RemoveCurrentFromBackStack();
 
         /// <summary>
         /// Occurs when the service navigates to a page, forwards or backwards.

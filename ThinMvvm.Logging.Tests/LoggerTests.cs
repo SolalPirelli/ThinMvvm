@@ -34,7 +34,7 @@ namespace ThinMvvm.Logging.Tests
                 OnNavigated( CurrentViewModel, false );
             }
 
-            public void PopBackStack()
+            public void RemoveCurrentFromBackStack()
             {
                 throw new NotSupportedException();
             }

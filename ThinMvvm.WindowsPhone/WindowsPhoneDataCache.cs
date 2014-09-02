@@ -75,7 +75,7 @@ namespace ThinMvvm.WindowsPhone
         /// <param name="id">The ID.</param>
         /// <param name="expirationDate">The expiration date.</param>
         /// <param name="value">The value.</param>
-        public void Set( Type owner, long id, DateTime expirationDate, object value )
+        public void Set( Type owner, long id, DateTimeOffset expirationDate, object value )
         {
             if ( owner == null )
             {
@@ -177,7 +177,7 @@ namespace ThinMvvm.WindowsPhone
             /// Gets (or sets, but only for serialization) the serialized data.
             /// </summary>
             [DataMember]
-            public Dictionary<string, Dictionary<long, DateTime>> Data { get; set; }
+            public Dictionary<string, Dictionary<long, DateTimeOffset>> Data { get; set; }
 
 
             /// <summary>
@@ -185,17 +185,17 @@ namespace ThinMvvm.WindowsPhone
             /// </summary>
             public CacheMetadata()
             {
-                Data = new Dictionary<string, Dictionary<long, DateTime>>();
+                Data = new Dictionary<string, Dictionary<long, DateTimeOffset>>();
             }
 
             /// <summary>
             /// Adds the specified expiration date, associated with the specified key and ID, in the metadata.
             /// </summary>
-            public void Add( string key, long id, DateTime expirationDate )
+            public void Add( string key, long id, DateTimeOffset expirationDate )
             {
                 if ( !Data.ContainsKey( key ) )
                 {
-                    Data.Add( key, new Dictionary<long, DateTime>() );
+                    Data.Add( key, new Dictionary<long, DateTimeOffset>() );
                 }
                 Data[key][id] = expirationDate;
             }

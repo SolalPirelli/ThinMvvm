@@ -27,6 +27,6 @@ namespace ThinMvvm
         /// <param name="id">The ID.</param>
         /// <param name="expirationDate">The expiration date.</param>
         /// <param name="value">The value.</param>
-        void Set( Type owner, long id, DateTime expirationDate, object value );
+        void Set( Type owner, long id, DateTimeOffset expirationDate, object value );
     }
 }

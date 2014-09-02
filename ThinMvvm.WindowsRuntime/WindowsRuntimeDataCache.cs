@@ -30,8 +30,8 @@ namespace ThinMvvm.WindowsRuntime
 
             if ( typeContainer.Values.TryGetValue( key, out serializedValue ) )
             {
-                var date = (DateTime) dateContainer.Values[key];
-                if ( date < DateTime.Now )
+                var date = (DateTimeOffset) dateContainer.Values[key];
+                if ( date < DateTimeOffset.Now )
                 {
                     typeContainer.Values.Remove( key );
                     dateContainer.Values.Remove( key );
@@ -48,7 +48,7 @@ namespace ThinMvvm.WindowsRuntime
             return false;
         }
 
-        public void Set( Type owner, long id, DateTime expirationDate, object value )
+        public void Set( Type owner, long id, DateTimeOffset expirationDate, object value )
         {
             var typeContainer = _settings.CreateContainer( owner.FullName, ApplicationDataCreateDisposition.Always );
             var dateContainer = _settings.CreateContainer( owner.FullName + DateContainerSuffix, ApplicationDataCreateDisposition.Always );

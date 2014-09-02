@@ -72,22 +72,20 @@ namespace ThinMvvm.WindowsPhone
             {
                 Application.Current.Terminate();
             }
-
-            AppBase.RootFrame.GoBack();
+            else
+            {
+                AppBase.RootFrame.GoBack();
+            }
         }
 
         /// <summary>
-        /// Pops the ViewModel back-stack, removing the current one so that going backwards later will not go to it.
+        /// Removes the current ViewModel from the back stack.
         /// </summary>
-        public void PopBackStack()
+        public void RemoveCurrentFromBackStack()
         {
-            if ( _backStack.Count == 0 )
-            {
-                throw new InvalidOperationException( "Cannot pop an empty back stack." );
-            }
             if ( _removeCurrentFromBackStack )
             {
-                throw new InvalidOperationException( "PopBackStack was already called in this ViewModel." );
+                throw new InvalidOperationException( "RemoveCurrentFromBackStack was already called in this ViewModel." );
             }
 
             _removeCurrentFromBackStack = true;
@@ -134,7 +132,7 @@ namespace ThinMvvm.WindowsPhone
             Uri viewUri;
             if ( !_views.TryGetValue( viewModel.GetType(), out viewUri ) )
             {
-                throw new ArgumentException( string.Format( "The ViewModel type {0} has no registered View type.", viewModel.GetType() ) );
+                throw new ArgumentException( string.Format( "{0} has no registered View.", viewModel.GetType().FullName ) );
             }
 
             _backStack.Push( viewModel );

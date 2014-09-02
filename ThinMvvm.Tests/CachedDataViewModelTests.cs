@@ -16,14 +16,14 @@ namespace ThinMvvm.Tests
         private sealed class TestCache : IDataCache
         {
             // pretend it's a static cache, as a real one would be
-            public static readonly Dictionary<Type, Dictionary<long, Tuple<object, DateTime>>> Data
-                = new Dictionary<Type, Dictionary<long, Tuple<object, DateTime>>>();
+            public static readonly Dictionary<Type, Dictionary<long, Tuple<object, DateTimeOffset>>> Data
+                = new Dictionary<Type, Dictionary<long, Tuple<object, DateTimeOffset>>>();
 
             public bool TryGet<T>( Type owner, long id, out T value )
             {
                 if ( Data.ContainsKey( owner ) && Data[owner].ContainsKey( id ) )
                 {
-                    if ( DateTime.Now <= Data[owner][id].Item2 )
+                    if ( DateTimeOffset.Now <= Data[owner][id].Item2 )
                     {
                         value = (T) Data[owner][id].Item1;
                         return true;
@@ -33,11 +33,11 @@ namespace ThinMvvm.Tests
                 return false;
             }
 
-            public void Set( Type owner, long id, DateTime expirationDate, object value )
+            public void Set( Type owner, long id, DateTimeOffset expirationDate, object value )
             {
                 if ( !Data.ContainsKey( owner ) )
                 {
-                    Data.Add( owner, new Dictionary<long, Tuple<object, DateTime>>() );
+                    Data.Add( owner, new Dictionary<long, Tuple<object, DateTimeOffset>>() );
                 }
                 Data[owner][id] = Tuple.Create( value, expirationDate );
             }
