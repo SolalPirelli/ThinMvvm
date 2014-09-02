@@ -1,4 +1,7 @@
-﻿using ThinMvvm.SampleApp.Services;
+﻿// Copyright (c) Solal Pirelli 2014
+// See License.txt file for more details
+
+using ThinMvvm.SampleApp.Services;
 using ThinMvvm.SampleApp.ViewModels;
 using ThinMvvm.SampleApp.WindowsRuntime.Views;
 using ThinMvvm.WindowsRuntime;
