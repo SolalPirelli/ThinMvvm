@@ -67,6 +67,15 @@ namespace ThinMvvm.WindowsRuntime
         /// <param name="value">The value.</param>
         public void Set( Type owner, long id, DateTimeOffset expirationDate, object value )
         {
+            // HACK
+            if ( expirationDate == DateTimeOffset.MaxValue )
+            {
+                throw new InvalidOperationException(
+                    "DateTimeOffset.MaxValue cannot be used as the expiration date on the Windows Runtime because of a Windows Runtime bug."
+                  + Environment.NewLine
+                  + "Please use new DateTimeOffset( 9999, 12, 31, 00, 00, 00, TimeSpan.Zero ) instead." );
+            }
+
             var typeContainer = _settings.CreateContainer( owner.FullName, ApplicationDataCreateDisposition.Always );
             var dateContainer = _settings.CreateContainer( owner.FullName + DateContainerSuffix, ApplicationDataCreateDisposition.Always );
             string key = id.ToString();
