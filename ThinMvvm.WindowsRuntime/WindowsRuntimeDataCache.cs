@@ -2,6 +2,9 @@
 // See License.txt file for more details
 
 using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using ThinMvvm.WindowsRuntime.Internals;
 using Windows.Storage;
 
@@ -12,8 +15,9 @@ namespace ThinMvvm.WindowsRuntime
     /// </summary>
     public sealed class WindowsRuntimeDataCache : IDataCache
     {
-        // N.B.: CreateContainer(string, ApplicationDataCreateDisposition) will throw 
-        //       if it doesn't exist when using Existing, so we have to use Always instead.
+        // N.B.: The size of settings is too small for practical purposes, we have to serialize to files.
+        // N.B. 2: CreateContainer(string, ApplicationDataCreateDisposition) will throw 
+        //         if it doesn't exist when using Existing, so we have to use Always instead.
 
         private const string DateContainerSuffix = "#Date";
 
@@ -21,51 +25,59 @@ namespace ThinMvvm.WindowsRuntime
 
 
         /// <summary>
-        /// Attempts to get the value stored by the specified owner type, with the specified ID.
+        /// Asynchronously attempts to get the value stored by the specified owner type, with the specified ID.
         /// </summary>
         /// <typeparam name="T">The value type.</typeparam>
         /// <param name="owner">The owner type.</param>
         /// <param name="id">The ID.</param>
-        /// <param name="value">The value, if any.</param>
-        /// <returns>A value indicating whether a value was found.</returns>
-        public bool TryGet<T>( Type owner, long id, out T value )
+        /// <returns>A tuple whose first element indicates whether a value was found, and whose second element is the value.</returns>
+        public async Task<Tuple<bool, T>> TryGetAsync<T>( Type owner, long id )
         {
-            string key = id.ToString();
-            var container = _settings.CreateContainer( owner.FullName, ApplicationDataCreateDisposition.Always );
-            if ( !container.Values.ContainsKey( key ) )
+            var folder = await GetFolderForType( owner );
+            // There's no way to check whether the file exists outside of this :-(
+            var file = ( await folder.GetFilesAsync() ).FirstOrDefault( f => f.Name == owner.FullName );
+
+            if ( file == null )
             {
-                value = default( T );
-                return false;
+                return Tuple.Create( false, default( T ) );
             }
+
+            string key = id.ToString();
 
             var dateContainer = _settings.CreateContainer( owner.FullName + DateContainerSuffix, ApplicationDataCreateDisposition.Always );
             if ( (DateTimeOffset) dateContainer.Values[key] < DateTimeOffset.UtcNow )
             {
-                container.Values.Remove( key );
+                await file.DeleteAsync();
                 dateContainer.Values.Remove( key );
 
-                if ( container.Values.Count == 0 )
+                if ( !( await folder.GetFilesAsync() ).Any() )
                 {
-                    _settings.DeleteContainer( container.Name );
+                    await folder.DeleteAsync();
+                }
+                if ( dateContainer.Values.Count == 0 )
+                {
                     _settings.DeleteContainer( dateContainer.Name );
                 }
 
-                value = default( T );
-                return false;
+                return Tuple.Create( false, default( T ) );
             }
 
-            value = Serializer.Deserialize<T>( (string) container.Values[key] );
-            return true;
+            using ( var stream = await file.OpenAsync( FileAccessMode.Read ) )
+            using ( var reader = new StreamReader( stream.AsStreamForRead() ) )
+            {
+                string data = await reader.ReadToEndAsync();
+                return Tuple.Create( true, Serializer.Deserialize<T>( data ) );
+            }
         }
 
         /// <summary>
-        /// Sets the specified value for the specified owner type, with the specified ID.
+        /// Asynchronously sets the specified value for the specified owner type, with the specified ID.
         /// </summary>
         /// <param name="owner">The owner type.</param>
         /// <param name="id">The ID.</param>
         /// <param name="expirationDate">The expiration date.</param>
         /// <param name="value">The value.</param>
-        public void Set( Type owner, long id, DateTimeOffset expirationDate, object value )
+        public async Task SetAsync( Type owner, long id, DateTimeOffset expirationDate, object value )
         {
             // HACK
             if ( expirationDate == DateTimeOffset.MaxValue )
@@ -76,12 +88,25 @@ namespace ThinMvvm.WindowsRuntime
                   + "Please use new DateTimeOffset( 9999, 12, 31, 00, 00, 00, TimeSpan.Zero ) instead." );
             }
 
-            var typeContainer = _settings.CreateContainer( owner.FullName, ApplicationDataCreateDisposition.Always );
-            var dateContainer = _settings.CreateContainer( owner.FullName + DateContainerSuffix, ApplicationDataCreateDisposition.Always );
-            string key = id.ToString();
+            var folder = await GetFolderForType( owner );
+            var file = await folder.CreateFileAsync( id.ToString(), CreationCollisionOption.ReplaceExisting );
+            using ( var stream = await file.OpenAsync( FileAccessMode.ReadWrite ) )
+            using ( var writer = new StreamWriter( stream.AsStreamForWrite() ) )
+            {
+                await writer.WriteAsync( Serializer.Serialize( value ) );
+            }
 
-            typeContainer.Values[key] = Serializer.Serialize( value );
-            dateContainer.Values[key] = expirationDate;
+            GetExpirationDateContainer( owner ).Values[id.ToString()] = expirationDate;
+        }
+
+        private ApplicationDataContainer GetExpirationDateContainer( Type owner )
+        {
+            return _settings.CreateContainer( owner.FullName + DateContainerSuffix, ApplicationDataCreateDisposition.Always );
+        }
+
+        private Task<StorageFolder> GetFolderForType( Type owner )
+        {
+            return ApplicationData.Current.LocalFolder.CreateFolderAsync( owner.FullName, CreationCollisionOption.OpenIfExists ).AsTask();
         }
     }
 }
