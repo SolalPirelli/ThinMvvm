@@ -36,6 +36,7 @@ namespace ThinMvvm.WindowsRuntime
         protected AppBase()
         {
             Suspending += OnSuspending;
+            RootFrame = CreateRootFrame();
         }
 
 
@@ -77,11 +78,9 @@ namespace ThinMvvm.WindowsRuntime
         /// <param name="e">Details about the launch request and process.</param>
         protected override sealed void OnLaunched( LaunchActivatedEventArgs e )
         {
-            RootFrame = (Frame) Window.Current.Content;
-
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
-            if ( RootFrame == null )
+            if ( Window.Current.Content == null )
             {
                 RootFrame = CreateRootFrame();
 
@@ -92,6 +91,8 @@ namespace ThinMvvm.WindowsRuntime
 
                 Window.Current.Content = RootFrame;
             }
+
+            RootFrame = (Frame) Window.Current.Content;
 
             if ( RootFrame.Content == null )
             {

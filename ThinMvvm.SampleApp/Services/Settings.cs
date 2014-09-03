@@ -18,7 +18,7 @@ namespace ThinMvvm.SampleApp.Services
         {
             return new SettingsDefaultValues
             {
-                { x => x.SavedText, () => "Hello, World!" }
+                { x => x.SavedText, () => null }
             };
         }
     }

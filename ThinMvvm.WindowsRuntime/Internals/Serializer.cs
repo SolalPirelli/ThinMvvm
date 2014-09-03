@@ -21,6 +21,11 @@ namespace ThinMvvm.WindowsRuntime.Internals
         /// </summary>
         public static string Serialize( object value )
         {
+            if ( value == null )
+            {
+                return null;
+            }
+
             using ( var stream = new MemoryStream() )
             {
                 new DataContractJsonSerializer( value.GetType() ).WriteObject( stream, value );
@@ -33,6 +38,11 @@ namespace ThinMvvm.WindowsRuntime.Internals
         /// </summary>
         public static T Deserialize<T>( string serialized )
         {
+            if ( serialized == null )
+            {
+                return default( T );
+            }
+
             byte[] serializedBytes = Encoding.GetBytes( serialized );
             using ( var stream = new MemoryStream( serializedBytes ) )
             {
