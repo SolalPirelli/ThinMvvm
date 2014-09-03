@@ -82,8 +82,6 @@ namespace ThinMvvm.WindowsRuntime
             // just ensure that the window is active
             if ( Window.Current.Content == null )
             {
-                RootFrame = CreateRootFrame();
-
                 if ( e.PreviousExecutionState == ApplicationExecutionState.Terminated )
                 {
                     ReloadState();
