@@ -2,11 +2,13 @@
 // See License.txt file for more details
 
 using System.Threading;
+using ThinMvvm.Logging;
 using ThinMvvm.SampleApp.Models;
 using ThinMvvm.SampleApp.Services;
 
 namespace ThinMvvm.SampleApp.ViewModels
 {
+    [LogId( "Main" )]
     public sealed class MainViewModel : CachedDataViewModel<NoParameter, NewsFeed>
     {
         private readonly INavigationService _navigationService;
@@ -23,6 +25,8 @@ namespace ThinMvvm.SampleApp.ViewModels
         }
 
 
+        [LogId( "ViewItem" )]
+        [LogParameter( "$Param.Title" )]
         public Command<NewsItem> ViewItemCommand
         {
             get { return this.GetCommand<NewsItem>( ViewItem ); }

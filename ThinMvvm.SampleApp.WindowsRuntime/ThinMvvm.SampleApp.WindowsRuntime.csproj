@@ -81,6 +81,10 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <ProjectReference Include="..\ThinMvvm.Logging\ThinMvvm.Logging.csproj">
+      <Project>{4e255288-94ea-4ffb-a6a3-11a03513a664}</Project>
+      <Name>ThinMvvm.Logging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ThinMvvm.SampleApp\ThinMvvm.SampleApp.csproj">
       <Project>{276407fb-3d67-4b1b-bc12-6f9aec2fe928}</Project>
       <Name>ThinMvvm.SampleApp</Name>

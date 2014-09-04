@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using ThinMvvm.Logging;
 using ThinMvvm.SampleApp.Services;
 using ThinMvvm.SampleApp.ViewModels;
 using ThinMvvm.SampleApp.WindowsRuntime.Views;
@@ -26,6 +27,8 @@ namespace ThinMvvm.SampleApp.WindowsRuntime
             Container.Bind<IDataCache, WindowsRuntimeDataCache>();
             Container.Bind<INewsService, GoogleNewsService>();
             Container.Bind<ISettings, Settings>();
+
+            Container.Bind<Logger, DebugLogger>().Start();
 
             navigationService.Bind<MainViewModel, MainView>();
             navigationService.Bind<NewsItemViewModel, NewsItemView>();
