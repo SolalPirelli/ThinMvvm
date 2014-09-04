@@ -18,7 +18,6 @@ namespace ThinMvvm.Design
         /// <typeparam name="T">Ignored.</typeparam>
         /// <param name="owner">Ignored.</param>
         /// <param name="id">Ignored.</param>
-        /// <param name="value">Ignored.</param>
         /// <returns>No data.</returns>
         public Task<CachedData<T>> GetAsync<T>( Type owner, long id )
         {
