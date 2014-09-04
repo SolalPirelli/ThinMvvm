@@ -37,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsyncCommand.cs" />
+    <Compile Include="CachedData.cs" />
     <Compile Include="CachedDataViewModel.cs" />
     <Compile Include="CachedTask.cs" />
     <Compile Include="CacheStatus.cs" />

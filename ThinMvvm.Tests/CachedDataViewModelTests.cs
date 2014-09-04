@@ -19,27 +19,26 @@ namespace ThinMvvm.Tests
             public static readonly Dictionary<Type, Dictionary<long, Tuple<object, DateTimeOffset>>> Data
                 = new Dictionary<Type, Dictionary<long, Tuple<object, DateTimeOffset>>>();
 
-            public bool TryGet<T>( Type owner, long id, out T value )
+            public Task<CachedData<T>> GetAsync<T>( Type owner, long id )
             {
                 if ( Data.ContainsKey( owner ) && Data[owner].ContainsKey( id ) )
                 {
                     if ( DateTimeOffset.Now <= Data[owner][id].Item2 )
                     {
-                        value = (T) Data[owner][id].Item1;
-                        return true;
+                        return Task.FromResult( new CachedData<T>( (T) Data[owner][id].Item1 ) );
                     }
                 }
-                value = default( T );
-                return false;
+                return Task.FromResult( new CachedData<T>() );
             }
 
-            public void Set( Type owner, long id, DateTimeOffset expirationDate, object value )
+            public Task SetAsync( Type owner, long id, DateTimeOffset expirationDate, object value )
             {
                 if ( !Data.ContainsKey( owner ) )
                 {
                     Data.Add( owner, new Dictionary<long, Tuple<object, DateTimeOffset>>() );
                 }
                 Data[owner][id] = Tuple.Create( value, expirationDate );
+                return Task.FromResult( 0 );
             }
         }
 

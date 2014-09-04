@@ -2,6 +2,7 @@
 // See License.txt file for more details
 
 using System;
+using System.Threading.Tasks;
 
 namespace ThinMvvm.Design
 {
@@ -12,17 +13,16 @@ namespace ThinMvvm.Design
     public sealed class DesignDataCache : IDataCache
     {
         /// <summary>
-        /// Returns false.
+        /// Returns no data.
         /// </summary>
         /// <typeparam name="T">Ignored.</typeparam>
         /// <param name="owner">Ignored.</param>
         /// <param name="id">Ignored.</param>
         /// <param name="value">Ignored.</param>
-        /// <returns>False.</returns>
-        public bool TryGet<T>( Type owner, long id, out T value )
+        /// <returns>No data.</returns>
+        public Task<CachedData<T>> GetAsync<T>( Type owner, long id )
         {
-            value = default( T );
-            return false;
+            return Task.FromResult( new CachedData<T>() );
         }
 
         /// <summary>
@@ -32,6 +32,10 @@ namespace ThinMvvm.Design
         /// <param name="id">Ignored.</param>
         /// <param name="expirationDate">Ignored.</param>
         /// <param name="value">Ignored.</param>
-        public void Set( Type owner, long id, DateTimeOffset expirationDate, object value ) { }
+        /// <returns>An already-completed task.</returns>
+        public Task SetAsync( Type owner, long id, DateTimeOffset expirationDate, object value )
+        {
+            return Task.FromResult( 0 );
+        }
     }
 }

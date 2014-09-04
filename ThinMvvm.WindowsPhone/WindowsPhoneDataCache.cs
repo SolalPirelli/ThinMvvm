@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO.IsolatedStorage;
+using System.Threading.Tasks;
 
 namespace ThinMvvm.WindowsPhone
 {
@@ -20,16 +21,14 @@ namespace ThinMvvm.WindowsPhone
 
         private readonly IsolatedStorageSettings _settings = IsolatedStorageSettings.ApplicationSettings;
 
-
         /// <summary>
-        /// Attempts to get the value stored by the specified owner type, with the specified ID.
+        /// Asynchronously gets the value stored by the specified owner type, with the specified ID.
         /// </summary>
         /// <typeparam name="T">The value type.</typeparam>
         /// <param name="owner">The owner type.</param>
         /// <param name="id">The ID.</param>
-        /// <param name="value">The value, if any.</param>
-        /// <returns>A value indicating whether a value was found.</returns>
-        public bool TryGet<T>( Type owner, long id, out T value )
+        /// <returns>The cached value.</returns>
+        public Task<CachedData<T>> GetAsync<T>( Type owner, long id )
         {
             if ( owner == null )
             {
@@ -40,8 +39,7 @@ namespace ThinMvvm.WindowsPhone
 
             if ( !_settings.Contains( key ) )
             {
-                value = default( T );
-                return false;
+                return Task.FromResult( new CachedData<T>() );
             }
 
             string dateKey = GetDateKey( owner.FullName, id );
@@ -52,22 +50,20 @@ namespace ThinMvvm.WindowsPhone
                 _settings.Remove( key );
                 _settings.Remove( dateKey );
                 _settings.Save();
-                value = default( T );
-                return false;
+                return Task.FromResult( new CachedData<T>() );
             }
 
-            value = (T) _settings[key];
-            return true;
+            return Task.FromResult( new CachedData<T>( (T) _settings[key] ) );
         }
 
         /// <summary>
-        /// Sets the specified value for the specified owner type, with the specified ID.
+        /// Asynchronously sets the specified value for the specified owner type, with the specified ID.
         /// </summary>
         /// <param name="owner">The owner type.</param>
         /// <param name="id">The ID.</param>
         /// <param name="expirationDate">The expiration date.</param>
         /// <param name="value">The value.</param>
-        public void Set( Type owner, long id, DateTimeOffset expirationDate, object value )
+        public Task SetAsync( Type owner, long id, DateTimeOffset expirationDate, object value )
         {
             if ( owner == null )
             {
@@ -77,6 +73,8 @@ namespace ThinMvvm.WindowsPhone
             _settings[GetKey( owner.FullName, id )] = value;
             _settings[GetDateKey( owner.FullName, id )] = expirationDate.UtcDateTime;
             _settings.Save();
+
+            return Task.FromResult( 0 );
         }
 
 

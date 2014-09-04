@@ -15,8 +15,7 @@ namespace ThinMvvm
     public abstract class CachedDataViewModel<TParameter, TData> : DataViewModel<TParameter>
     {
         private const long DefaultId = 0;
-        // HACK: WinRT has a bug with serializing MaxValue when the timezone is positive relative to UTC since it overflows into year 10000
-        private static readonly DateTimeOffset DefaultExpirationDate = new DateTimeOffset( 9999, 12, 31, 00, 00, 00, TimeSpan.Zero );
+        private static readonly DateTimeOffset DefaultExpirationDate = DateTimeOffset.MaxValue;
 
         private readonly IDataCache _cache;
 
@@ -72,37 +71,37 @@ namespace ThinMvvm
                 throw new ArgumentNullException( "token" );
             }
 
-            var cachedData = GetData( force, token );
+            var newData = GetData( force, token );
 
-            TData data = default( TData );
-            if ( _cache.TryGet( this.GetType(), cachedData.Id ?? DefaultId, out data ) )
+            var cached = await _cache.GetAsync<TData>( this.GetType(), newData.Id ?? DefaultId );
+            if ( cached.HasData )
             {
-                if ( cachedData.HasNewData )
+                if ( newData.HasNewData )
                 {
                     CacheStatus = CacheStatus.UsedTemporarily;
                 }
 
-                HandleData( data, token );
+                HandleData( cached.Data, token );
             }
-            else if ( cachedData.HasNewData )
+            else if ( newData.HasNewData )
             {
                 CacheStatus = CacheStatus.Loading;
             }
 
-            if ( !cachedData.HasNewData )
+            if ( !newData.HasNewData )
             {
                 return;
             }
 
             try
             {
-                data = await cachedData.GetDataAsync();
-                if ( HandleData( data, token ) && cachedData.ShouldBeCached )
+                var data = await newData.GetDataAsync();
+                if ( HandleData( data, token ) && newData.ShouldBeCached )
                 {
-                    if ( cachedData.HasNewData )
+                    if ( newData.HasNewData )
                     {
-                        var expirationDate = ( cachedData.ExpirationDate ?? DefaultExpirationDate ).ToUniversalTime();
-                        _cache.Set( this.GetType(), cachedData.Id ?? DefaultId, expirationDate, data );
+                        var expirationDate = ( newData.ExpirationDate ?? DefaultExpirationDate ).ToUniversalTime();
+                        await _cache.SetAsync( this.GetType(), newData.Id ?? DefaultId, expirationDate, data );
                     }
 
                     CacheStatus = CacheStatus.Unused;

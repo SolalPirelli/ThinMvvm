@@ -53,6 +53,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CachedDataTests.cs" />
     <Compile Include="CachedTaskTests.cs" />
     <Compile Include="GenericAsyncCommandTests.cs" />
     <Compile Include="CachedDataViewModelTests.cs" />
