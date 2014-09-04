@@ -1,15 +1,18 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System.Collections.ObjectModel;
+
 namespace ThinMvvm.SampleApp.Services
 {
     public sealed class Settings : SettingsBase<Settings>, ISettings
     {
-        public string SavedText
+        public ObservableCollection<string> ReadArticles
         {
-            get { return Get<string>(); }
+            get { return Get<ObservableCollection<string>>(); }
             set { Set( value ); }
         }
+
 
         public Settings( ISettingsStorage storage ) : base( storage ) { }
 
@@ -18,7 +21,7 @@ namespace ThinMvvm.SampleApp.Services
         {
             return new SettingsDefaultValues
             {
-                { x => x.SavedText, () => null }
+                { x => x.ReadArticles, () => new ObservableCollection<string>() }
             };
         }
     }

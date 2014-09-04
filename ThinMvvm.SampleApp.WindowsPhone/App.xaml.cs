@@ -8,7 +8,7 @@ using ThinMvvm.WindowsPhone;
 
 namespace ThinMvvm.SampleApp.WindowsPhone
 {
-    public sealed class App : AppBase
+    public sealed partial class App : AppBase
     {
         protected override string Language
         {
@@ -26,12 +26,14 @@ namespace ThinMvvm.SampleApp.WindowsPhone
 
             var navigationService = Container.Bind<IWindowsPhoneNavigationService, WindowsPhoneNavigationService>();
             Container.Bind<ISettingsStorage, WindowsPhoneSettingsStorage>();
+            Container.Bind<IDataCache, WindowsPhoneDataCache>();
+            Container.Bind<INewsService, GoogleNewsService>();
             Container.Bind<ISettings, Settings>();
 
             navigationService.Bind<MainViewModel>( "/Views/MainView.xaml" );
-            navigationService.Bind<AboutViewModel>( "/Views/AboutView.xaml" );
+            navigationService.Bind<NewsItemViewModel>( "/Views/NewsItemView.xaml" );
 
-            navigationService.NavigateTo<MainViewModel, int>( 42 );
+            navigationService.NavigateTo<MainViewModel>();
         }
     }
 }

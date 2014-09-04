@@ -1,0 +1,14 @@
+﻿<!-- Copyright (c) Solal Pirelli 2014
+     See License.txt file for more details -->
+
+<mvvm:AppBase x:Class="ThinMvvm.SampleApp.WindowsPhone.App"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:mvvm="clr-namespace:ThinMvvm.WindowsPhone;assembly=ThinMvvm.WindowsPhone"
+              xmlns:myDesign="clr-namespace:ThinMvvm.SampleApp.ViewModels.Design;assembly=ThinMvvm.SampleApp">
+    <mvvm:AppBase.Resources>
+        <ResourceDictionary>
+            <myDesign:Design x:Key="Design" />
+        </ResourceDictionary>
+    </mvvm:AppBase.Resources>
+</mvvm:AppBase>

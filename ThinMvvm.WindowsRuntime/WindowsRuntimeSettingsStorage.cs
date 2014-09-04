@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System.Collections.Generic;
 using ThinMvvm.WindowsRuntime.Internals;
 using Windows.Storage;
 
@@ -11,7 +12,10 @@ namespace ThinMvvm.WindowsRuntime
     /// </summary>
     public sealed class WindowsRuntimeSettingsStorage : ISettingsStorage
     {
-        private readonly ApplicationDataContainer _settings = ApplicationData.Current.LocalSettings;
+        // N.B.: To preserve objects, we need to have both in-memory values as well as stored ones.
+
+        private readonly ApplicationDataContainer _storage = ApplicationData.Current.LocalSettings;
+        private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets a value indicating whether the setting with the specified key is defined.
@@ -20,7 +24,7 @@ namespace ThinMvvm.WindowsRuntime
         /// <returns>A value indicating whether the setting with the specified key is defined.</returns>
         public bool IsDefined( string key )
         {
-            return _settings.Values.ContainsKey( key );
+            return _storage.Values.ContainsKey( key );
         }
 
         /// <summary>
@@ -33,8 +37,14 @@ namespace ThinMvvm.WindowsRuntime
         {
             if ( IsDefined( key ) )
             {
-                string serializedValue = (string) _settings.Values[key];
-                return Serializer.Deserialize<T>( serializedValue );
+                // Lazily load requested settings in memory
+                if ( !_values.ContainsKey( key ) )
+                {
+                    string serializedValue = (string) _storage.Values[key];
+                    _values[key] = Serializer.Deserialize<T>( serializedValue );
+                }
+
+                return (T) _values[key];
             }
             return default( T );
         }
@@ -46,7 +56,8 @@ namespace ThinMvvm.WindowsRuntime
         /// <param name="value">The value.</param>
         public void Set( string key, object value )
         {
-            _settings.Values[key] = Serializer.Serialize( value );
+            _values[key] = value;
+            _storage.Values[key] = Serializer.Serialize( value );
         }
     }
 }

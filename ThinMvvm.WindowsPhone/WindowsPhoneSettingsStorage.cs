@@ -1,6 +1,7 @@
 // Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System.Collections.Generic;
 using System.IO.IsolatedStorage;
 
 namespace ThinMvvm.WindowsPhone
@@ -10,7 +11,10 @@ namespace ThinMvvm.WindowsPhone
     /// </summary>
     public sealed class WindowsPhoneSettingsStorage : ISettingsStorage
     {
+        // N.B.: To preserve objects, we need to have both in-memory values as well as stored ones.
+
         private readonly IsolatedStorageSettings _settings = IsolatedStorageSettings.ApplicationSettings;
+        private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets a value indicating whether the setting with the specified key is defined.
@@ -32,7 +36,13 @@ namespace ThinMvvm.WindowsPhone
         {
             if ( _settings.Contains( key ) )
             {
-                return (T) _settings[key];
+                // Lazily load requested settings in memory
+                if ( !_values.ContainsKey( key ) )
+                {
+                    _values[key] = (T) _settings[key];
+                }
+
+                return (T) _values[key];
             }
             return default( T );
         }
@@ -44,15 +54,8 @@ namespace ThinMvvm.WindowsPhone
         /// <param name="value">The value.</param>
         public void Set( string key, object value )
         {
-            if ( !_settings.Contains( key ) )
-            {
-                _settings.Add( key, value );
-            }
-            else
-            {
-                _settings[key] = value;
-            }
-
+            _values[key] = value;
+            _settings[key] = value;
             _settings.Save();
         }
     }

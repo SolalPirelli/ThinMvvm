@@ -117,34 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AboutText" xml:space="preserve">
-    <value>Sample app for ThinMvvm on Windows Phone Silverlight 8.</value>
-  </data>
-  <data name="AboutViewTitle" xml:space="preserve">
-    <value>about</value>
-  </data>
-  <data name="AppVersion" xml:space="preserve">
-    <value>version</value>
-  </data>
-  <data name="MainViewModelInvokedWithArg" xml:space="preserve">
-    <value>The ViewModel was invoked with argument</value>
-  </data>
-  <data name="MainViewTitle" xml:space="preserve">
-    <value>main page</value>
-  </data>
   <data name="ResourceFlowDirection" xml:space="preserve">
     <value>LeftToRight</value>
   </data>
   <data name="ResourceLanguage" xml:space="preserve">
     <value>en-US</value>
-  </data>
-  <data name="Save" xml:space="preserve">
-    <value>save</value>
-  </data>
-  <data name="SavedText" xml:space="preserve">
-    <value>Saved text:</value>
-  </data>
-  <data name="ShowAboutView" xml:space="preserve">
-    <value>show about page</value>
   </data>
 </root>

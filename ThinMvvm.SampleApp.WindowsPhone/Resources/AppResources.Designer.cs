@@ -61,51 +61,6 @@ namespace ThinMvvm.SampleApp.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sample app for ThinMvvm on Windows Phone Silverlight 8..
-        /// </summary>
-        public static string AboutText {
-            get {
-                return ResourceManager.GetString("AboutText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to about.
-        /// </summary>
-        public static string AboutViewTitle {
-            get {
-                return ResourceManager.GetString("AboutViewTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to version.
-        /// </summary>
-        public static string AppVersion {
-            get {
-                return ResourceManager.GetString("AppVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The ViewModel was invoked with argument.
-        /// </summary>
-        public static string MainViewModelInvokedWithArg {
-            get {
-                return ResourceManager.GetString("MainViewModelInvokedWithArg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to main page.
-        /// </summary>
-        public static string MainViewTitle {
-            get {
-                return ResourceManager.GetString("MainViewTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to LeftToRight.
         /// </summary>
         public static string ResourceFlowDirection {
@@ -120,33 +75,6 @@ namespace ThinMvvm.SampleApp.Resources {
         public static string ResourceLanguage {
             get {
                 return ResourceManager.GetString("ResourceLanguage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to save.
-        /// </summary>
-        public static string Save {
-            get {
-                return ResourceManager.GetString("Save", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Saved text:.
-        /// </summary>
-        public static string SavedText {
-            get {
-                return ResourceManager.GetString("SavedText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to show about page.
-        /// </summary>
-        public static string ShowAboutView {
-            get {
-                return ResourceManager.GetString("ShowAboutView", resourceCulture);
             }
         }
     }

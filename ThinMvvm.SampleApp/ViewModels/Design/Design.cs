@@ -1,4 +1,7 @@
-﻿#if DEBUG
+﻿// Copyright (c) Solal Pirelli 2014
+// See License.txt file for more details
+
+#if DEBUG
 using ThinMvvm.Design;
 using ThinMvvm.SampleApp.Services.Design;
 #endif
@@ -9,16 +12,17 @@ namespace ThinMvvm.SampleApp.ViewModels.Design
     {
 #if DEBUG
         public MainViewModel Main { get; private set; }
-
-        public AboutViewModel About { get; private set; }
+        public NewsItemViewModel NewsItem { get; private set; }
 
         public Design()
         {
-            Main = new MainViewModel( new DesignSettings(), new DesignNavigationService(), 1234 );
-            About = new AboutViewModel();
+            var newsService = new DesignNewsService();
+            var item = newsService.GetFeedAsync().Result.Items[0];
+            Main = new MainViewModel( new DesignDataCache(), new DesignNavigationService(), new DesignSettings(), newsService );
+            NewsItem = new NewsItemViewModel( item );
 
             Main.OnNavigatedTo();
-            About.OnNavigatedTo();
+            NewsItem.OnNavigatedTo();
         }
 #endif
     }

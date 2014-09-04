@@ -1,58 +1,86 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
-using System;
+using System.Threading;
+using ThinMvvm.SampleApp.Models;
 using ThinMvvm.SampleApp.Services;
 
 namespace ThinMvvm.SampleApp.ViewModels
 {
-    public sealed class MainViewModel : ViewModel<int>
+    public sealed class MainViewModel : CachedDataViewModel<NoParameter, NewsFeed>
     {
-        private readonly ISettings _settings;
         private readonly INavigationService _navigationService;
+        private readonly ISettings _settings;
+        private readonly INewsService _newsService;
 
 
-        public int Argument { get; private set; }
+        private NewsFeed _feed;
 
-        private string _savedText;
-        public string SavedText
+        public NewsFeed Feed
         {
-            get { return _savedText; }
-            private set { SetProperty( ref _savedText, value ); }
+            get { return _feed; }
+            private set { SetProperty( ref _feed, value ); }
         }
 
 
-        public Command<string> SaveCommand
+        public Command<NewsItem> ViewItemCommand
         {
-            get { return this.GetCommand<string>( Save, s => !string.IsNullOrWhiteSpace( s ) ); }
-        }
-
-        public Command ShowAboutViewCommand
-        {
-            get { return this.GetCommand( _navigationService.NavigateTo<AboutViewModel> ); }
+            get { return this.GetCommand<NewsItem>( ViewItem ); }
         }
 
 
-        public MainViewModel( ISettings settings, INavigationService navigationService,
-                              int arg )
+        public MainViewModel( IDataCache cache, INavigationService navigationService,
+                              ISettings settings, INewsService newsService )
+            : base( cache )
         {
-            _settings = settings;
             _navigationService = navigationService;
-
-            Argument = arg;
+            _settings = settings;
+            _newsService = newsService;
         }
 
 
-        public override void OnNavigatedTo()
+        protected override CachedTask<NewsFeed> GetData( bool force, CancellationToken token )
         {
-            SavedText = _settings.SavedText;
+            if ( !force )
+            {
+                return CachedTask.NoNewData<NewsFeed>();
+            }
+
+            return CachedTask.Create( _newsService.GetFeedAsync );
+        }
+
+        protected override bool HandleData( NewsFeed data, CancellationToken token )
+        {
+            if ( data == null )
+            {
+                // No data yet
+                return false;
+            }
+
+            foreach ( var item in data.Items )
+            {
+                if ( _settings.ReadArticles.Contains( item.Title ) )
+                {
+                    item.IsRead = true;
+                }
+            }
+
+            Feed = data;
+
+            // No validation, it's always correct
+            return true;
         }
 
 
-        private void Save( string arg )
+        private void ViewItem( NewsItem item )
         {
-            SavedText = arg;
-            _settings.SavedText = SavedText + " - " + DateTime.Now.ToString();
+            if ( !_settings.ReadArticles.Contains( item.Title ) )
+            {
+                _settings.ReadArticles.Add( item.Title );
+                item.IsRead = true;
+            }
+
+            _navigationService.NavigateTo<NewsItemViewModel, NewsItem>( item );
         }
     }
 }

@@ -23,10 +23,12 @@ namespace ThinMvvm.SampleApp.WindowsRuntime
 
             var navigationService = Container.Bind<IWindowsRuntimeNavigationService, WindowsRuntimeNavigationService>();
             Container.Bind<ISettingsStorage, WindowsRuntimeSettingsStorage>();
+            Container.Bind<IDataCache, WindowsRuntimeDataCache>();
+            Container.Bind<INewsService, GoogleNewsService>();
             Container.Bind<ISettings, Settings>();
 
             navigationService.Bind<MainViewModel, MainView>();
-            navigationService.Bind<AboutViewModel, AboutView>();
+            navigationService.Bind<NewsItemViewModel, NewsItemView>();
 
             // handle the back button since WP doesn't do it for us
             HardwareButtons.BackPressed += ( _, e2 ) =>
@@ -35,7 +37,7 @@ namespace ThinMvvm.SampleApp.WindowsRuntime
                 navigationService.NavigateBack();
             };
 
-            navigationService.NavigateTo<MainViewModel, int>( 42 );
+            navigationService.NavigateTo<MainViewModel>();
         }
     }
 }
