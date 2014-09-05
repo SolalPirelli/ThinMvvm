@@ -12,22 +12,25 @@ namespace ThinMvvm
     /// <typeparam name="T">The operation result type.</typeparam>
     public sealed class CachedTask<T>
     {
+        private const long DefaultId = 0;
+        private static readonly DateTimeOffset DefaultExpirationDate = DateTimeOffset.MaxValue;
+
         private readonly Func<Task<T>> _getter;
 
         /// <summary>
-        /// Gets the task's ID, if it has one.
+        /// Gets the task's ID.
         /// </summary>
-        public long? Id { get; private set; }
+        public long Id { get; private set; }
 
         /// <summary>
-        /// Gets the task's result's expiration date, if it has one.
+        /// Gets the task's result's expiration date.
         /// </summary>
-        public DateTimeOffset? ExpirationDate { get; private set; }
+        public DateTimeOffset ExpirationDate { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether the task has any new data.
+        /// Gets a value indicating whether the task has any data.
         /// </summary>
-        public bool HasNewData { get; private set; }
+        public bool HasData { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the task's result should be cached.
@@ -38,12 +41,12 @@ namespace ThinMvvm
         /// <summary>
         /// Initializes a new instance of the <see cref="CachedTask{T}" /> class with the specified parameters.
         /// </summary>
-        internal CachedTask( Func<Task<T>> getter, long? id, DateTimeOffset? expirationDate, bool hasNewData, bool shouldBeCached )
+        internal CachedTask( Func<Task<T>> getter, long? id, DateTimeOffset? expirationDate, bool hasData, bool shouldBeCached )
         {
             _getter = getter;
-            Id = id;
-            ExpirationDate = expirationDate;
-            HasNewData = hasNewData;
+            Id = id ?? DefaultId;
+            ExpirationDate = expirationDate ?? DefaultExpirationDate;
+            HasData = hasData;
             ShouldBeCached = shouldBeCached;
         }
 

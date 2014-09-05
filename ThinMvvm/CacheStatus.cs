@@ -14,11 +14,6 @@ namespace ThinMvvm
         NoCache,
 
         /// <summary>
-        /// Data is being loaded.
-        /// </summary>
-        Loading,
-
-        /// <summary>
         /// Cached data is used temporarily while loading data.
         /// </summary>
         UsedTemporarily,

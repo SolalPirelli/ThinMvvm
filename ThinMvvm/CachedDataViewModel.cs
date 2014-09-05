@@ -14,10 +14,8 @@ namespace ThinMvvm
     /// <typeparam name="TData">The type of the cached data.</typeparam>
     public abstract class CachedDataViewModel<TParameter, TData> : DataViewModel<TParameter>
     {
-        private const long DefaultId = 0;
-        private static readonly DateTimeOffset DefaultExpirationDate = DateTimeOffset.MaxValue;
-
         private readonly IDataCache _cache;
+        private long? _currentDataId;
 
         private CacheStatus _cacheStatus;
 
@@ -71,39 +69,34 @@ namespace ThinMvvm
                 throw new ArgumentNullException( "token" );
             }
 
-            var newData = GetData( force, token );
+            var newTask = GetData( force, token );
 
-            var cached = await _cache.GetAsync<TData>( this.GetType(), newData.Id ?? DefaultId );
-            if ( cached.HasData )
+            if ( !newTask.HasData )
             {
-                if ( newData.HasNewData )
+                if ( _currentDataId == null )
                 {
-                    CacheStatus = CacheStatus.UsedTemporarily;
+                    throw new InvalidOperationException( "CachedTask.NoNewData should not be returned when there is no cached data." );
                 }
 
-                HandleData( cached.Data, token );
-            }
-            else if ( newData.HasNewData )
-            {
-                CacheStatus = CacheStatus.Loading;
+                return;
             }
 
-            if ( !newData.HasNewData )
+            var cachedData = await _cache.GetAsync<TData>( GetType(), newTask.Id );
+
+            if ( cachedData.HasData && _currentDataId != newTask.Id )
             {
-                return;
+                HandleData( cachedData.Data, token );
+                CacheStatus = CacheStatus.UsedTemporarily;
             }
 
             try
             {
-                var data = await newData.GetDataAsync();
-                if ( HandleData( data, token ) && newData.ShouldBeCached )
-                {
-                    if ( newData.HasNewData )
-                    {
-                        var expirationDate = ( newData.ExpirationDate ?? DefaultExpirationDate ).ToUniversalTime();
-                        await _cache.SetAsync( this.GetType(), newData.Id ?? DefaultId, expirationDate, data );
-                    }
+                var newData = await newTask.GetDataAsync();
+                _currentDataId = newTask.Id;
 
+                if ( HandleData( newData, token ) && newTask.ShouldBeCached )
+                {
+                    await _cache.SetAsync( GetType(), newTask.Id, newTask.ExpirationDate, newData );
                     CacheStatus = CacheStatus.Unused;
                 }
                 else
@@ -111,21 +104,18 @@ namespace ThinMvvm
                     CacheStatus = CacheStatus.OptedOut;
                 }
             }
-            catch ( Exception e )
+            catch
             {
-                if ( DataViewModelOptions.IsNetworkException( e ) )
+                if ( _currentDataId == newTask.Id )
                 {
-                    if ( CacheStatus == CacheStatus.UsedTemporarily )
-                    {
-                        CacheStatus = CacheStatus.Used;
-                    }
+                    CacheStatus = CacheStatus.Used;
                 }
-
-                if ( CacheStatus != CacheStatus.Used )
+                else
                 {
                     CacheStatus = CacheStatus.NoCache;
-                    throw;
                 }
+
+                throw;
             }
         }
     }

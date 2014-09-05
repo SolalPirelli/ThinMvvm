@@ -105,22 +105,6 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public void CacheStatusWhenLoadingIsLoading()
-        {
-            var source = new TaskCompletionSource<int>();
-            var vm = new TestCachedDataViewModel
-            {
-                GetDataMethod = ( _, __ ) => CachedTask.Create( () => source.Task )
-            };
-
-            vm.OnNavigatedTo();
-
-            Assert.AreEqual( CacheStatus.Loading, vm.CacheStatus );
-
-            source.SetResult( 0 );
-        }
-
-        [TestMethod]
         public async Task CacheStatusAfterSuccessfulLoadIsUnused()
         {
             var vm = new TestCachedDataViewModel
@@ -163,28 +147,7 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public async Task CacheStatusWhenLoadingAfterSuccessfulLoadIsUsedTemporarily()
-        {
-            var vm = new TestCachedDataViewModel
-            {
-                GetDataMethod = ( _, __ ) => CachedTask.Create( () => Task.FromResult( 0 ) ),
-                HandleDataMethod = ( _, __ ) => true
-            };
-
-            await vm.OnNavigatedToAsync();
-
-            var source = new TaskCompletionSource<int>();
-            vm.GetDataMethod = ( _, __ ) => CachedTask.Create( () => source.Task );
-
-            vm.OnNavigatedTo();
-
-            Assert.AreEqual( CacheStatus.UsedTemporarily, vm.CacheStatus );
-
-            source.SetResult( 0 );
-        }
-
-        [TestMethod]
-        public async Task CacheStatusOnErrorAfterSuccessfulLoadIsNoCache()
+        public async Task CacheStatusOnErrorAfterSuccessfulLoadIsUsed()
         {
             var vm = new TestCachedDataViewModel
             {
@@ -198,7 +161,7 @@ namespace ThinMvvm.Tests
 
             vm.OnNavigatedTo();
 
-            Assert.AreEqual( CacheStatus.NoCache, vm.CacheStatus );
+            Assert.AreEqual( CacheStatus.Used, vm.CacheStatus );
         }
 
         [TestMethod]
@@ -238,7 +201,7 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public async Task HandleDataIsCalledOnCachedData()
+        public async Task HandleDataIsNotCalledTwiceOnCachedData()
         {
             var vm = new TestCachedDataViewModel
             {
@@ -254,7 +217,7 @@ namespace ThinMvvm.Tests
 
             await vm.RefreshCommand.ExecuteAsync();
 
-            Assert.IsTrue( called );
+            Assert.IsFalse( called );
         }
 
         [TestMethod]
@@ -287,9 +250,9 @@ namespace ThinMvvm.Tests
 
             vm.GetDataMethod = ( _, __ ) => CachedTask.Create( () => source.Task, 1 );
 
-            var _unused = vm.RefreshCommand.ExecuteAsync();
+            vm.OnNavigatedTo();
 
-            Assert.AreEqual( CacheStatus.Loading, vm.CacheStatus );
+            Assert.AreNotEqual( CacheStatus.UsedTemporarily, vm.CacheStatus );
 
             source.SetResult( 0 );
         }
@@ -299,12 +262,12 @@ namespace ThinMvvm.Tests
         {
             var vm = new TestCachedDataViewModel
             {
-                GetDataMethod = ( _, __ ) => CachedTask.Create( () => Task.FromResult( 0 ), expirationDate: DateTime.Now.AddMilliseconds( 100 ) ),
+                GetDataMethod = ( _, __ ) => CachedTask.Create( () => Task.FromResult( 0 ), expirationDate: DateTime.Now.AddMilliseconds( 50 ) ),
                 HandleDataMethod = ( _, __ ) => { return true; }
             };
 
             await vm.OnNavigatedToAsync();
-            await Task.Delay( 200 );
+            await Task.Delay( 100 );
 
             var source = new TaskCompletionSource<int>();
 
@@ -312,7 +275,7 @@ namespace ThinMvvm.Tests
 
             var _unused = vm.RefreshCommand.ExecuteAsync();
 
-            Assert.AreEqual( CacheStatus.Loading, vm.CacheStatus );
+            Assert.AreNotEqual( CacheStatus.UsedTemporarily, vm.CacheStatus );
 
             source.SetResult( 0 );
         }
