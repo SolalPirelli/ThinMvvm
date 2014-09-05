@@ -78,10 +78,17 @@ namespace ThinMvvm
 
             var cachedData = await _cache.GetAsync<TData>( GetType(), newTask.Id );
 
-            if ( cachedData.HasData && _currentDataId != newTask.Id )
+            if ( cachedData.HasData )
             {
-                HandleData( cachedData.Data, token );
+                if ( _currentDataId != newTask.Id )
+                {
+                    HandleData( cachedData.Data, token );
+                }
                 CacheStatus = CacheStatus.UsedTemporarily;
+            }
+            else
+            {
+                CacheStatus = CacheStatus.NoData;
             }
 
             try
@@ -107,7 +114,7 @@ namespace ThinMvvm
                 }
                 else
                 {
-                    CacheStatus = CacheStatus.NoCache;
+                    CacheStatus = CacheStatus.NoData;
                 }
 
                 throw;

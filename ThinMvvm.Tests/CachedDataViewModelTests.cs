@@ -79,7 +79,7 @@ namespace ThinMvvm.Tests
                                  .DoAsync();
 
             test.Data( DataStatus.Loaded )
-                .Cache( CacheStatus.NoCache )
+                .Cache( CacheStatus.NoData )
                 .NotInCache();
         }
 
@@ -92,7 +92,7 @@ namespace ThinMvvm.Tests
                                  .DoAsync();
 
             test.Data( DataStatus.Error )
-                .Cache( CacheStatus.NoCache )
+                .Cache( CacheStatus.NoData )
                 .NotInCache();
         }
 
@@ -224,7 +224,7 @@ namespace ThinMvvm.Tests
         }
 
         [TestMethod]
-        public void Nothing__Data__NoCache_WhileLoading()
+        public void Nothing__Data__NoData_WhileLoading()
         {
             var source = new TaskCompletionSource<int>();
             var vm = new TestCachedDataViewModel()
@@ -237,7 +237,7 @@ namespace ThinMvvm.Tests
             vm.OnNavigatedTo();
 
             Assert.AreEqual( DataStatus.Loading, vm.DataStatus );
-            Assert.AreEqual( CacheStatus.NoCache, vm.CacheStatus );
+            Assert.AreEqual( CacheStatus.NoData, vm.CacheStatus );
 
             source.SetResult( 0 );
         }
@@ -261,6 +261,50 @@ namespace ThinMvvm.Tests
             vm.OnNavigatedTo();
 
             Assert.AreEqual( 1, count );
+
+            source.SetResult( 1 );
+        }
+
+        [TestMethod]
+        public async Task Data__NewData__UsedTemporarily()
+        {
+            var vm = new TestCachedDataViewModel()
+            {
+                Data = CachedTask.Create( () => Task.FromResult( 0 ) ),
+                HandleDataMethod = _ => true
+            };
+
+            await vm.OnNavigatedToAsync();
+
+            var source = new TaskCompletionSource<int>();
+            vm.Data = CachedTask.Create( () => source.Task );
+
+            // use OnNavigatedTo to avoid blocking since source.Task won't finish automatically
+            vm.OnNavigatedTo();
+
+            Assert.AreEqual( CacheStatus.UsedTemporarily, vm.CacheStatus );
+
+            source.SetResult( 1 );
+        }
+
+        [TestMethod]
+        public async Task Data__NewDataDifferentId__NoData()
+        {
+            var vm = new TestCachedDataViewModel()
+            {
+                Data = CachedTask.Create( () => Task.FromResult( 0 ), id: 0 ),
+                HandleDataMethod = _ => true
+            };
+
+            await vm.OnNavigatedToAsync();
+
+            var source = new TaskCompletionSource<int>();
+            vm.Data = CachedTask.Create( () => source.Task, id: 1 );
+
+            // use OnNavigatedTo to avoid blocking since source.Task won't finish automatically
+            vm.OnNavigatedTo();
+
+            Assert.AreEqual( CacheStatus.NoData, vm.CacheStatus );
 
             source.SetResult( 1 );
         }

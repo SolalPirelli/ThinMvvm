@@ -9,9 +9,9 @@ namespace ThinMvvm
     public enum CacheStatus
     {
         /// <summary>
-        /// No cache is available.
+        /// No cached data is available.
         /// </summary>
-        NoCache,
+        NoData,
 
         /// <summary>
         /// Cached data is used temporarily while loading data.
