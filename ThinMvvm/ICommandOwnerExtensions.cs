@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Solal Pirelli 2014
+// See License.txt file for more details
+
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
