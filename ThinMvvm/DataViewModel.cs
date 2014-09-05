@@ -67,7 +67,7 @@ namespace ThinMvvm
         public virtual async Task OnNavigatedToAsync()
         {
             await TryRefreshAsync( _firstRun );
-            if ( DataStatus == DataStatus.DataLoaded )
+            if ( DataStatus == DataStatus.Loaded )
             {
                 _firstRun = false;
             }
@@ -141,7 +141,7 @@ namespace ThinMvvm
 
             if ( DataStatus == DataStatus.Loading && !token.IsCancellationRequested )
             {
-                DataStatus = DataStatus.DataLoaded;
+                DataStatus = DataStatus.Loaded;
             }
         }
 
@@ -151,7 +151,7 @@ namespace ThinMvvm
         /// Do not call this method explicitly.
         /// </summary>
         [EditorBrowsable( EditorBrowsableState.Never )]
-        public async override void OnNavigatedTo()
+        public async override sealed void OnNavigatedTo()
         {
             await OnNavigatedToAsync();
         }

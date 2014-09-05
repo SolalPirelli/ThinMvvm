@@ -21,7 +21,7 @@ namespace ThinMvvm
         /// <summary>
         /// Data was loaded successfully.
         /// </summary>
-        DataLoaded,
+        Loaded,
 
         /// <summary>
         /// An error occurred while loading data.

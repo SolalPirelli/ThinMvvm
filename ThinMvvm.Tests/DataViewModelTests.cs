@@ -126,7 +126,7 @@ namespace ThinMvvm.Tests
 
             source.SetResult( 0 );
 
-            Assert.AreEqual( DataStatus.DataLoaded, vm.DataStatus );
+            Assert.AreEqual( DataStatus.Loaded, vm.DataStatus );
         }
 
         [TestMethod]

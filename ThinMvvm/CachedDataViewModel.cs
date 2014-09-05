@@ -73,11 +73,6 @@ namespace ThinMvvm
 
             if ( !newTask.HasData )
             {
-                if ( _currentDataId == null )
-                {
-                    throw new InvalidOperationException( "CachedTask.NoNewData should not be returned when there is no cached data." );
-                }
-
                 return;
             }
 

@@ -13,7 +13,14 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void Create_Works()
         {
-            CachedTask.Create( () => Task.FromResult( 0 ) );
+            long id = 10;
+            var now = DateTimeOffset.Now.AddDays( 1 );
+            var task = CachedTask.Create( () => Task.FromResult( 0 ), id, now );
+
+            Assert.IsTrue( task.HasData );
+            Assert.IsTrue( task.ShouldBeCached );
+            Assert.AreEqual( id, task.Id );
+            Assert.AreEqual( now, task.ExpirationDate );
         }
 
         [TestMethod]
@@ -26,7 +33,10 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void DoNotCache_Works()
         {
-            CachedTask.DoNotCache( () => Task.FromResult( 0 ) );
+            var task = CachedTask.DoNotCache( () => Task.FromResult( 0 ) );
+
+            Assert.IsTrue( task.HasData );
+            Assert.IsFalse( task.ShouldBeCached );
         }
 
         [TestMethod]
@@ -34,6 +44,38 @@ namespace ThinMvvm.Tests
         public void DoNotCache_ErrorOnNullGetter()
         {
             CachedTask.DoNotCache<int>( null );
+        }
+
+        [TestMethod]
+        public void NoNewData_Works()
+        {
+            var task = CachedTask.NoNewData<int>();
+
+            Assert.IsFalse( task.HasData );
+            Assert.IsFalse( task.ShouldBeCached );
+        }
+
+        [TestMethod]
+        [ExpectedException( typeof( ArgumentException ) )]
+        public void ErrorWhenExpirationDateIsInPast()
+        {
+            CachedTask.Create( () => Task.FromResult( 0 ), expirationDate: DateTime.Now.AddSeconds( -1 ) );
+        }
+
+        [TestMethod]
+        public void DefaultIdIsZero()
+        {
+            var task = CachedTask.Create( () => Task.FromResult( 0 ) );
+
+            Assert.AreEqual( 0, task.Id );
+        }
+
+        [TestMethod]
+        public void DefaultExpirationDateIsMaxValue()
+        {
+            var task = CachedTask.Create( () => Task.FromResult( 0 ) );
+
+            Assert.AreEqual( DateTimeOffset.MaxValue, task.ExpirationDate );
         }
     }
 }
