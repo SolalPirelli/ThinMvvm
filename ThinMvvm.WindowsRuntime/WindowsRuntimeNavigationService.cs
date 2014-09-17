@@ -117,7 +117,7 @@ namespace ThinMvvm.WindowsRuntime
             }
 
             _backStack.Push( viewModel );
-            AppBase.RootFrame.Navigate( _views[viewModel.GetType()] );
+            AppBase.RootFrame.Navigate( viewType );
         }
 
 
@@ -148,7 +148,7 @@ namespace ThinMvvm.WindowsRuntime
             {
                 if ( _removeCurrentFromBackStack )
                 {
-                    AppBase.RootFrame.BackStack.RemoveAt( 0 );
+                    AppBase.RootFrame.BackStack.RemoveAt( AppBase.RootFrame.BackStack.Count - 1 );
 
                     var newTop = _backStack.Pop();
                     var currentTop = _backStack.Pop();
