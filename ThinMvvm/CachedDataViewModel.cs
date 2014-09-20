@@ -108,7 +108,7 @@ namespace ThinMvvm
             }
             catch
             {
-                if ( _currentDataId == newTask.Id )
+                if ( CacheStatus == CacheStatus.UsedTemporarily )
                 {
                     CacheStatus = CacheStatus.Used;
                 }

@@ -332,6 +332,23 @@ namespace ThinMvvm.Tests
             source.SetResult( 1 );
         }
 
+        [TestMethod]
+        public async Task DataInCache__Error__Used()
+        {
+            var cache = new TestDataCache();
+            await cache.SetAsync( typeof( TestCachedDataViewModel ), 0, DateTimeOffset.MaxValue, 123 );
+
+            var vm = new TestCachedDataViewModel( cache )
+            {
+                Data = CachedTask.Create<int>( () => { throw new Exception( "lalalala" ); }, id: 0 ),
+                HandleDataMethod = _ => true
+            };
+
+            await vm.RefreshCommand.ExecuteAsync();
+
+            Assert.AreEqual( CacheStatus.Used, vm.CacheStatus );
+        }
+
         private sealed class Test
         {
             private int _data;
