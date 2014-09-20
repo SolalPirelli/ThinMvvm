@@ -136,7 +136,11 @@ namespace ThinMvvm.WindowsPhone
             }
 
             _backStack.Push( viewModel );
-            AppBase.RootFrame.Navigate( MakeUnique( viewUri ) );
+
+            // BeginInvoke is a possible fix for an odd and misleading WP error message that might occur
+            // when two navigations are executed at the same time:
+            // http://social.msdn.microsoft.com/Forums/windowsapps/en-US/c68b397e-e16f-4474-b813-1ca03eef6932/navigation-is-not-allowed-when-the-task-is-not-in-the-foreground-error-while-debugging
+            AppBase.RootFrame.Dispatcher.BeginInvoke( () => AppBase.RootFrame.Navigate( MakeUnique( viewUri ) ) );
         }
 
         /// <summary>

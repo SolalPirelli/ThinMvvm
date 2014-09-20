@@ -68,7 +68,7 @@ namespace ThinMvvm.WindowsPhone
 
         /// <summary>
         /// Creates the root frame of the app.
-        /// Override this method to change the root frame's type, e.g. if you need one that supports transitions.
+        /// Override this method to change the root frame's type, e.g. to have a frame that supports transitions
         /// </summary>
         /// <returns>A frame that will be set as the root frame of the app.</returns>
         protected virtual PhoneApplicationFrame CreateRootFrame()
@@ -85,15 +85,14 @@ namespace ThinMvvm.WindowsPhone
 
         /// <summary>
         /// Checks whether this is the first time the application is run.
-        /// Only executions in which this method was called are counted.
+        /// Only executions in which this method was called are considered.
         /// </summary>
         /// <remarks>
         /// This method accesses the isolated storage, which Microsoft defines as "resource-intensive".
-        /// Therefore, implementors should avoid using this method unless they absolutely need it.
+        /// Therefore, avoid using this method unless it is absolutely needed.
         /// </remarks>
         protected bool IsFirstRun()
         {
-            // Do first run stuff now, message boxes (a common use case) can't be displayed before
             bool dummy;
             if ( !IsolatedStorageSettings.ApplicationSettings.TryGetValue( FirstRunKey, out dummy ) )
             {
@@ -112,9 +111,7 @@ namespace ThinMvvm.WindowsPhone
             RootVisual = RootFrame;
             RootFrame.Navigating -= OnAppOpening;
 
-            var args = new AppArguments( e.Uri );
-            // Overlapping navigations aren't allowed, schedule the new navigation for later
-            RootFrame.Dispatcher.BeginInvoke( () => Start( args ) );
+            Start( new AppArguments( e.Uri ) );
         }
 
         /// <summary>

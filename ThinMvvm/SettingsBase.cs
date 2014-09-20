@@ -13,7 +13,7 @@ using ThinMvvm.Internals;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Helper base class for settings.
+    /// Base class for settings.
     /// </summary>
     /// <typeparam name="TSelf">The type of the derived class implementing this class.</typeparam>
     public abstract class SettingsBase<TSelf> : ObservableObject
@@ -21,7 +21,8 @@ namespace ThinMvvm
     {
         private const string KeyPrefixSeparator = ".";
 
-        private readonly ISettingsStorage _settings;
+        private readonly ISettingsStorage _storage;
+        private readonly ISettingsStorage _live;
         private readonly string _keyPrefix;
 
         private Dictionary<string, Func<object>> _defaultValues;
@@ -30,18 +31,16 @@ namespace ThinMvvm
         /// <summary>
         /// Initializes a new instance of the <see cref="SettingsBase{TSelf}" /> class.
         /// </summary>
-        /// <param name="settings">The settings storage. Implementors' constructors should also take it as a parameter.</param>
-        protected SettingsBase( ISettingsStorage settings )
+        /// <param name="storage">The settings storage. Implementors' constructors should also take it as a parameter.</param>
+        protected SettingsBase( ISettingsStorage storage )
         {
-            if ( settings == null )
+            if ( storage == null )
             {
-                throw new ArgumentNullException( "settings" );
+                throw new ArgumentNullException( "storage" );
             }
 
-            _settings = settings;
-            // Make sure that different settings types don't collide
-            // e.g. if SettingsA and SettingsB both inherit from SettingsBase and have a property named X,
-            // setting A.X shouldn't affect B.X.
+            _storage = storage;
+            _live = new InMemorySettingsStorage();
             _keyPrefix = GetType().FullName + KeyPrefixSeparator;
         }
 
@@ -59,77 +58,106 @@ namespace ThinMvvm
         /// <param name="propertyName">The property name. This should not be specified; it will be filled in by the compiler.</param>
         protected T Get<T>( [CallerMemberName] string propertyName = "" )
         {
-            SetIfUndefined( propertyName );
-            return _settings.Get<T>( GetFullKey( propertyName ) );
+            string key = GetKey( propertyName );
+
+            if ( _live.IsDefined( key ) )
+            {
+                return _live.Get<T>( key );
+            }
+
+            if ( _storage.IsDefined( key ) )
+            {
+                var value = _storage.Get<T>( key );
+                RegisterToChanges( key, value );
+                _live.Set( key, value );
+                return value;
+            }
+
+            var defaultValue = GetDefaultValue<T>( propertyName );
+            RegisterToChanges( key, defaultValue );
+            _storage.Set( key, defaultValue );
+            _live.Set( key, defaultValue );
+            return defaultValue;
         }
 
         /// <summary>
         /// Sets the specified setting's value.
         /// This method is intended to be used from a property's set block.
         /// </summary>
+        /// <typeparam name="T">The setting type.</typeparam>
         /// <param name="value">The value.</param>
         /// <param name="propertyName">The property name. This should not be specified; it will be filled in by the compiler.</param>
-        protected void Set( object value, [CallerMemberName] string propertyName = "" )
+        protected void Set<T>( T value, [CallerMemberName] string propertyName = "" )
         {
-            string fullKey = GetFullKey( propertyName );
+            string key = GetKey( propertyName );
 
-            _settings.Set( fullKey, value );
+            if ( !_live.IsDefined( key ) || !object.Equals( _live.Get<T>( key ), value ) )
+            {
+                RegisterToChanges( key, value );
+            }
+
+            _live.Set( key, value );
+            _storage.Set( key, value );
 
             OnPropertyChanged( propertyName );
-
-            var propNotif = value as INotifyPropertyChanged;
-            if ( propNotif != null )
-            {
-                propNotif.PropertyChanged += ( s, _ ) => _settings.Set( fullKey, s );
-            }
-
-            var collNotif = value as INotifyCollectionChanged;
-            if ( collNotif != null )
-            {
-                collNotif.CollectionChanged += ( s, _ ) => _settings.Set( fullKey, s );
-            }
         }
 
 
         /// <summary>
-        /// If the specified setting is undefined, set it to its default value.
+        /// Gets the default value for the specified property.
         /// </summary>
-        private void SetIfUndefined( string key )
+        private T GetDefaultValue<T>( string propertyName )
         {
-            string fullKey = GetFullKey( key );
-
-            if ( _settings.IsDefined( fullKey ) )
-            {
-                return;
-            }
-
             if ( _defaultValues == null )
             {
                 _defaultValues = GetDefaultValues().AsDictionary;
             }
 
-            if ( !_defaultValues.ContainsKey( key ) )
+            if ( !_defaultValues.ContainsKey( propertyName ) )
             {
-                throw new InvalidOperationException( "Settings: no default value found for key " + key );
+                throw new InvalidOperationException( "Settings: no default value found for property " + propertyName );
             }
 
-            Set( _defaultValues[key](), key );
+            return (T) _defaultValues[propertyName]();
         }
 
 
         /// <summary>
-        /// Gets the full key for the specified setting key.
+        /// Gets the settings key for the specified property.
         /// </summary>
-        private string GetFullKey( string key )
+        /// <remarks>
+        /// This ensures that different settings types don't collide
+        /// e.g. if SettingsA and SettingsB both inherit from SettingsBase and have a property named X,
+        /// setting A.X shouldn't affect B.X.
+        /// </remarks>
+        private string GetKey( string propertyName )
         {
-            return _keyPrefix + key;
+            return _keyPrefix + propertyName;
+        }
+
+        /// <summary>
+        /// Register to change notifications for the specified object, with the specified settings key.
+        /// </summary>
+        private void RegisterToChanges( string key, object value )
+        {
+            var propNotif = value as INotifyPropertyChanged;
+            if ( propNotif != null )
+            {
+                propNotif.PropertyChanged += ( s, _ ) => _storage.Set( key, s );
+            }
+
+            var collNotif = value as INotifyCollectionChanged;
+            if ( collNotif != null )
+            {
+                collNotif.CollectionChanged += ( s, _ ) => _storage.Set( key, s );
+            }
         }
 
 
         /// <summary>
         /// Dictionary containing settings default values.
         /// This class is intended to be used with the collection initializer syntax,
-        /// e.g. <code>new SettingsDefaultValues&lt;MySettings&gt; { { x => x.SomeSetting, 42 } }</code>
+        /// e.g. <code>new SettingsDefaultValues&lt;MySettings&gt; { { x => x.SomeSetting, () => 42 } }</code>
         /// </summary>
         protected sealed class SettingsDefaultValues : IEnumerable
         {
@@ -159,6 +187,31 @@ namespace ThinMvvm
             IEnumerator IEnumerable.GetEnumerator()
             {
                 throw new NotSupportedException();
+            }
+        }
+
+
+        /// <summary>
+        /// In-memory settings storage, to avoid having to (de)serialize objects on each get/set call.
+        /// </summary>
+        private sealed class InMemorySettingsStorage : ISettingsStorage
+        {
+            private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
+
+
+            public bool IsDefined( string key )
+            {
+                return _values.ContainsKey( key );
+            }
+
+            public T Get<T>( string key )
+            {
+                return (T) _values[key];
+            }
+
+            public void Set( string key, object value )
+            {
+                _values[key] = value;
             }
         }
     }

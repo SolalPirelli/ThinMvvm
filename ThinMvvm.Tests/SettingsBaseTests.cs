@@ -131,13 +131,43 @@ namespace ThinMvvm.Tests
             var storage = new TestSettingsStorage();
             var settings = new TestSettings( storage );
 
-            bool b = settings.Bool;
-            string s = settings.String;
+            // just use the variables to trigger default value creation
+            Assert.AreEqual( true, settings.Bool );
+            Assert.AreEqual( "abc", settings.String );
 
+            Assert.AreEqual( 2, storage.Values.Count );
             Assert.IsTrue( storage.Values.ContainsKey( "ThinMvvm.Tests.SettingsBaseTests+TestSettings.Bool" ) );
             Assert.AreEqual( true, storage.Values["ThinMvvm.Tests.SettingsBaseTests+TestSettings.Bool"] );
             Assert.IsTrue( storage.Values.ContainsKey( "ThinMvvm.Tests.SettingsBaseTests+TestSettings.String" ) );
             Assert.AreEqual( "abc", storage.Values["ThinMvvm.Tests.SettingsBaseTests+TestSettings.String"] );
+        }
+
+        [TestMethod]
+        public void ExistingValueIsLoaded()
+        {
+            var storage = new TestSettingsStorage();
+            var settings = new TestSettings( storage );
+
+            storage.Values.Add( "ThinMvvm.Tests.SettingsBaseTests+TestSettings.String", "xyz" );
+
+            Assert.AreEqual( "xyz", settings.String );
+        }
+
+        [TestMethod]
+        public void ExistingObservableObjectIsListenedTo()
+        {
+            var storage = new TestSettingsStorage();
+            var settings = new TestSettings( storage );
+            var obj = new TestObservableObject();
+
+            storage.Values.Add( "ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableObject", obj );
+            storage.SetCallsCounts.Add( "ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableObject", 0 );
+
+            Assert.AreEqual( obj, settings.ObservableObject );
+
+            obj.FirePropertyChanged();
+
+            Assert.AreEqual( 1, storage.SetCallsCounts["ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableObject"] );
         }
 
         [TestMethod]
@@ -164,10 +194,11 @@ namespace ThinMvvm.Tests
             var storage = new TestSettingsStorage();
             var settings = new TestSettings( storage );
 
+            settings.ObservableObject = null;
             settings.ObservableObject = new TestObservableObject();
             settings.ObservableObject.FirePropertyChanged();
 
-            Assert.AreEqual( 2, storage.SetCallsCounts["ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableObject"] );
+            Assert.AreEqual( 3, storage.SetCallsCounts["ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableObject"] );
         }
 
         [TestMethod]
