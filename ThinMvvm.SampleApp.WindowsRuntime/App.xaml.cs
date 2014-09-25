@@ -11,7 +11,7 @@ using Windows.Phone.UI.Input;
 
 namespace ThinMvvm.SampleApp
 {
-    public sealed partial class App : AppBase
+    public sealed partial class App
     {
         public App()
         {

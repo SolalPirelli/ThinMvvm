@@ -8,7 +8,7 @@ using ThinMvvm.WindowsPhone;
 
 namespace ThinMvvm.SampleApp
 {
-    public sealed partial class App : AppBase
+    public sealed partial class App
     {
         protected override string Language
         {

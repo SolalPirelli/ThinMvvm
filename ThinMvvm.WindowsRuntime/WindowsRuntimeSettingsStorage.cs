@@ -16,7 +16,7 @@ namespace ThinMvvm.WindowsRuntime
     {
         // HACK: Since the maximum size of settings is 8 KB, we need to split larger ones.
         //       Unfortunately, we can't just split strings after a certain number of bytes 
-        //       since it could split multi-byte characters in two.
+        //       since it could split multi-byte characters in two. (the JsonDataContractSerializer does not escape non-ASCII chars)
         //       The maximum character length is 4 bytes.
         private const int MaximumSettingLength = 2048;
 
@@ -43,8 +43,14 @@ namespace ThinMvvm.WindowsRuntime
         {
             if ( IsDefined( key ) )
             {
-                var serializedValueBuilder = new StringBuilder();
                 int chunkCount = (int) _sizeStorage.Values[key];
+
+                if ( chunkCount == 0 )
+                {
+                    return default( T );
+                }
+
+                var serializedValueBuilder = new StringBuilder();
                 for ( int n = 0; n < chunkCount; n++ )
                 {
                     serializedValueBuilder.Append( _storage.Values[GetChunkKey( key, n )] );
@@ -78,6 +84,11 @@ namespace ThinMvvm.WindowsRuntime
         /// </summary>
         private static string[] SplitInChunks( string str, int chunkSize )
         {
+            if ( str == null )
+            {
+                return new string[0];
+            }
+
             int chunkCount = (int) Math.Ceiling( (double) str.Length / (double) chunkSize );
             string[] chunks = new string[chunkCount];
             for ( int n = 0; n < chunkCount; n++ )
