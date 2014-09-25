@@ -40,7 +40,7 @@ namespace ThinMvvm.WindowsRuntime
         /// </summary>
         /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
         /// <typeparam name="TView">The View type.</typeparam>
-        public void Bind<TViewModel, TView>() where TView : Windows.UI.Xaml.Controls.Page
+        public void Bind<TViewModel, TView>() where TView : Page
         {
             _views.Add( typeof( TViewModel ), typeof( TView ) );
         }

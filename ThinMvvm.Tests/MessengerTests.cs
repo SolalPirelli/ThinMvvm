@@ -11,8 +11,8 @@ namespace ThinMvvm.Tests
     {
         private sealed class IntWrapper
         {
-            public int Value { get; set; }
-            public static int StaticValue { get; set; }
+            public int Value { get; private set; }
+            public static int StaticValue { get; private set; }
 
             public void Increment( int incr )
             {
@@ -62,7 +62,7 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void SendWorksWithRegisteredClosures()
         {
-            int incr = 42;
+            const int incr = 42;
             Messenger.Register<int>( _ => Counter += incr );
 
             ForceGC();
@@ -75,7 +75,7 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void SendWorksWithRegisteredMethods()
         {
-            var wrapper = new IntWrapper { Value = 0 };
+            var wrapper = new IntWrapper();
             Messenger.Register<int>( wrapper.Increment );
 
             ForceGC();
@@ -140,6 +140,7 @@ namespace ThinMvvm.Tests
             Messenger.Send( 42 );
 
             Assert.AreEqual( 0, IntWrapper.StaticValue );
+            Assert.IsFalse( wrapperRef.IsAlive );
         }
 
         [TestMethod]

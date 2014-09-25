@@ -15,7 +15,7 @@ namespace ThinMvvm.Logging.Tests
         {
             public object CurrentViewModel { get { return _viewModels.Peek(); } }
 
-            private Stack<object> _viewModels = new Stack<object>();
+            private readonly Stack<object> _viewModels = new Stack<object>();
 
             public void NavigateTo<T>() where T : ViewModel<NoParameter>
             {

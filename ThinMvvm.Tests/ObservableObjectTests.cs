@@ -40,9 +40,10 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void SetPropertySetsTheField()
         {
-            var obj = new TestObservableObject();
-
-            obj.Value = 42;
+            var obj = new TestObservableObject
+            {
+                Value = 42
+            };
 
             Assert.AreEqual( 42, obj._value, "SetProperty() should set the field to the correct value." );
         }
@@ -50,9 +51,11 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void SetPropertyDoesNotFirePropertyChangedIfThereWasNoChange()
         {
-            var obj = new TestObservableObject();
+            var obj = new TestObservableObject
+            {
+                Value = 0
+            };
 
-            obj.Value = 0;
             int counter = 0;
             obj.PropertyChanged += ( s, e ) => counter++;
 
@@ -64,9 +67,11 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void SetPropertyFiresPropertyChangedWhenNeeded()
         {
-            var obj = new TestObservableObject();
+            var obj = new TestObservableObject
+            {
+                Value = 0
+            };
 
-            obj.Value = 0;
             int counter = 0;
             obj.PropertyChanged += ( s, e ) => counter++;
 

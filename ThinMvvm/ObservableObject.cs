@@ -38,7 +38,7 @@ namespace ThinMvvm
         /// <param name="propertyName">Optional. The property's name. If unset, the compiler will fill this parameter in.</param>
         protected void OnPropertyChanged( [CallerMemberName] string propertyName = "" )
         {
-            var evt = this.PropertyChanged;
+            var evt = PropertyChanged;
             if ( evt != null )
             {
                 if ( _context == null )
@@ -63,7 +63,7 @@ namespace ThinMvvm
             if ( !object.Equals( field, value ) )
             {
                 field = value;
-                this.OnPropertyChanged( propertyName );
+                OnPropertyChanged( propertyName );
             }
         }
     }

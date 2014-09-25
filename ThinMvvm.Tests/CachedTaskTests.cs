@@ -13,7 +13,7 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void Create_Works()
         {
-            long id = 10;
+            const long id = 10;
             var now = DateTimeOffset.Now.AddDays( 1 );
             var task = CachedTask.Create( () => Task.FromResult( 0 ), id, now );
 

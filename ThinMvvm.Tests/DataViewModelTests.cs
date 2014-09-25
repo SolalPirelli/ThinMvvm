@@ -18,7 +18,7 @@ namespace ThinMvvm.Tests
 
             public CancellationToken PublicCurrentCancellationToken
             {
-                get { return this.CurrentCancellationToken; }
+                get { return CurrentCancellationToken; }
             }
 
             protected override Task RefreshAsync( bool force, CancellationToken token )

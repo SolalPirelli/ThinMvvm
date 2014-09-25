@@ -7,7 +7,7 @@
     <ProjectGuid>{9573EAF5-D0F9-4103-A9C6-8D35D839A272}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinMvvm.SampleApp.WindowsRuntime</RootNamespace>
+    <RootNamespace>ThinMvvm.SampleApp</RootNamespace>
     <AssemblyName>ThinMvvm.SampleApp.WindowsRuntime</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>

@@ -227,7 +227,7 @@ namespace ThinMvvm.Tests
         public void Nothing__Data__NoData_WhileLoading()
         {
             var source = new TaskCompletionSource<int>();
-            var vm = new TestCachedDataViewModel()
+            var vm = new TestCachedDataViewModel
             {
                 Data = CachedTask.Create( () => source.Task ),
                 HandleDataMethod = _ => true
@@ -246,7 +246,7 @@ namespace ThinMvvm.Tests
         public async Task Data__NewData__DoesNotHandleTwice()
         {
             int count = 0;
-            var vm = new TestCachedDataViewModel()
+            var vm = new TestCachedDataViewModel
             {
                 Data = CachedTask.Create( () => Task.FromResult( 0 ) ),
                 HandleDataMethod = _ => { count++; return true; }
@@ -268,7 +268,7 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public async Task Data__NewData__UsedTemporarily()
         {
-            var vm = new TestCachedDataViewModel()
+            var vm = new TestCachedDataViewModel
             {
                 Data = CachedTask.Create( () => Task.FromResult( 0 ) ),
                 HandleDataMethod = _ => true
@@ -290,7 +290,7 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public async Task Data__NewDataDifferentId__NoData()
         {
-            var vm = new TestCachedDataViewModel()
+            var vm = new TestCachedDataViewModel
             {
                 Data = CachedTask.Create( () => Task.FromResult( 0 ), id: 0 ),
                 HandleDataMethod = _ => true

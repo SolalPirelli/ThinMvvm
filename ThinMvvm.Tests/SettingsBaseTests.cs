@@ -14,8 +14,8 @@ namespace ThinMvvm.Tests
     {
         private sealed class TestSettingsStorage : ISettingsStorage
         {
-            public Dictionary<string, object> Values = new Dictionary<string, object>();
-            public Dictionary<string, int> SetCallsCounts = new Dictionary<string, int>();
+            public readonly Dictionary<string, object> Values = new Dictionary<string, object>();
+            public readonly Dictionary<string, int> SetCallsCounts = new Dictionary<string, int>();
 
             public bool IsDefined( string key )
             {
@@ -181,9 +181,10 @@ namespace ThinMvvm.Tests
         [TestMethod]
         public void SetAndGetWorks()
         {
-            var settings = new TestSettings( new TestSettingsStorage() );
-
-            settings.String = "xyz";
+            var settings = new TestSettings( new TestSettingsStorage() )
+            {
+                String = "xyz"
+            };
 
             Assert.AreEqual( "xyz", settings.String );
         }
@@ -192,9 +193,11 @@ namespace ThinMvvm.Tests
         public void SettingsAreSavedWhenNestedPropertyChanges()
         {
             var storage = new TestSettingsStorage();
-            var settings = new TestSettings( storage );
+            var settings = new TestSettings( storage )
+            {
+                ObservableObject = null
+            };
 
-            settings.ObservableObject = null;
             settings.ObservableObject = new TestObservableObject();
             settings.ObservableObject.FirePropertyChanged();
 
@@ -205,9 +208,11 @@ namespace ThinMvvm.Tests
         public void SettingsAreSavedWhenObservableCollectionChanges()
         {
             var storage = new TestSettingsStorage();
-            var settings = new TestSettings( storage );
+            var settings = new TestSettings( storage )
+            {
+                ObservableCollection = new TestObservableCollection()
+            };
 
-            settings.ObservableCollection = new TestObservableCollection();
             settings.ObservableCollection.FireCollectionChanged();
 
             Assert.AreEqual( 2, storage.SetCallsCounts["ThinMvvm.Tests.SettingsBaseTests+TestSettings.ObservableCollection"] );

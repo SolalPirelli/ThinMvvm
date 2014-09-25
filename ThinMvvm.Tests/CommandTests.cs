@@ -71,7 +71,7 @@ namespace ThinMvvm.Tests
                 set { SetProperty( ref _value, value ); }
             }
 
-            public InpcExample Other { get; set; }
+            private InpcExample Other { get; set; }
 
             public void TestCommand()
             {

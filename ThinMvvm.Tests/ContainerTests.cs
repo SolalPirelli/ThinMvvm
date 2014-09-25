@@ -19,9 +19,6 @@ namespace ThinMvvm.Tests
 
         private class NotDependent
         {
-            public NotDependent()
-            {
-            }
         }
 
         private class DependentOnOneDependency

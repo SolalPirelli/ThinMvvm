@@ -19,11 +19,9 @@ namespace ThinMvvm.Tests
                 set { SetProperty( ref _property, value ); }
             }
 
+#pragma warning disable 0649 // unused field
             public int Field;
-            private void IgnoreUnusedField()
-            {
-                Field++;
-            }
+#pragma warning restore 0649
         }
 
         [TestMethod]
@@ -31,7 +29,7 @@ namespace ThinMvvm.Tests
         public void ExceptionThrownOnListenToFieldExpression()
         {
             var inpc = new TestNotifyPropertyChanged();
-            inpc.ListenToProperty<TestNotifyPropertyChanged, int>( x => x.Field, () => { } );
+            inpc.ListenToProperty( x => x.Field, () => { } );
         }
 
         [TestMethod]
@@ -39,7 +37,7 @@ namespace ThinMvvm.Tests
         public void ExceptionThrownOnListenToConstantExpression()
         {
             var inpc = new TestNotifyPropertyChanged();
-            inpc.ListenToProperty<TestNotifyPropertyChanged, int>( x => 0, () => { } );
+            inpc.ListenToProperty( x => 0, () => { } );
         }
 
         [TestMethod]

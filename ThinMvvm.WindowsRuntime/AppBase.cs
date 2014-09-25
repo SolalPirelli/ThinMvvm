@@ -97,7 +97,7 @@ namespace ThinMvvm.WindowsRuntime
                 // Removes the turnstile navigation for startup.
                 if ( RootFrame.ContentTransitions != null )
                 {
-                    this._frametransitions = RootFrame.ContentTransitions;
+                    _frametransitions = RootFrame.ContentTransitions;
                     RootFrame.ContentTransitions = null;
                 }
 
@@ -117,8 +117,8 @@ namespace ThinMvvm.WindowsRuntime
         /// <param name="e">Details about the navigation event.</param>
         private void RootFrame_FirstNavigated( object sender, NavigationEventArgs e )
         {
-            RootFrame.ContentTransitions = this._frametransitions ?? new TransitionCollection();
-            RootFrame.Navigated -= this.RootFrame_FirstNavigated;
+            RootFrame.ContentTransitions = _frametransitions ?? new TransitionCollection();
+            RootFrame.Navigated -= RootFrame_FirstNavigated;
         }
 
         /// <summary>

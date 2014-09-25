@@ -5,7 +5,7 @@ using ThinMvvm.SampleApp.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-namespace ThinMvvm.SampleApp.WindowsRuntime.Views
+namespace ThinMvvm.SampleApp.Views
 {
     public sealed partial class NewsItemView : Page
     {

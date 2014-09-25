@@ -4,12 +4,12 @@
 using ThinMvvm.Logging;
 using ThinMvvm.SampleApp.Services;
 using ThinMvvm.SampleApp.ViewModels;
-using ThinMvvm.SampleApp.WindowsRuntime.Views;
+using ThinMvvm.SampleApp.Views;
 using ThinMvvm.WindowsRuntime;
 using Windows.ApplicationModel.Activation;
 using Windows.Phone.UI.Input;
 
-namespace ThinMvvm.SampleApp.WindowsRuntime
+namespace ThinMvvm.SampleApp
 {
     public sealed partial class App : AppBase
     {

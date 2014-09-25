@@ -6,7 +6,7 @@ using ThinMvvm.SampleApp.Services;
 using ThinMvvm.SampleApp.ViewModels;
 using ThinMvvm.WindowsPhone;
 
-namespace ThinMvvm.SampleApp.WindowsPhone
+namespace ThinMvvm.SampleApp
 {
     public sealed partial class App : AppBase
     {
