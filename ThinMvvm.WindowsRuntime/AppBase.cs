@@ -58,6 +58,9 @@ namespace ThinMvvm.WindowsRuntime
         /// should be handled separately by overriding the associated methods.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
+        /// <remarks>
+        /// This method can also be invoked while the app is already running.
+        /// </remarks>
         protected abstract void Launch( LaunchActivatedEventArgs e );
 
         /// <summary>
@@ -102,9 +105,9 @@ namespace ThinMvvm.WindowsRuntime
                 }
 
                 RootFrame.Navigated += RootFrame_FirstNavigated;
-
-                Launch( e );
             }
+
+            Launch( e );
 
             Window.Current.Activate();
         }
