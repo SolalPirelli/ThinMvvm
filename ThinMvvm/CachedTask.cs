@@ -12,9 +12,6 @@ namespace ThinMvvm
     /// <typeparam name="T">The operation result type.</typeparam>
     public sealed class CachedTask<T>
     {
-        private const long DefaultId = 0;
-        private static readonly DateTimeOffset DefaultExpirationDate = DateTimeOffset.MaxValue;
-
         private readonly Func<Task<T>> _getter;
 
         /// <summary>
@@ -44,8 +41,8 @@ namespace ThinMvvm
         internal CachedTask( Func<Task<T>> getter, long? id, DateTimeOffset? expirationDate, bool hasData, bool shouldBeCached )
         {
             _getter = getter;
-            Id = id ?? DefaultId;
-            ExpirationDate = expirationDate ?? DefaultExpirationDate;
+            Id = id ?? CachedTask.DefaultId;
+            ExpirationDate = expirationDate ?? CachedTask.DefaultExpirationDate;
             HasData = hasData;
             ShouldBeCached = shouldBeCached;
         }
@@ -66,6 +63,11 @@ namespace ThinMvvm
     /// </summary>
     public static class CachedTask
     {
+        // These constants are here to avoid duplication because of genericity,
+        // i.e. CachedTask<int>.DefaultExpirationDate != CachedTask<string>.DefaultExpirationDate.
+        internal const long DefaultId = 0;
+        internal static readonly DateTimeOffset DefaultExpirationDate = DateTimeOffset.MaxValue;
+
         /// <summary>
         /// Creates a <see cref="CachedTask{T}"/> with a result that will be cached, an optional ID and an optional expiration date.
         /// </summary>

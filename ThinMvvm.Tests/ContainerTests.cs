@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ThinMvvm.Tests
 {
     [TestClass]
-    public class ContainerTests
+    public sealed class ContainerTests
     {
         private interface IDependency { }
         private interface IDependencyEx : IDependency { }

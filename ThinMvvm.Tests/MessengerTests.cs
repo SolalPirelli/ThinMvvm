@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ThinMvvm.Tests
 {
     [TestClass]
-    public class MessengerTests
+    public sealed class MessengerTests
     {
         private sealed class IntWrapper
         {

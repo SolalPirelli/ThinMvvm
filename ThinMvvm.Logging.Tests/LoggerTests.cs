@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ThinMvvm.Logging.Tests
 {
     [TestClass]
-    public class LoggerTests
+    public sealed class LoggerTests
     {
         private class TestNavigationService : INavigationService
         {

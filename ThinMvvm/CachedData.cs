@@ -44,7 +44,7 @@ namespace ThinMvvm
         /// <summary>
         /// Creates a new instance of the <see cref="CachedData{T}" /> class with data.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">The data.</param>
         public CachedData( T data )
         {
             HasData = true;

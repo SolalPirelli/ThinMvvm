@@ -10,10 +10,6 @@ namespace ThinMvvm.Internals
     /// <summary>
     /// The base class for commands.
     /// </summary>
-    /// <remarks>
-    /// ICommand is implemented partially to let implementers implement it explicitly
-    /// so that the parameters can be ignored or of the correct type.
-    /// </remarks>
     [EditorBrowsable( EditorBrowsableState.Never )]
     public abstract class CommandBase
     {

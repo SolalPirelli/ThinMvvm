@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ThinMvvm.Tests
 {
     [TestClass]
-    public class ObservableObjectTests
+    public sealed class ObservableObjectTests
     {
         private sealed class TestObservableObject : ObservableObject
         {

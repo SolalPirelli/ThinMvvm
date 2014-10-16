@@ -69,8 +69,7 @@ namespace ThinMvvm.Internals
             }
             else
             {
-                var prop = memberExpr.Member as PropertyInfo;
-                value = prop.GetValue( memberConstExpr.Value );
+                value = ( (PropertyInfo) memberExpr.Member ).GetValue( memberConstExpr.Value );
             }
 
             return Tuple.Create( value, propertyExpr.Member.Name );
