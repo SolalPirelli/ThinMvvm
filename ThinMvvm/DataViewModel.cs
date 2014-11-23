@@ -128,14 +128,7 @@ namespace ThinMvvm
             {
                 if ( !token.IsCancellationRequested )
                 {
-                    if ( DataViewModelOptions.IsNetworkException( e ) )
-                    {
-                        DataStatus = DataStatus.NetworkError;
-                    }
-                    else
-                    {
-                        DataStatus = DataStatus.Error;
-                    }
+                    DataStatus = DataViewModelOptions.IsNetworkException( e ) ? DataStatus.NetworkError : DataStatus.Error;
                 }
             }
 

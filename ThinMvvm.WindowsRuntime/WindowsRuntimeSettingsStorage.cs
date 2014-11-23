@@ -89,7 +89,7 @@ namespace ThinMvvm.WindowsRuntime
                 return new string[0];
             }
 
-            int chunkCount = (int) Math.Ceiling( (double) str.Length / (double) chunkSize );
+            int chunkCount = (int) Math.Ceiling( str.Length / (double) chunkSize );
             string[] chunks = new string[chunkCount];
             for ( int n = 0; n < chunkCount; n++ )
             {
