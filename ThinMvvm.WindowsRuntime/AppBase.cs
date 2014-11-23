@@ -5,8 +5,6 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Animation;
-using Windows.UI.Xaml.Navigation;
 
 namespace ThinMvvm.WindowsRuntime
 {
@@ -20,10 +18,6 @@ namespace ThinMvvm.WindowsRuntime
     /// </remarks>
     public abstract class AppBase : Application
     {
-        // Holds the frame's transitions, since they must be removed prior to the first navigation and re-added afterwards
-        private TransitionCollection _frametransitions;
-
-
         /// <summary>
         /// Gets the root frame of the application.
         /// </summary>
@@ -94,34 +88,8 @@ namespace ThinMvvm.WindowsRuntime
             }
 
             RootFrame = (Frame) Window.Current.Content;
-
-            if ( RootFrame.Content == null )
-            {
-                // Removes the turnstile navigation for startup.
-                if ( RootFrame.ContentTransitions != null )
-                {
-                    _frametransitions = RootFrame.ContentTransitions;
-                    RootFrame.ContentTransitions = null;
-                }
-
-                RootFrame.Navigated += RootFrame_FirstNavigated;
-            }
-
             Launch( e );
-
             Window.Current.Activate();
-        }
-
-
-        /// <summary>
-        /// Restores the content transitions after the app has launched.
-        /// </summary>
-        /// <param name="sender">The object where the handler is attached.</param>
-        /// <param name="e">Details about the navigation event.</param>
-        private void RootFrame_FirstNavigated( object sender, NavigationEventArgs e )
-        {
-            RootFrame.ContentTransitions = _frametransitions ?? new TransitionCollection();
-            RootFrame.Navigated -= RootFrame_FirstNavigated;
         }
 
         /// <summary>

@@ -20,7 +20,12 @@ namespace ThinMvvm.SampleApp
 
         protected override void Launch( LaunchActivatedEventArgs e )
         {
-            // simple app, no arguments necessary
+            // Only do stuff if the app wasn't already open
+            if ( e.PreviousExecutionState != ApplicationExecutionState.ClosedByUser
+              && e.PreviousExecutionState != ApplicationExecutionState.NotRunning )
+            {
+                return;
+            }
 
             var navigationService = Container.Bind<IWindowsRuntimeNavigationService, WindowsRuntimeNavigationService>();
             Container.Bind<ISettingsStorage, WindowsRuntimeSettingsStorage>();
