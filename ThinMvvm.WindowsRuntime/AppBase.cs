@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Solal Pirelli 2014
 // See License.txt file for more details
 
+using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
@@ -18,15 +19,35 @@ namespace ThinMvvm.WindowsRuntime
     /// </remarks>
     public abstract class AppBase : Application
     {
+        private static Frame _rootFrame;
+
         /// <summary>
         /// Gets the root frame of the application.
         /// </summary>
         /// <remarks>
         /// Override the <see cref="M:AppBase.GetRootFrame" /> method to provide your own frame.
         /// If your app needs to handle special launches, such as a share target, you'll need to set
-        /// <c>Window.Current.Content</c> to this property manually, and call <c>Window.Current.Activate()</c>.
+        /// this property manually, then set <c>Window.Current.Content</c> to this property, 
+        /// and call <c>Window.Current.Activate()</c>.
         /// </remarks>
-        protected internal static Frame RootFrame { get; set; }
+        protected internal static Frame RootFrame
+        {
+            get { return _rootFrame; }
+            protected set
+            {
+                if ( value == null )
+                {
+                    throw new ArgumentNullException();
+                }
+
+                if ( _rootFrame != null )
+                {
+                    throw new InvalidOperationException( "Cannot overwrite the root frame of the app." );
+                }
+
+                _rootFrame = value;
+            }
+        }
 
 
         /// <summary>
@@ -35,7 +56,6 @@ namespace ThinMvvm.WindowsRuntime
         protected AppBase()
         {
             Suspending += OnSuspending;
-            RootFrame = CreateRootFrame();
         }
 
 
@@ -87,6 +107,7 @@ namespace ThinMvvm.WindowsRuntime
                     ReloadState();
                 }
 
+                RootFrame = CreateRootFrame();
                 Window.Current.Content = RootFrame;
             }
 

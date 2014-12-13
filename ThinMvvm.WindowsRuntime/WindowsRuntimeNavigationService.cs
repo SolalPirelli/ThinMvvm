@@ -32,6 +32,11 @@ namespace ThinMvvm.WindowsRuntime
             _backStack = new Stack<dynamic>();
             _shouldIgnore = new Stack<bool>();
 
+            if ( AppBase.RootFrame == null )
+            {
+                throw new InvalidOperationException( "AppBase.RootFrame must be set before instantiating the WindowsRuntimeNavigationService." );
+            }
+
             AppBase.RootFrame.Navigated += RootFrame_Navigated;
         }
 
