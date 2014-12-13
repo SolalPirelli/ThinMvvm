@@ -21,7 +21,12 @@ namespace ThinMvvm.WindowsRuntime
         /// <summary>
         /// Gets the root frame of the application.
         /// </summary>
-        internal static Frame RootFrame { get; private set; }
+        /// <remarks>
+        /// Override the <see cref="M:AppBase.GetRootFrame" /> method to provide your own frame.
+        /// If your app needs to handle special launches, such as a share target, you'll need to set
+        /// <c>Window.Current.Content</c> to this property manually, and call <c>Window.Current.Activate()</c>.
+        /// </remarks>
+        protected internal static Frame RootFrame { get; set; }
 
 
         /// <summary>
@@ -51,11 +56,11 @@ namespace ThinMvvm.WindowsRuntime
         /// other endpoints (e.g. opening files or displaying search results)
         /// should be handled separately by overriding the associated methods.
         /// </summary>
-        /// <param name="e">Details about the launch request and process.</param>
+        /// <param name="args">Details about the launch request and process.</param>
         /// <remarks>
         /// This method can also be invoked while the app is already running.
         /// </remarks>
-        protected abstract void Launch( LaunchActivatedEventArgs e );
+        protected abstract void Launch( LaunchActivatedEventArgs args );
 
         /// <summary>
         /// Save state when the application is about to be set to the background (but will not always be terminated).
@@ -72,14 +77,12 @@ namespace ThinMvvm.WindowsRuntime
         /// Other entry points will be used when the application is launched to 
         /// open a specific file, display search results, and so forth.
         /// </summary>
-        /// <param name="e">Details about the launch request and process.</param>
-        protected override sealed void OnLaunched( LaunchActivatedEventArgs e )
+        /// <param name="args">Details about the launch request and process.</param>
+        protected override sealed void OnLaunched( LaunchActivatedEventArgs args )
         {
-            // Do not repeat app initialization when the Window already has content,
-            // just ensure that the window is active
             if ( Window.Current.Content == null )
             {
-                if ( e.PreviousExecutionState == ApplicationExecutionState.Terminated )
+                if ( args.PreviousExecutionState == ApplicationExecutionState.Terminated )
                 {
                     ReloadState();
                 }
@@ -87,8 +90,7 @@ namespace ThinMvvm.WindowsRuntime
                 Window.Current.Content = RootFrame;
             }
 
-            RootFrame = (Frame) Window.Current.Content;
-            Launch( e );
+            Launch( args );
             Window.Current.Activate();
         }
 
@@ -98,10 +100,10 @@ namespace ThinMvvm.WindowsRuntime
         /// of memory still intact.
         /// </summary>
         /// <param name="sender">The source of the suspend request.</param>
-        /// <param name="e">Details about the suspend request.</param>
-        private void OnSuspending( object sender, SuspendingEventArgs e )
+        /// <param name="args">Details about the suspend request.</param>
+        private void OnSuspending( object sender, SuspendingEventArgs args )
         {
-            var deferral = e.SuspendingOperation.GetDeferral();
+            var deferral = args.SuspendingOperation.GetDeferral();
             SaveState();
             deferral.Complete();
         }
