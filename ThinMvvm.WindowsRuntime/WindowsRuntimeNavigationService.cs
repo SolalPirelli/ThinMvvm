@@ -149,7 +149,7 @@ namespace ThinMvvm.WindowsRuntime
                     OnNavigated( newTop, false );
                 }
             }
-            else if ( e.NavigationMode == NavigationMode.Forward || e.NavigationMode == NavigationMode.New )
+            else
             {
                 if ( _removeCurrentFromBackStack )
                 {
