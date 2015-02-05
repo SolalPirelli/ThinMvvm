@@ -4,7 +4,6 @@
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle( "ThinMvvm" )]
 [assembly: AssemblyDescription( "MVVM framework for thin clients." )]
@@ -12,10 +11,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
 
-[assembly: ComVisible( false )]
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "0.9.27" )]
+[assembly: AssemblyVersion( "0.9.28" )]
 
 [assembly: InternalsVisibleTo( "ThinMvvm.Logging" )]
 [assembly: InternalsVisibleTo( "ThinMvvm.WindowsPhone" )]

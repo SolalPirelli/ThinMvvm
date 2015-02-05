@@ -2,7 +2,6 @@
 // See License.txt file for more details
 
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle( "ThinMvvm.Logging.Tests" )]
 [assembly: AssemblyDescription( "Tests for ThinMvvm.Logging." )]
@@ -10,6 +9,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2014" )]
 [assembly: AssemblyCulture( "" )]
 
-[assembly: ComVisible( false )]
-
-[assembly: AssemblyVersion( "1.0.0" )]
+[assembly: AssemblyVersion( "1.0.0.*" )]
