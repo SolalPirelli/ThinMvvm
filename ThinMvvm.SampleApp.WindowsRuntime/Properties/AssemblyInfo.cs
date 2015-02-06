@@ -8,6 +8,6 @@ using System.Resources;
 [assembly: AssemblyDescription( "ThinMVVM sample app for the Windows Runtime." )]
 [assembly: AssemblyCopyright( "Copyright © 2014-15 Solal Pirelli" )]
 [assembly: AssemblyCulture( "" )]
-
-[assembly: AssemblyVersion( "1.0.0.*" )]
 [assembly: NeutralResourcesLanguageAttribute( "en-US" )]
+
+[assembly: AssemblyVersion( "1.0.0" )]

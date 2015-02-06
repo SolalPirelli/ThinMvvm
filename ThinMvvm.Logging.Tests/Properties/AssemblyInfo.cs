@@ -9,4 +9,4 @@ using System.Reflection;
 [assembly: AssemblyCopyright( "Copyright © 2014-15 Solal Pirelli" )]
 [assembly: AssemblyCulture( "" )]
 
-[assembly: AssemblyVersion( "1.0.0.*" )]
+[assembly: AssemblyVersion( "1.0.0" )]

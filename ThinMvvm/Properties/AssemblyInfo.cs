@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "0.9.29" )]
+[assembly: AssemblyVersion( "0.10.0" )]
 
 [assembly: InternalsVisibleTo( "ThinMvvm.Logging" )]
 [assembly: InternalsVisibleTo( "ThinMvvm.WindowsPhone" )]
