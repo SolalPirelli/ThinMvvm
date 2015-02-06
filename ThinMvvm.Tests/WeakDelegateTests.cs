@@ -61,7 +61,7 @@ namespace ThinMvvm.Tests
 
             GC.Collect();
 
-            Assert.IsTrue( weakGetOne.TryInvoke( null, out result ) );
+            Assert.IsTrue( weakGetOne.TryInvoke( new object[0], out result ) );
             Assert.AreEqual( 1, result );
         }
 
@@ -72,7 +72,7 @@ namespace ThinMvvm.Tests
             var weakGetOne = new WeakDelegate( new Func<int>( instance.GetOne ) );
             object result;
 
-            Assert.IsTrue( weakGetOne.TryInvoke( null, out result ) );
+            Assert.IsTrue( weakGetOne.TryInvoke( new object[0], out result ) );
             Assert.AreEqual( 1, result );
 
             GC.KeepAlive( instance );

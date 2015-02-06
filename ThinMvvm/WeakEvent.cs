@@ -8,8 +8,12 @@ using ThinMvvm.Internals;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Event that takes weak references to its handlers.
+    /// Event that does its best to only have weak references to its handlers.
     /// </summary>
+    /// <remarks>
+    /// Weak references are possible on most event handlers, but for instance they are not possible
+    /// on private handlers in framework code in restricted environments such as Silverlight.
+    /// </remarks>
     public sealed class WeakEvent
     {
         private readonly List<WeakDelegate> _handlers;

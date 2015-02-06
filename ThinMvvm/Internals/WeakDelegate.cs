@@ -8,17 +8,17 @@ using System.Runtime.CompilerServices;
 namespace ThinMvvm.Internals
 {
     /// <summary>
-    /// Delegate that take a weak reference on its target.
+    /// Delegate that does its best to only have a weak reference to its target.
     /// </summary>
     internal sealed class WeakDelegate
     {
         private readonly MethodInfo _method;
-        private readonly WeakReference<object> _targetRef;
-
-#pragma warning disable 0414 // Field is assigned but never used
-        // If the delegate is a closure, a strong reference to the target is needed
+        // If the delegate isn't friendly to reflection, bail out and keep a strong reference.
+        private readonly Delegate _original;
+        // If the delegate is a closure, a strong reference to the target is needed, since there are no other references to it
         private readonly object _targetStrongRef;
-#pragma warning restore 0414
+        // Otherwise we have a normal delegate and we only keep a weak reference
+        private readonly WeakReference<object> _targetRef;
 
         /// <summary>
         /// Creates a new instance of the <see cref="WeakDelegate" /> class with the specified delegate.
@@ -27,10 +27,21 @@ namespace ThinMvvm.Internals
         public WeakDelegate( Delegate wrapped )
         {
             _method = wrapped.GetMethodInfo();
-            _targetRef = wrapped.Target == null ? null : new WeakReference<object>( wrapped.Target );
+
+            _original =
+                // Open delegate
+                ( wrapped.Target == null && !_method.IsStatic )
+                // Private method in a private type, possibly untrusted code, better back out
+             || ( _method.IsPrivate && wrapped.Target != null && !wrapped.Target.GetType().GetTypeInfo().IsPublic ) ?
+                wrapped : null;
+
             _targetStrongRef =
-                _method.DeclaringType.GetTypeInfo().GetCustomAttribute<CompilerGeneratedAttribute>() == null ?
+                _original == null && _method.DeclaringType.GetTypeInfo().GetCustomAttribute<CompilerGeneratedAttribute>() == null ?
                 null : wrapped.Target;
+
+            _targetRef =
+                _targetStrongRef == null && wrapped.Target != null ?
+                new WeakReference<object>( wrapped.Target ) : null;
         }
 
         /// <summary>
@@ -41,13 +52,26 @@ namespace ThinMvvm.Internals
         /// <returns>True if the delegate is still alive; false otherwise.</returns>
         public bool TryInvoke( object[] parameters, out object result )
         {
+            object target;
+
+            if ( _original != null )
+            {
+                result = _original.DynamicInvoke( parameters );
+                return true;
+            }
+
+            if ( _targetStrongRef != null )
+            {
+                result = _method.Invoke( _targetStrongRef, parameters );
+                return true;
+            }
+
             if ( _targetRef == null )
             {
                 result = _method.Invoke( null, parameters );
                 return true;
             }
 
-            object target;
             if ( _targetRef.TryGetTarget( out target ) )
             {
                 result = _method.Invoke( target, parameters );
@@ -69,6 +93,19 @@ namespace ThinMvvm.Internals
             if ( other == null )
             {
                 result = false;
+                return true;
+            }
+
+            if ( _original != null )
+            {
+                result = _original == other;
+                return true;
+            }
+
+            if ( _targetStrongRef != null )
+            {
+                result = _method == other.GetMethodInfo()
+                      && _targetStrongRef == other.Target;
                 return true;
             }
 
