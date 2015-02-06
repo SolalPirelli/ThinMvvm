@@ -28,6 +28,11 @@ namespace ThinMvvm
         /// <param name="handler">The handler.</param>
         public void Add( Delegate handler )
         {
+            if ( handler == null )
+            {
+                throw new ArgumentNullException( "handler" );
+            }
+
             _handlers.Add( new WeakDelegate( handler ) );
         }
 
@@ -37,6 +42,11 @@ namespace ThinMvvm
         /// <param name="handler">The handler.</param>
         public void Remove( Delegate handler )
         {
+            if ( handler == null )
+            {
+                throw new ArgumentNullException( "handler" );
+            }
+
             _handlers.RemoveAll( weakHandler =>
             {
                 bool result;
