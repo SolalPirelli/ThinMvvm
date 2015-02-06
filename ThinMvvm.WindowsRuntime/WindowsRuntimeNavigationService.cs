@@ -15,6 +15,7 @@ namespace ThinMvvm.WindowsRuntime
     /// </summary>
     public sealed class WindowsRuntimeNavigationService : IWindowsRuntimeNavigationService
     {
+        private readonly WeakEvent _navigated;
         private readonly Dictionary<Type, Type> _views;
         // HACK: IViewModel can't be covariant because it would forbid value types as TParameters,
         //       and having a non-generic ViewModel that shouldn't be implemented is a terrible idea
@@ -28,6 +29,7 @@ namespace ThinMvvm.WindowsRuntime
         /// </summary>
         public WindowsRuntimeNavigationService()
         {
+            _navigated = new WeakEvent();
             _views = new Dictionary<Type, Type>();
             _backStack = new Stack<dynamic>();
             _shouldIgnore = new Stack<bool>();
@@ -102,14 +104,14 @@ namespace ThinMvvm.WindowsRuntime
         /// <summary>
         /// Occurs when the service navigates to a page, forwards or backwards.
         /// </summary>
-        public event EventHandler<NavigatedEventArgs> Navigated;
+        public event EventHandler<NavigatedEventArgs> Navigated
+        {
+            add { _navigated.Add( value ); }
+            remove { _navigated.Remove( value ); }
+        }
         private void OnNavigated( object viewModel, bool isForward )
         {
-            var evt = Navigated;
-            if ( evt != null )
-            {
-                evt( this, new NavigatedEventArgs( viewModel, isForward ) );
-            }
+            _navigated.Raise( this, new NavigatedEventArgs( viewModel, isForward ) );
         }
 
 

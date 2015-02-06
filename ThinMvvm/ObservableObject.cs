@@ -14,6 +14,7 @@ namespace ThinMvvm
     [DataContract]
     public abstract class ObservableObject : INotifyPropertyChanged
     {
+        private readonly WeakEvent _propertyChanged;
         // Used to send PropertyChanged messages on the right thread
         private readonly SynchronizationContext _context;
 
@@ -23,6 +24,7 @@ namespace ThinMvvm
         /// </summary>
         protected ObservableObject()
         {
+            _propertyChanged = new WeakEvent();
             _context = SynchronizationContext.Current;
         }
 
@@ -30,7 +32,11 @@ namespace ThinMvvm
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add { _propertyChanged.Add( value ); }
+            remove { _propertyChanged.Remove( value ); }
+        }
 
         /// <summary>
         /// Fires a property changed event.
@@ -38,17 +44,13 @@ namespace ThinMvvm
         /// <param name="propertyName">Optional. The property's name. If unset, the compiler will fill this parameter in.</param>
         protected void OnPropertyChanged( [CallerMemberName] string propertyName = "" )
         {
-            var evt = PropertyChanged;
-            if ( evt != null )
+            if ( _context == null )
             {
-                if ( _context == null )
-                {
-                    evt( this, new PropertyChangedEventArgs( propertyName ) );
-                }
-                else
-                {
-                    _context.Post( _ => evt( this, new PropertyChangedEventArgs( propertyName ) ), null );
-                }
+                _propertyChanged.Raise( this, new PropertyChangedEventArgs( propertyName ) );
+            }
+            else
+            {
+                _context.Post( _ => _propertyChanged.Raise( this, new PropertyChangedEventArgs( propertyName ) ), null );
             }
         }
 

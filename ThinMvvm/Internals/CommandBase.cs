@@ -13,6 +13,9 @@ namespace ThinMvvm.Internals
     [EditorBrowsable( EditorBrowsableState.Never )]
     public abstract class CommandBase
     {
+        private readonly WeakEvent _canExecuteChanged;
+        private readonly WeakEvent _executed;
+
         /// <summary>
         /// Gets the object that owns the command.
         /// </summary>
@@ -26,6 +29,9 @@ namespace ThinMvvm.Internals
         /// <param name="canExecute">The predicate indicating whether the command can be executed, or null to always execute it.</param>
         protected CommandBase( object owner, Expression canExecute )
         {
+            _canExecuteChanged = new WeakEvent();
+            _executed = new WeakEvent();
+
             Owner = owner;
 
             if ( canExecute == null )
@@ -43,25 +49,29 @@ namespace ThinMvvm.Internals
         /// <summary>
         /// Occurs when changes occur that affect whether or not the command should execute.
         /// </summary>
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler CanExecuteChanged
+        {
+            add { _canExecuteChanged.Add( value ); }
+            remove { _canExecuteChanged.Remove( value ); }
+        }
 
         /// <summary>
         /// Fires the CanExecuteChanged event.
         /// </summary>
         public void OnCanExecuteChanged()
         {
-            var evt = CanExecuteChanged;
-            if ( evt != null )
-            {
-                evt( this, EventArgs.Empty );
-            }
+            _canExecuteChanged.Raise( this, EventArgs.Empty );
         }
 
 
         /// <summary>
         /// Occurs when the command is executed.
         /// </summary>
-        internal event EventHandler<CommandExecutedEventArgs> Executed;
+        internal event EventHandler<CommandExecutedEventArgs> Executed
+        {
+            add { _executed.Add( value ); }
+            remove { _executed.Remove( value ); }
+        }
 
         /// <summary>
         /// Fires the Executed event.
@@ -69,11 +79,7 @@ namespace ThinMvvm.Internals
         /// <param name="parameter">The parameter given to the command's Execute method, if any.</param>
         protected void OnExecuted( object parameter )
         {
-            var evt = Executed;
-            if ( evt != null )
-            {
-                evt( this, new CommandExecutedEventArgs( parameter ) );
-            }
+            _executed.Raise( this, new CommandExecutedEventArgs( parameter ) );
         }
     }
 }

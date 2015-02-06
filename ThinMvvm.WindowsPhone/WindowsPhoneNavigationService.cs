@@ -20,6 +20,7 @@ namespace ThinMvvm.WindowsPhone
         private const char UriParameterKeyValueSeparator = '=';
         private const string UniqueParameter = "ThinMvvm.WindowsPhone.UniqueId";
 
+        private readonly WeakEvent _navigated;
         private readonly Dictionary<Type, Uri> _views;
         // HACK: IViewModel can't be covariant because it would forbid value types as TParameters,
         //       and having a non-generic ViewModel that shouldn't be implemented is a terrible idea
@@ -35,6 +36,7 @@ namespace ThinMvvm.WindowsPhone
         /// </summary>
         public WindowsPhoneNavigationService()
         {
+            _navigated = new WeakEvent();
             _views = new Dictionary<Type, Uri>();
             _backStack = new Stack<dynamic>();
             _shouldIgnore = new Stack<bool>();
@@ -94,17 +96,17 @@ namespace ThinMvvm.WindowsPhone
         /// <summary>
         /// Occurs when the service navigates to a page, forwards or backwards.
         /// </summary>
-        public event EventHandler<NavigatedEventArgs> Navigated;
+        public event EventHandler<NavigatedEventArgs> Navigated
+        {
+            add { _navigated.Add( value ); }
+            remove { _navigated.Remove( value ); }
+        }
         /// <summary>
         /// Fires the <see cref="Navigated" /> event.
         /// </summary>
         private void OnNavigated( object viewModel, bool isForwards )
         {
-            var evt = Navigated;
-            if ( evt != null )
-            {
-                evt( this, new NavigatedEventArgs( viewModel, isForwards ) );
-            }
+            _navigated.Raise( this, new NavigatedEventArgs( viewModel, isForwards ) );
         }
 
 
