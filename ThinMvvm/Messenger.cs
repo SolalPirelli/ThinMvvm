@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using ThinMvvm.Internals;
 
 namespace ThinMvvm
 {
@@ -62,26 +62,15 @@ namespace ThinMvvm
         /// <typeparam name="T">The message type.</typeparam>
         private sealed class Handler<T>
         {
-            private const string ClosureMethodToken = "<";
-
-            // If the action is a closure, a strong reference to the target is needed
-#pragma warning disable 0414 // Field is assigned but never used
-            private readonly object _targetStrongRef;
-#pragma warning restore 0414
-            private readonly WeakReference<object> _targetRef;
-            private readonly MethodInfo _method;
-
+            private readonly WeakDelegate _action;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Handler{T}" /> class with the specified handler action.
             /// </summary>
             /// <param name="handler">The handler.</param>
-            /// <returns>A recipient with the specified message handler.</returns>
-            public Handler( Action<T> handler )
+            public Handler( Action<T> action )
             {
-                _targetStrongRef = handler.GetMethodInfo().Name.Contains( ClosureMethodToken ) ? handler.Target : null;
-                _method = handler.GetMethodInfo();
-                _targetRef = handler.Target == null ? null : new WeakReference<object>( handler.Target );
+                _action = new WeakDelegate( action );
             }
 
 
@@ -92,14 +81,8 @@ namespace ThinMvvm
             /// <returns>True if the handler is still alive, false otherwise.</returns>
             public bool TryHandle( T message )
             {
-                object target = null;
-                if ( _targetRef == null || _targetRef.TryGetTarget( out target ) )
-                {
-                    _method.Invoke( target, new object[] { message } );
-                    return true;
-                }
-
-                return false;
+                object ignored;
+                return _action.TryInvoke( new object[] { message }, out ignored );
             }
         }
     }
