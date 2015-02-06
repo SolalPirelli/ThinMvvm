@@ -16,7 +16,7 @@ namespace ThinMvvm
     /// </remarks>
     public static class Messenger
     {
-        private static readonly List<object> _handlers = new List<object>();
+        private static readonly List<Handler> _handlers = new List<Handler>();
 
         /// <summary>
         /// Registers the specified handler for the specified message type.
@@ -30,7 +30,7 @@ namespace ThinMvvm
                 throw new ArgumentNullException( "handler" );
             }
 
-            _handlers.Add( new Handler<T>( handler ) );
+            _handlers.Add( Handler.Create( handler ) );
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace ThinMvvm
         /// <param name="message">The message.</param>
         public static void Send<T>( T message )
         {
-            foreach ( var deadHandler in _handlers.OfType<Handler<T>>().Where( h => !h.TryHandle( message ) ).ToArray() )
+            foreach ( var deadHandler in _handlers.Where( h => !h.TryHandle( message, typeof( T ) ) ).ToArray() )
             {
                 _handlers.Remove( deadHandler );
             }
@@ -57,32 +57,48 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Stores data necessary to handle messages.
+        /// Handle messages (or refuses to do so).
         /// </summary>
-        /// <typeparam name="T">The message type.</typeparam>
-        private sealed class Handler<T>
+        private sealed class Handler
         {
             private readonly WeakDelegate _action;
+            private readonly Type _messageType;
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="Handler{T}" /> class with the specified handler action.
+            /// Initializes a new instance of the <see cref="Handler" /> class with the specified action and message type.
             /// </summary>
-            /// <param name="handler">The handler.</param>
-            public Handler( Action<T> action )
+            private Handler( WeakDelegate action, Type messageType )
             {
-                _action = new WeakDelegate( action );
+                _action = action;
+                _messageType = messageType;
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="Handler" /> with the specified action.
+            /// </summary>
+            /// <param name="action">The action.</param>
+            public static Handler Create<T>( Action<T> action )
+            {
+                return new Handler( new WeakDelegate( action ), typeof( T ) );
             }
 
 
             /// <summary>
-            /// Attempts to handle the specified message.
+            /// Handles the specified message if it is of the correct type.
+            /// Otherwise, does nothing.
             /// </summary>
             /// <param name="message">The message.</param>
+            /// <param name="messageType">The message type. (required because message can be null)</param>
             /// <returns>True if the handler is still alive, false otherwise.</returns>
-            public bool TryHandle( T message )
+            public bool TryHandle( object message, Type messageType )
             {
+                if ( messageType != _messageType )
+                {
+                    return true;
+                }
+
                 object ignored;
-                return _action.TryInvoke( new object[] { message }, out ignored );
+                return _action.TryInvoke( new[] { message }, out ignored );
             }
         }
     }
