@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace ThinMvvm.Internals
 {
@@ -11,8 +12,6 @@ namespace ThinMvvm.Internals
     /// </summary>
     internal sealed class WeakDelegate
     {
-        private const string ClosureMethodToken = "<";
-
         private readonly MethodInfo _method;
         private readonly WeakReference<object> _targetRef;
 
@@ -29,7 +28,9 @@ namespace ThinMvvm.Internals
         {
             _method = wrapped.GetMethodInfo();
             _targetRef = wrapped.Target == null ? null : new WeakReference<object>( wrapped.Target );
-            _targetStrongRef = _method.Name.Contains( ClosureMethodToken ) ? wrapped.Target : null;
+            _targetStrongRef =
+                _method.DeclaringType.GetTypeInfo().GetCustomAttribute<CompilerGeneratedAttribute>() == null ?
+                null : wrapped.Target;
         }
 
         /// <summary>
