@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using ThinMvvm.Internals;
 
 namespace ThinMvvm
@@ -40,10 +39,7 @@ namespace ThinMvvm
         /// <param name="message">The message.</param>
         public static void Send<T>( T message )
         {
-            foreach ( var deadHandler in _handlers.Where( h => !h.TryHandle( message, typeof( T ) ) ).ToArray() )
-            {
-                _handlers.Remove( deadHandler );
-            }
+            _handlers.RemoveAll( h => !h.TryHandle( message, typeof( T ) ) );
         }
 
         /// <summary>
