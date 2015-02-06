@@ -1,4 +1,4 @@
-﻿// Copyright (c) Solal Pirelli 2015
+﻿// Copyright (c) 2015 Solal Pirelli
 // See License.txt file for more details
 
 using System;

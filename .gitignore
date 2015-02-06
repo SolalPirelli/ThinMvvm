@@ -2,6 +2,9 @@
 *.suo
 *.user
 
+# NuGet packages
+[Pp]ackages/
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
@@ -12,7 +15,7 @@
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
-# Nuget build results
+# NuGet build results
 *.nupkg
 
 # Script to upload packages to MyGet

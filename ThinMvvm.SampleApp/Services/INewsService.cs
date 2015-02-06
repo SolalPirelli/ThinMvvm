@@ -1,4 +1,4 @@
-﻿// Copyright (c) Solal Pirelli 2014
+﻿// Copyright (c) 2014-15 Solal Pirelli
 // See License.txt file for more details
 
 using System.Threading.Tasks;
