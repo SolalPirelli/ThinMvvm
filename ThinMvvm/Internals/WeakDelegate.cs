@@ -36,10 +36,10 @@ namespace ThinMvvm.Internals
             _original =
                 // Open delegate
                 ( wrapped.Target == null && !_method.IsStatic )
-                // Private method in a framework namespace, possibly untrusted, bail out
-             || ( !_method.IsPublic && targetType != null && FrameworkNamespaces.Any( n => targetType.FullName.StartsWith( n ) ) )
-                // Private type, possibly untrusted code, better bail out
-             || ( targetType != null && targetType.IsNotPublic && ( !targetType.IsNested || targetType.IsNestedPublic ) ) ?
+                // Private method/type in a framework namespace, possibly untrusted, bail out
+             || ( targetType != null
+               && ( !_method.IsPublic || !targetType.IsPublic )
+               && FrameworkNamespaces.Any( n => targetType.FullName.StartsWith( n ) ) ) ?
                 wrapped : null;
 
             _targetStrongRef =
