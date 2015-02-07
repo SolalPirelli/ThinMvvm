@@ -2,6 +2,7 @@
 // See License.txt file for more details
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -12,6 +13,9 @@ namespace ThinMvvm.Internals
     /// </summary>
     internal sealed class WeakDelegate
     {
+        // Namespaces belonging to .NET or WinRT, their private methods most likely cannot be called.
+        private static readonly string[] FrameworkNamespaces = { "System.", "Microsoft.", "Windows." };
+
         private readonly MethodInfo _method;
         // If the delegate isn't friendly to reflection, bail out and keep a strong reference.
         private readonly Delegate _original;
@@ -32,6 +36,8 @@ namespace ThinMvvm.Internals
             _original =
                 // Open delegate
                 ( wrapped.Target == null && !_method.IsStatic )
+                // Private method in a framework namespace, possibly untrusted, bail out
+             || ( !_method.IsPublic && targetType != null && FrameworkNamespaces.Any( n => targetType.FullName.StartsWith( n ) ) )
                 // Private type, possibly untrusted code, better bail out
              || ( targetType != null && targetType.IsNotPublic && ( !targetType.IsNested || targetType.IsNestedPublic ) ) ?
                 wrapped : null;
