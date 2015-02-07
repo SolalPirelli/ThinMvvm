@@ -12,4 +12,4 @@ using System.Reflection;
 
 [assembly: CLSCompliant( true )]
 
-[assembly: AssemblyVersion( "0.10.1" )]
+[assembly: AssemblyVersion( "0.10.2" )]
