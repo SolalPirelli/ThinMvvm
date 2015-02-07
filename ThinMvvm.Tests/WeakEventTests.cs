@@ -6,7 +6,7 @@ namespace ThinMvvm.Tests
     [TestClass]
     public sealed class WeakEventTests
     {
-        private sealed class IntEventArgs : EventArgs
+        public sealed class IntEventArgs : EventArgs
         {
             public int Value { get; private set; }
 
@@ -16,7 +16,7 @@ namespace ThinMvvm.Tests
             }
         }
 
-        private sealed class Source
+        public sealed class Source
         {
             private WeakEvent _event = new WeakEvent();
             public event EventHandler<IntEventArgs> Event
@@ -31,7 +31,7 @@ namespace ThinMvvm.Tests
             }
         }
 
-        private sealed class Sink
+        public sealed class Sink
         {
             public int Counter { get; private set; }
 

@@ -13,7 +13,7 @@ namespace ThinMvvm.Tests
     [TestClass]
     public sealed class WeakDelegateTests
     {
-        private sealed class Static
+        public sealed class Static
         {
             public static int GetOne()
             {
@@ -26,7 +26,7 @@ namespace ThinMvvm.Tests
             }
         }
 
-        private sealed class Instance
+        public sealed class Instance
         {
             public int GetOne()
             {

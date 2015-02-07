@@ -28,11 +28,12 @@ namespace ThinMvvm.Internals
         {
             _method = wrapped.GetMethodInfo();
 
+            var targetType = wrapped.Target == null ? null : wrapped.Target.GetType().GetTypeInfo();
             _original =
                 // Open delegate
                 ( wrapped.Target == null && !_method.IsStatic )
-                // Private method in a private type, possibly untrusted code, better back out
-             || ( _method.IsPrivate && wrapped.Target != null && !wrapped.Target.GetType().GetTypeInfo().IsPublic ) ?
+                // Private type, possibly untrusted code, better bail out
+             || ( targetType != null && targetType.IsNotPublic && ( !targetType.IsNested || targetType.IsNestedPublic ) ) ?
                 wrapped : null;
 
             _targetStrongRef =

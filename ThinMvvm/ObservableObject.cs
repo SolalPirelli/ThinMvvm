@@ -14,7 +14,8 @@ namespace ThinMvvm
     [DataContract]
     public abstract class ObservableObject : INotifyPropertyChanged
     {
-        private readonly WeakEvent _propertyChanged;
+        // Should be readonly, but it must also be initialized in OnDeserialized
+        private WeakEvent _propertyChanged;
         // Used to send PropertyChanged messages on the right thread
         private readonly SynchronizationContext _context;
 
@@ -67,6 +68,29 @@ namespace ThinMvvm
                 field = value;
                 OnPropertyChanged( propertyName );
             }
+        }
+
+
+        /// <summary>
+        /// Called when deserializing an instance by the framework serializers.
+        /// Do not call this method manually.
+        /// </summary>
+        /// <param name="context">The serialization context.</param>
+        [OnDeserialized]
+        [EditorBrowsable( EditorBrowsableState.Never )]
+        public void OnDeserialized( StreamingContext context )
+        {
+            _propertyChanged = new WeakEvent();
+            OnDeserialized();
+        }
+
+        /// <summary>
+        /// Called when deserializing an instance by the framework serializers.
+        /// Override this method to provide custom deserialization logic for subclasses.
+        /// </summary>
+        protected virtual void OnDeserialized()
+        {
+            // Nothing by default.
         }
     }
 }
