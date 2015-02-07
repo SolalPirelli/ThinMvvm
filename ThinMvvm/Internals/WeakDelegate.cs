@@ -32,7 +32,7 @@ namespace ThinMvvm.Internals
         {
             _method = wrapped.GetMethodInfo();
 
-            var targetType = wrapped.Target == null ? null : wrapped.Target.GetType().GetTypeInfo();
+            var targetType = _method.DeclaringType.GetTypeInfo();
             _original =
                 // Open delegate
                 ( wrapped.Target == null && !_method.IsStatic )
