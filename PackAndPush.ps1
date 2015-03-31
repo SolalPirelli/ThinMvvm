@@ -1,4 +1,4 @@
-$projects = @("ThinMvvm","ThinMvvm.Logging","ThinMvvm.WindowsPhone","ThinMvvm.WindowsRuntime")
+$projects = @("ThinMvvm","ThinMvvm.Logging","ThinMvvm.WindowsRuntime")
 
 ForEach ($proj in $projects) {
   nuget pack "$proj/$proj.csproj" -Symbols -Prop Configuration=Release
