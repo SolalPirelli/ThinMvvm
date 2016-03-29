@@ -1,0 +1,5 @@
+.vs/
+artifacts/
+TestResults/
+*.user
+project.lock.json

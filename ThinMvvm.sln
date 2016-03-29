@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ThinMvvm", "src\ThinMvvm\ThinMvvm.xproj", "{5747052E-A951-4299-92EF-630DE558E18E}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ThinMvvm.Tests", "test\ThinMvvm.Tests\ThinMvvm.Tests.xproj", "{507E59F5-874A-4CF9-8D1F-05F3C2B8026A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5747052E-A951-4299-92EF-630DE558E18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5747052E-A951-4299-92EF-630DE558E18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5747052E-A951-4299-92EF-630DE558E18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5747052E-A951-4299-92EF-630DE558E18E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{507E59F5-874A-4CF9-8D1F-05F3C2B8026A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{507E59F5-874A-4CF9-8D1F-05F3C2B8026A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{507E59F5-874A-4CF9-8D1F-05F3C2B8026A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{507E59F5-874A-4CF9-8D1F-05F3C2B8026A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
