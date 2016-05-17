@@ -1,5 +1,7 @@
 .vs/
 artifacts/
+bin/
+obj/
 TestResults/
 *.user
 project.lock.json
