@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinMvvm.Data.Infrastructure;
@@ -13,7 +14,26 @@ namespace ThinMvvm.Data
     {
         private T _value;
         private Optional<T> _originalValue;
-        
+
+        /// <summary>
+        /// Infrastructure.
+        /// Gets a value indicating whether there is more data to fetch.
+        /// </summary>
+        [EditorBrowsable( EditorBrowsableState.Never )]
+        public override bool CanFetchMore
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Infrastructure.
+        /// Do not use this property; use <see cref="Value" /> instead.
+        /// </summary>
+        [EditorBrowsable( EditorBrowsableState.Never )]
+        public override object RawValue
+        {
+            get { return Value; }
+        }
 
         /// <summary>
         /// Gets the last successfully retrieved value.
@@ -41,7 +61,7 @@ namespace ThinMvvm.Data
         public override sealed Task RefreshAsync()
         {
             return LoadAsync(
-                () => { }, // No initialization needed
+                () => Status = DataStatus.Loading,
                 FetchAsync,
                 ( result, cacheStatus ) =>
                 {
@@ -58,8 +78,18 @@ namespace ThinMvvm.Data
                         Value = default( T );
                         Status = DataStatus.NoData;
                     }
-                } 
+                }
             );
+        }
+
+        /// <summary>
+        /// This method is not supported.
+        /// </summary>
+        /// <returns>Never returns; always throws a <see cref="NotSupportedException" />.</returns>
+        [EditorBrowsable( EditorBrowsableState.Never )]
+        public override Task FetchMoreAsync()
+        {
+            throw new NotSupportedException();
         }
 
 
@@ -97,11 +127,12 @@ namespace ThinMvvm.Data
         /// <summary>
         /// Enables caching for this source.
         /// </summary>
+        /// <param name="id">The source's ID.</param>
         /// <param name="dataStore">The data store for cached values.</param>
         /// <param name="metadataCreator">The metadata creator, if any.</param>
-        protected new void EnableCache( IDataStore dataStore, Func<CacheMetadata> metadataCreator = null )
+        protected new void EnableCache( string id, IDataStore dataStore, Func<CacheMetadata> metadataCreator = null )
         {
-            base.EnableCache( dataStore, metadataCreator ?? ( () => CacheMetadata.Default ) );
+            base.EnableCache( id, dataStore, metadataCreator ?? ( () => CacheMetadata.Default ) );
         }
     }
 }

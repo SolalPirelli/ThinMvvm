@@ -12,6 +12,11 @@ namespace ThinMvvm.Infrastructure
     public interface IViewModel
     {
         /// <summary>
+        /// Gets a value indicating whether the ViewModel should be kept into navigation history.
+        /// </summary>
+        bool IsTransient { get; }
+
+        /// <summary>
         /// Infrastructure.
         /// Occurs when the ViewModel is navigated to.
         /// </summary>
@@ -28,6 +33,10 @@ namespace ThinMvvm.Infrastructure
         /// </summary>
         /// <param name="navigationKind">The navigation kind.</param>
         /// <returns>A task that represents the navigation response operation.</returns>
+        /// <remarks>
+        /// Navigation service implementations may call this without awaiting its result,
+        /// if the platform does not support asynchronous navigation.
+        /// </remarks>
         Task OnNavigatedToAsync( NavigationKind navigationKind );
 
         /// <summary>
@@ -35,6 +44,10 @@ namespace ThinMvvm.Infrastructure
         /// </summary>
         /// <param name="navigationKind">The navigation kind.</param>
         /// <returns>A task that represents the navigation response operation.</returns>
+        /// <remarks>
+        /// Navigation service implementations may call this without awaiting its result,
+        /// if the platform does not support asynchronous navigation.
+        /// </remarks>
         Task OnNavigatedFromAsync( NavigationKind navigationKind );
 
         /// <summary>
@@ -42,8 +55,7 @@ namespace ThinMvvm.Infrastructure
         /// </summary>
         /// <param name="store">The store containing values set by this ViewModel last time <see cref="SaveState" /> was called.</param>
         /// <remarks>
-        /// This method is called when the ViewModel needs to be inflated from previously stored data,
-        /// for instance when navigating back to it if it had been tombstoned by the operating system.
+        /// This method, if it is called, is guaranteed to be called before <see cref="OnNavigatedToAsync" /> when navigating to the ViewModel.
         /// </remarks>
         void LoadState( IKeyValueStore store );
 
@@ -52,8 +64,7 @@ namespace ThinMvvm.Infrastructure
         /// </summary>
         /// <param name="store">The store, specific to this ViewModel.</param>
         /// <remarks>
-        /// This method is called when the operating system tombstones the ViewModel, 
-        /// for instance because it needs to free memory.
+        /// This method, if it is called, is guaranteed to be called before <see cref="OnNavigatedFromAsync" /> when navigating away from the ViewModel.
         /// </remarks>
         void SaveState( IKeyValueStore store );
     }

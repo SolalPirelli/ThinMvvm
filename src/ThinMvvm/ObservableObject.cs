@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 namespace ThinMvvm
 {
     /// <summary>
     /// Base class for objects whose property changes can be observed.
     /// </summary>
+    [DataContract]
     public abstract class ObservableObject : INotifyPropertyChanged
     {
         /// <summary>
@@ -40,10 +42,9 @@ namespace ThinMvvm
         /// <summary>
         /// Triggers the <see cref="PropertyChanged" /> event.
         /// </summary>
-        /// <param name="propertyName">The property name.</param>
+        /// <param name="propertyName">The property name, or null if the entire object state changed.</param>
         protected void OnPropertyChanged( string propertyName )
         {
-            // The event's documentation explicitly allows null property names to mean "everything changed".
             PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
         }
     }

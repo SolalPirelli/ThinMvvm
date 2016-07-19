@@ -18,6 +18,8 @@ namespace ThinMvvm.Data.Infrastructure
         private CacheStatus _cacheStatus;
 
         private DataStatus _status;
+        private bool _canFetchMore;
+        private object _value;
         private Exception _lastException;
 
 
@@ -35,12 +37,32 @@ namespace ThinMvvm.Data.Infrastructure
         }
 
         /// <summary>
-        /// Gets the exception thrown by the last operation, if said operation threw.
+        /// Gets a value indicating whether there is more data to fetch.
+        /// </summary>
+        public abstract bool CanFetchMore { get; }
+
+        /// <summary>
+        /// Infrastructure.
+        /// Gets the last successfully retrieved value.
+        /// </summary>
+        /// <remarks>
+        /// This property exists so that code can be written to target both kinds 
+        /// of data sources, i.e. paginated and non-paginated.
+        /// However, for compatibility with Windows Universal Apps, whose bindings
+        /// do not support properties which hide a base property (C#'s "new"),
+        /// it is not named "Value".
+        /// To ensure nobody accidentally uses this property, subclasses hide it
+        /// with a property marked as invisible to editors.
+        /// </remarks>
+        public abstract object RawValue { get; }
+
+        /// <summary>
+        /// Gets the exception thrown by the last operation, if the operation threw.
         /// </summary>
         public Exception LastException
         {
             get { return _lastException; }
-            internal set { Set( ref _lastException, value ); }
+            private set { Set( ref _lastException, value ); }
         }
 
         /// <summary>
@@ -60,7 +82,6 @@ namespace ThinMvvm.Data.Infrastructure
         internal DataSource()
         {
             _semaphore = new SemaphoreSlim( 1 );
-            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         /// <summary>
@@ -70,26 +91,24 @@ namespace ThinMvvm.Data.Infrastructure
         public abstract Task RefreshAsync();
 
         /// <summary>
-        /// Asynchronously attempts to fetch more data.
+        /// Asynchronously fetches more data.
         /// </summary>
-        /// <returns>
-        /// A task that representa the fetch operation. 
-        /// The value will be <c>true</c> if a fetch operation was performed (even if it failed),
-        /// and <c>false</c> if the source had no more data available.
-        /// </returns>
-        public virtual Task<bool> TryFetchMoreAsync()
-        {
-            return Task.FromResult( false );
-        }
+        /// <returns>A task that represents the fetch operation.</returns>
+        public abstract Task FetchMoreAsync();
 
 
         /// <summary>
         /// Enables caching for this source.
         /// </summary>
+        /// <param name="id">The source's ID.</param>
         /// <param name="dataStore">The data store for cached values.</param>
         /// <param name="metadataCreator">The metadata creator.</param>
-        internal void EnableCache( IDataStore dataStore, Func<CacheMetadata> metadataCreator )
+        internal void EnableCache( string id, IDataStore dataStore, Func<CacheMetadata> metadataCreator )
         {
+            if( id == null )
+            {
+                throw new ArgumentNullException( nameof( id ) );
+            }
             if( dataStore == null )
             {
                 throw new ArgumentNullException( nameof( dataStore ) );
@@ -99,7 +118,7 @@ namespace ThinMvvm.Data.Infrastructure
                 throw new InvalidOperationException( $"Cannot call {nameof( EnableCache )} more than once." );
             }
 
-            _cache = new Cache( this, dataStore );
+            _cache = new Cache( id, dataStore );
             _metadataCreator = metadataCreator;
         }
 
@@ -117,31 +136,29 @@ namespace ThinMvvm.Data.Infrastructure
         // TODO: Find a better way to do it.
         // Also, the callback being passed the cache status is so that the paginated source
         // can choose whether to update the cache status depending on whether this is a "fetch more" call or not.
-        internal async Task LoadAsync<TData>( Action initialization, 
-                                              Func<CancellationToken, Task<TData>> fetcher, 
+        internal async Task LoadAsync<TData>( Action initialization,
+                                              Func<CancellationToken, Task<TData>> fetcher,
                                               Action<TData, CacheStatus> resultHandler )
         {
-            // Refresh operations need to be fully atomic, i.e. nobody should be able to observe a data source
-            // with status, exception and value properties that do not all match the same fetch operation.
-            // A simple lock can be used to cancel the previous operation (cancelling is a synchronous),
-            // but a semaphore is needed to make the fetch itself atomic, as locks cannot be used in asynchronous contexts.
+            // Refresh operations need to be fully atomic, i.e. at the end of a fetch operation
+            // the status, exception and value properties must all be related.
+            // Use the semaphore both as a semaphore and as a lock object, because why not?
 
             CancellationToken token;
-            lock ( _cancellationTokenSource )
+            lock( _semaphore )
             {
-                if( !_cancellationTokenSource.IsCancellationRequested )
+                if( _cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested )
                 {
                     _cancellationTokenSource.Cancel();
-                    _cancellationTokenSource = new CancellationTokenSource();
                 }
+
+                _cancellationTokenSource = new CancellationTokenSource();
                 token = _cancellationTokenSource.Token;
             }
 
             await _semaphore.WaitAsync();
             try
             {
-                Status = DataStatus.Loading;
-
                 initialization();
 
                 TData result;
@@ -161,11 +178,21 @@ namespace ThinMvvm.Data.Infrastructure
                         }
                         else
                         {
-                            var metadata = _metadataCreator();
                             var cachedResult = default( Optional<TData> );
-                            if( metadata != null )
+
+                            try
                             {
-                                cachedResult = await _cache.GetAsync<TData>( metadata.Id );
+                                var metadata = _metadataCreator();
+                                if( metadata != null )
+                                {
+                                    cachedResult = await _cache.GetAsync<TData>( metadata.Id );
+                                }
+                            }
+                            catch( Exception e2 )
+                            {
+                                LastException = e2;
+                                resultHandler( default( TData ), CacheStatus.Unused );
+                                return;
                             }
 
                             if( cachedResult.HasValue )
@@ -183,10 +210,19 @@ namespace ThinMvvm.Data.Infrastructure
 
                 if( _cache != null )
                 {
-                    var metadata = _metadataCreator();
-                    if( metadata != null )
+                    try
                     {
-                        await _cache.StoreAsync( result, metadata.Id, metadata.ExpirationDate );
+                        var metadata = _metadataCreator();
+                        if( metadata != null )
+                        {
+                            await _cache.StoreAsync( metadata.Id, result, metadata.ExpirationDate );
+                        }
+                    }
+                    catch( Exception e )
+                    {
+                        LastException = e;
+                        resultHandler( default( TData ), CacheStatus.Unused );
+                        return;
                     }
                 }
 

@@ -10,9 +10,27 @@ namespace ThinMvvm
     /// <typeparam name="TParameter">Type of the navigation parameter, or <see cref="NoParameter" /> if the ViewModel is parameterless.</typeparam>
     public abstract class ViewModel<TParameter> : IViewModel
     {
+        // COMPAT: Task.CompletedTask does not exist in Profile111
+        private static readonly Task CompletedTask = Task.FromResult( 0 );
+
         private event EventHandler<EventArgs> _navigatedTo;
         private event EventHandler<EventArgs> _navigatedFrom;
 
+        /// <summary>
+        /// Gets a value indicating whether the ViewModel should be kept into navigation history.
+        /// </summary>
+        /// <remarks>
+        /// Most ViewModels should not be transient, as users expect normal navigation behavior.
+        ///
+        /// An example of a transient ViewModels is authentication to access a protected resource;
+        /// if a guest user is on the main app page and opens a page that requires authentication,
+        /// a login page should be shown. However, when the user navigates back from the protected
+        /// page, they should be back in the main page, not in the login page.
+        /// </remarks>
+        protected virtual bool IsTransient
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// Responds to a navigation to the ViewModel.
@@ -21,7 +39,7 @@ namespace ThinMvvm
         /// <returns>A task that represents the navigation response operation.</returns>
         protected virtual Task OnNavigatedToAsync( NavigationKind navigationKind )
         {
-            return Task.CompletedTask;
+            return CompletedTask;
         }
 
         /// <summary>
@@ -31,7 +49,7 @@ namespace ThinMvvm
         /// <returns>A task that represents the navigation response operation.</returns>
         protected virtual Task OnNavigatedFromAsync( NavigationKind navigationKind )
         {
-            return Task.CompletedTask;
+            return CompletedTask;
         }
 
         /// <summary>
@@ -60,6 +78,10 @@ namespace ThinMvvm
             // Nothing.
         }
 
+        
+        // This is both a protected virtual property and explicitly implemented,
+        // so that only subclasses can see it normally, e.g. not a designer when suggesting properties to bind.
+        bool IViewModel.IsTransient => IsTransient;
 
         // The events and associated machinery are explicitly implemented,
         // both to guarantee that they will always be fired properly,

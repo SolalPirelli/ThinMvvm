@@ -13,19 +13,19 @@ namespace ThinMvvm.Tests
         [Fact]
         public void CannotCreateWithInvalidKind()
         {
-            Assert.Throws<ArgumentException>( () => new NavigatedEventArgs( (NavigationKind) ( -1 ), new MyViewModel() ) );
+            Assert.Throws<ArgumentException>( () => new NavigatedEventArgs( new MyViewModel(), (NavigationKind) ( -1 ) ) );
         }
 
         [Fact]
         public void CannotCreateWithNullTarget()
         {
-            Assert.Throws<ArgumentNullException>( () => new NavigatedEventArgs( NavigationKind.Forwards, null ) );
+            Assert.Throws<ArgumentNullException>( () => new NavigatedEventArgs( null, NavigationKind.Forwards ) );
         }
 
         [Fact]
         public void ConstructorSetsKind()
         {
-            var args = new NavigatedEventArgs( NavigationKind.Backwards, new MyViewModel() );
+            var args = new NavigatedEventArgs( new MyViewModel(), NavigationKind.Backwards );
 
             Assert.Equal( NavigationKind.Backwards, args.Kind );
         }
@@ -34,7 +34,7 @@ namespace ThinMvvm.Tests
         public void ConstructorSetsTarget()
         {
             var target = new MyViewModel();
-            var args = new NavigatedEventArgs( NavigationKind.Forwards, target );
+            var args = new NavigatedEventArgs( target, NavigationKind.Forwards );
 
             Assert.Equal( args.Target, target );
         }

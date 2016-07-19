@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinMvvm.Infrastructure;
 using Xunit;
 
 namespace ThinMvvm.Tests
@@ -11,9 +12,9 @@ namespace ThinMvvm.Tests
         [Fact]
         public void GetThrowsOnNullType()
         {
-            var binder = new ServiceBinder();
+            IServiceCreator binder = new ServiceBinder();
 
-            Assert.Throws<ArgumentNullException>( () => binder.Get( null, null ) );
+            Assert.Throws<ArgumentNullException>( () => binder.Create( null, null ) );
         }
 
         /// <summary>
@@ -110,7 +111,7 @@ namespace ThinMvvm.Tests
                 var binder = new ServiceBinder();
                 binder.Bind<IDependency1, Dependency1>();
 
-                var inst = binder.Get( typeof( IDependency1 ), null );
+                var inst = ( (IServiceCreator) binder ).Create( typeof( IDependency1 ), null );
 
                 Assert.IsType( typeof( Dependency1 ), inst );
             }
@@ -122,7 +123,7 @@ namespace ThinMvvm.Tests
                 var dep = new Dependency1();
                 binder.Bind<IDependency1>( dep );
 
-                var inst = binder.Get( typeof( IDependency1 ), null );
+                var inst = ( (IServiceCreator) binder ).Create( typeof( IDependency1 ), null );
 
                 Assert.Equal( dep, inst );
             }
@@ -132,7 +133,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                var inst = binder.Get( typeof( IndependentService ), null );
+                var inst = ( (IServiceCreator) binder ).Create( typeof( IndependentService ), null );
 
                 Assert.IsType( typeof( IndependentService ), inst );
             }
@@ -143,7 +144,7 @@ namespace ThinMvvm.Tests
                 var binder = new ServiceBinder();
                 binder.Bind<IDependency1, Dependency1>();
 
-                var inst = (DependentService1) binder.Get( typeof( DependentService1 ), null );
+                var inst = (DependentService1) ( (IServiceCreator) binder ).Create( typeof( DependentService1 ), null );
 
                 Assert.IsType( typeof( Dependency1 ), inst.Dependency );
             }
@@ -155,7 +156,7 @@ namespace ThinMvvm.Tests
                 binder.Bind<IDependency1, Dependency1>();
                 binder.Bind<IDependency2, Dependency2>();
 
-                var inst = (DependentService12) binder.Get( typeof( DependentService12 ), null );
+                var inst = (DependentService12) ( (IServiceCreator) binder ).Create( typeof( DependentService12 ), null );
 
                 Assert.IsType( typeof( Dependency1 ), inst.Dependency1 );
                 Assert.IsType( typeof( Dependency2 ), inst.Dependency2 );
@@ -168,7 +169,7 @@ namespace ThinMvvm.Tests
                 var dep = new Dependency1();
                 binder.Bind<IDependency1>( dep );
 
-                var inst = (DependentService1) binder.Get( typeof( DependentService1 ), null );
+                var inst = (DependentService1) ( (IServiceCreator) binder ).Create( typeof( DependentService1 ), null );
 
                 Assert.Equal( dep, inst.Dependency );
             }
@@ -180,7 +181,7 @@ namespace ThinMvvm.Tests
                 binder.Bind<IDependency1, Dependency1>();
                 binder.Bind<IDependency2, Dependency2>();
 
-                var inst = (RecursivelyDependentService) binder.Get( typeof( RecursivelyDependentService ), null );
+                var inst = (RecursivelyDependentService) ( (IServiceCreator) binder ).Create( typeof( RecursivelyDependentService ), null );
 
                 Assert.NotNull( inst.Dependency );
                 Assert.NotNull( inst.Service );
@@ -192,7 +193,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                var inst = (SinglePublicConstructorService) binder.Get( typeof( SinglePublicConstructorService ), null );
+                var inst = (SinglePublicConstructorService) ( (IServiceCreator) binder ).Create( typeof( SinglePublicConstructorService ), null );
 
                 Assert.Equal( 0, inst.Value );
             }
@@ -262,7 +263,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                Assert.Throws<ArgumentException>( () => binder.Get( typeof( DependentService1 ), null ) );
+                Assert.Throws<ArgumentException>( () => ( (IServiceCreator) binder ).Create( typeof( DependentService1 ), null ) );
             }
 
             [Fact]
@@ -270,7 +271,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                Assert.Throws<ArgumentException>( () => binder.Get( typeof( NoPublicConstructorService ), null ) );
+                Assert.Throws<ArgumentException>( () => ( (IServiceCreator) binder ).Create( typeof( NoPublicConstructorService ), null ) );
             }
 
             [Fact]
@@ -278,7 +279,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                Assert.Throws<ArgumentException>( () => binder.Get( typeof( MultipleConstructorsService ), null ) );
+                Assert.Throws<ArgumentException>( () => ( (IServiceCreator) binder ).Create( typeof( MultipleConstructorsService ), null ) );
             }
         }
 
@@ -342,7 +343,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                var service = (IndependentService) binder.Get( typeof( IndependentService ), 42 );
+                var service = (IndependentService) ( (IServiceCreator) binder ).Create( typeof( IndependentService ), 42 );
 
                 Assert.Equal( 42, service.Value );
             }
@@ -353,7 +354,7 @@ namespace ThinMvvm.Tests
                 var binder = new ServiceBinder();
                 binder.Bind<IDependency, Dependency>();
 
-                var service = (DependentService) binder.Get( typeof( DependentService ), 100 );
+                var service = (DependentService) ( (IServiceCreator) binder ).Create( typeof( DependentService ), 100 );
 
                 Assert.IsType( typeof( Dependency ), service.Dependency );
                 Assert.Equal( 100, service.Value );
@@ -364,7 +365,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                Assert.Throws<ArgumentException>( () => binder.Get( typeof( IndependentService ), null ) );
+                Assert.Throws<ArgumentException>( () => ( (IServiceCreator) binder ).Create( typeof( IndependentService ), null ) );
             }
 
             [Fact]
@@ -372,7 +373,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                Assert.Throws<ArgumentException>( () => binder.Get( typeof( IndependentService ), "hello" ) );
+                Assert.Throws<ArgumentException>( () => ( (IServiceCreator) binder ).Create( typeof( IndependentService ), "hello" ) );
             }
 
             [Fact]
@@ -380,7 +381,7 @@ namespace ThinMvvm.Tests
             {
                 var binder = new ServiceBinder();
 
-                Assert.Throws<ArgumentException>( () => binder.Get( typeof( TwoArgumentsService ), 42 ) );
+                Assert.Throws<ArgumentException>( () => ( (IServiceCreator) binder ).Create( typeof( TwoArgumentsService ), 42 ) );
             }
 
             [Fact]
@@ -389,7 +390,7 @@ namespace ThinMvvm.Tests
                 var binder = new ServiceBinder();
                 binder.Bind<IDependency, Dependency>();
 
-                Assert.Throws<ArgumentException>( () => binder.Get( typeof( RecursivelyDependentService ), 42 ) );
+                Assert.Throws<ArgumentException>( () => ( (IServiceCreator) binder ).Create( typeof( RecursivelyDependentService ), 42 ) );
             }
         }
     }

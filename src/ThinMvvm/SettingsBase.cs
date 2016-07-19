@@ -160,6 +160,7 @@ namespace ThinMvvm
                     };
                 }
             }
+
             if( collectionNotifier != null )
             {
                 collectionNotifier.CollectionChanged += ( o, _ ) => _store.Set( key, o );
@@ -192,9 +193,6 @@ namespace ThinMvvm
             /// Gets the value corresponding to the specified key, if it exists,
             /// first looking into an in-memory cache.
             /// </summary>
-            /// <typeparam name="T">The value's type.</typeparam>
-            /// <param name="key">The key.</param>
-            /// <returns>The value, if it was found, or nothing.</returns>
             public Optional<T> Get<T>( string key )
             {
                 object boxedValue;
@@ -215,13 +213,18 @@ namespace ThinMvvm
             /// <summary>
             /// Sets the specified value for the specified key, and stores it in an in-memory cache as well.
             /// </summary>
-            /// <typeparam name="T">The value's type.</typeparam>
-            /// <param name="key">The key.</param>
-            /// <param name="value">The value.</param>
             public void Set<T>( string key, T value )
             {
                 _wrapped.Set( key, value );
                 _cache[key] = value;
+            }
+
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public void Delete( string key )
+            {
+                throw new NotSupportedException( "This class is meant for use by SettingsBase, which will never call this method." );
             }
         }
     }

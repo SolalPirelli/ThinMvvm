@@ -1,0 +1,29 @@
+﻿<Page x:Class="ThinMvvm.Sample.Pokedex.MainView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:tc="using:ThinMvvm.Windows.Controls"
+      xmlns:my="using:ThinMvvm.Sample.Pokedex">
+    <Page.Resources>
+        <DataTemplate x:Key="PokemonTemplate">
+            <RelativePanel Margin="0,8">
+                <Image x:Name="Image"
+                       Source="{Binding PictureUrl}"
+                       Stretch="None" />
+
+                <TextBlock x:Name="Title"
+                           Text="{Binding Name}"
+                           Style="{StaticResource TitleTextBlockStyle}"
+                           RelativePanel.RightOf="Image" />
+
+                <TextBlock Text="{Binding Description}"
+                           Style="{StaticResource BodyTextBlockStyle}"
+                           RelativePanel.RightOf="Image"
+                           RelativePanel.Below="Title" />
+            </RelativePanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <tc:DataContainer ContentSource="{Binding Pokemons}"
+                      ContentTemplate="{StaticResource PokemonTemplate}"
+                      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+</Page>

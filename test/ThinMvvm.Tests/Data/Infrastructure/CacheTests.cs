@@ -11,7 +11,7 @@ namespace ThinMvvm.Data.Infrastructure.Tests
     public sealed class CacheTests
     {
         [Fact]
-        public void CannotCreateWithNullOwner()
+        public void CannotCreateWithNullId()
         {
             Assert.Throws<ArgumentNullException>( () => new Cache( null, new InMemoryDataStore() ) );
         }
@@ -19,18 +19,18 @@ namespace ThinMvvm.Data.Infrastructure.Tests
         [Fact]
         public void CannotCreateWithNullStore()
         {
-            Assert.Throws<ArgumentNullException>( () => new Cache( this, null ) );
+            Assert.Throws<ArgumentNullException>( () => new Cache( "X", null ) );
         }
 
 
         [Fact]
         public async Task ValuesAreCachedWithNoMetadata()
         {
-            var cache = new Cache( this, new InMemoryDataStore() );
+            var cache = new Cache( "X", new InMemoryDataStore() );
 
-            await cache.StoreAsync( 42, null, null );
+            await cache.StoreAsync( "Y", 42, null );
 
-            var value = await cache.GetAsync<int>( null );
+            var value = await cache.GetAsync<int>( "Y" );
 
             Assert.Equal( new Optional<int>( 42 ), value );
         }
@@ -38,9 +38,9 @@ namespace ThinMvvm.Data.Infrastructure.Tests
         [Fact]
         public async Task ValuesAreCachedWithSameMetadata()
         {
-            var cache = new Cache( this, new InMemoryDataStore() );
+            var cache = new Cache( "X", new InMemoryDataStore() );
 
-            await cache.StoreAsync( 42, "id", null );
+            await cache.StoreAsync( "id", 42, null );
 
             var value = await cache.GetAsync<int>( "id" );
 
@@ -50,9 +50,9 @@ namespace ThinMvvm.Data.Infrastructure.Tests
         [Fact]
         public async Task CacheIsNotUsedWhenMetadataIdDiffers()
         {
-            var cache = new Cache( this, new InMemoryDataStore() );
+            var cache = new Cache( "X", new InMemoryDataStore() );
 
-            await cache.StoreAsync( 42, "id", null );
+            await cache.StoreAsync( "id", 42, null );
 
             var value = await cache.GetAsync<int>( "id2" );
 
@@ -62,10 +62,10 @@ namespace ThinMvvm.Data.Infrastructure.Tests
         [Fact]
         public async Task CacheDifferentiatesBetweenMetadataIds()
         {
-            var cache = new Cache( this, new InMemoryDataStore() );
+            var cache = new Cache( "X", new InMemoryDataStore() );
 
-            await cache.StoreAsync( 1, "id", null );
-            await cache.StoreAsync( 2, "id2", null );
+            await cache.StoreAsync( "id", 1, null );
+            await cache.StoreAsync( "id2", 2, null );
 
             var value = await cache.GetAsync<int>( "id" );
 
@@ -73,26 +73,13 @@ namespace ThinMvvm.Data.Infrastructure.Tests
         }
 
         [Fact]
-        public async Task NullAndEmptyIdsAreNotTheSame()
-        {
-            var cache = new Cache( this, new InMemoryDataStore() );
-
-            await cache.StoreAsync( 1, null, null );
-            await cache.StoreAsync( 2, "", null );
-
-            var value = await cache.GetAsync<int>( null );
-
-            Assert.Equal( new Optional<int>( 1 ), value );
-        }
-
-        [Fact]
         public async Task OldDataIsNotUsed()
         {
-            var cache = new Cache( this, new InMemoryDataStore() );
+            var cache = new Cache( "X", new InMemoryDataStore() );
 
-            await cache.StoreAsync( 1, null, DateTimeOffset.MinValue );
+            await cache.StoreAsync( "Y", 1, DateTimeOffset.MinValue );
 
-            var value = await cache.GetAsync<int>( null );
+            var value = await cache.GetAsync<int>( "Y" );
 
             Assert.Equal( default( Optional<int> ), value );
         }
@@ -100,10 +87,10 @@ namespace ThinMvvm.Data.Infrastructure.Tests
         [Fact]
         public async Task ExpirationDateChangesAreRespected()
         {
-            var cache = new Cache( this, new InMemoryDataStore() );
+            var cache = new Cache( "X", new InMemoryDataStore() );
 
-            await cache.StoreAsync( 1, "id", DateTimeOffset.MaxValue );
-            await cache.StoreAsync( 2, "id", DateTimeOffset.MinValue );
+            await cache.StoreAsync( "id", 1, DateTimeOffset.MaxValue );
+            await cache.StoreAsync( "id", 2, DateTimeOffset.MinValue );
 
             var value = await cache.GetAsync<int>( "id" );
 

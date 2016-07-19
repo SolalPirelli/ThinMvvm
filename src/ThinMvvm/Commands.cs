@@ -184,10 +184,12 @@ namespace ThinMvvm
             {
                 return false;
             }
+
             if( _canExecute == null )
             {
                 return true;
             }
+
             return _canExecute();
         }
 
@@ -264,10 +266,12 @@ namespace ThinMvvm
             {
                 return false;
             }
+
             if( _canExecute == null )
             {
                 return true;
             }
+
             return _canExecute( argument );
         }
 

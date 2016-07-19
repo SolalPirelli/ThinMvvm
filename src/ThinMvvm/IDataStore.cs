@@ -23,5 +23,12 @@ namespace ThinMvvm
         /// <param name="data">The data.</param>
         /// <returns>A task that represents the storing operation.</returns>
         Task StoreAsync<T>( string id, T data );
+
+        /// <summary>
+        /// Asynchronously deletes the data with the specified ID, if it exists.
+        /// </summary>
+        /// <param name="id">The data ID.</param>
+        /// <returns>A task that represents the deleting operation.</returns>
+        Task DeleteAsync( string id );
     }
 }

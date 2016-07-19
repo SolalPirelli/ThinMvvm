@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using ThinMvvm.Infrastructure;
 using ThinMvvm.Logging;
+using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
 namespace ThinMvvm.Tests.Logging
@@ -128,7 +127,7 @@ namespace ThinMvvm.Tests.Logging
         {
             var vm = new MyViewModel();
             var logger = new Logger();
-            var command = new AsyncCommand( () => Task.CompletedTask );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask );
 
             logger.Register( vm, "myVM" )
                 .WithCommand( command, "myCommand" );
@@ -143,7 +142,7 @@ namespace ThinMvvm.Tests.Logging
         {
             var vm = new MyViewModel();
             var logger = new Logger();
-            var command = new AsyncCommand( () => Task.CompletedTask );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask );
 
             logger.Register( vm, "myVM" )
                 .WithCommand( command, "myCommand", () => "hello" );
@@ -158,7 +157,7 @@ namespace ThinMvvm.Tests.Logging
         {
             var vm = new MyViewModel();
             var logger = new Logger();
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
 
             logger.Register( vm, "myVM" )
                 .WithCommand( command, "myCommand" );
@@ -173,7 +172,7 @@ namespace ThinMvvm.Tests.Logging
         {
             var vm = new MyViewModel();
             var logger = new Logger();
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
 
             logger.Register( vm, "myVM" )
                 .WithCommand( command, "myCommand", n => $"n:{n}" );

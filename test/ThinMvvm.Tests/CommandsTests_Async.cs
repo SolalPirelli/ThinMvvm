@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
 namespace ThinMvvm.Tests
@@ -20,7 +21,7 @@ namespace ThinMvvm.Tests
         public async Task ExecuteInvokesTheFunction()
         {
             bool fired = false;
-            var command = new AsyncCommand( () => { fired = true; return Task.CompletedTask; } );
+            var command = new AsyncCommand( () => { fired = true; return TaskEx.CompletedTask; } );
 
             await command.ExecuteAsync();
 
@@ -31,7 +32,7 @@ namespace ThinMvvm.Tests
         public async Task ExecuteInvokesTheFunctionAsManyTimesAsItIsInvoked()
         {
             int counter = 0;
-            var command = new AsyncCommand( () => { counter++; return Task.CompletedTask; } );
+            var command = new AsyncCommand( () => { counter++; return TaskEx.CompletedTask; } );
 
             for( int n = 0; n < 10; n++ )
             {
@@ -44,7 +45,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void CanExecuteReturnsTrueIfNotProvided()
         {
-            var command = new AsyncCommand( () => Task.CompletedTask );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask );
 
             bool result = command.CanExecute();
 
@@ -55,7 +56,7 @@ namespace ThinMvvm.Tests
         public void CanExecuteInvokesTheFunctionWhenProvided()
         {
             bool result = false;
-            var command = new AsyncCommand( () => Task.CompletedTask, () => result );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask, () => result );
 
             bool actual1 = command.CanExecute();
 
@@ -96,7 +97,7 @@ namespace ThinMvvm.Tests
         public void ICommandExecuteInvokesTheFunction()
         {
             bool fired = false;
-            var command = new AsyncCommand( () => { fired = true; return Task.CompletedTask; } );
+            var command = new AsyncCommand( () => { fired = true; return TaskEx.CompletedTask; } );
 
             ( (ICommand) command ).Execute( null );
 
@@ -106,7 +107,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandCanExecuteReturnsTrueIfNotProvided()
         {
-            var command = new AsyncCommand( () => Task.CompletedTask );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask );
 
             bool result = ( (ICommand) command ).CanExecute( null );
 
@@ -117,7 +118,7 @@ namespace ThinMvvm.Tests
         public void ICommandCanExecuteInvokesTheFunctionWhenProvided()
         {
             bool result = false;
-            var command = new AsyncCommand( () => Task.CompletedTask, () => result );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask, () => result );
 
             bool actual1 = ( (ICommand) command ).CanExecute( null );
 
@@ -134,7 +135,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public async Task ExecuteTriggersExecuted()
         {
-            var command = new AsyncCommand( () => Task.CompletedTask );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask );
             bool fired = false;
             command.Executed += ( _, __ ) => fired = true;
 
@@ -146,7 +147,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public async Task ExecutedHasNullArgument()
         {
-            var command = new AsyncCommand( () => Task.CompletedTask );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask );
             object arg = null;
             command.Executed += ( _, e ) => arg = e.Argument;
 
@@ -158,7 +159,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandExecuteTriggersExecuted()
         {
-            var command = new AsyncCommand( () => Task.CompletedTask );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask );
             bool fired = false;
             command.Executed += ( _, __ ) => fired = true;
 
@@ -170,7 +171,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandExecuteDoesNotPassArgumentToExecuted()
         {
-            var command = new AsyncCommand( () => Task.CompletedTask );
+            var command = new AsyncCommand( () => TaskEx.CompletedTask );
             object arg = null;
             command.Executed += ( _, e ) => arg = e.Argument;
 

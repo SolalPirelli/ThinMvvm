@@ -1,0 +1,102 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:ThinMvvm.Windows.Controls">
+    <Style TargetType="c:DataContainer">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="c:DataContainer">
+                    <Grid Background="{TemplateBinding Background}"
+                          DataContext="{x:Null}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <Grid x:Name="ErrorIndicator"
+                              Visibility="Collapsed"
+                              Background="{StaticResource AppBarBackgroundThemeBrush}"
+                              Padding="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{TemplateBinding ErrorText}"
+                                           Style="{StaticResource TitleTextBlockStyle}" />
+
+                                <TextBlock x:Name="CacheIndicator"
+                                           Visibility="Collapsed"
+                                           Text="{TemplateBinding CacheText}"
+                                           Style="{StaticResource TitleTextBlockStyle}" />
+                            </StackPanel>
+
+                            <AppBarButton Grid.Column="1"
+                                          Command="{Binding RefreshCommand,
+                                                            Mode=OneTime,
+                                                            RelativeSource={RelativeSource TemplatedParent}}"
+                                          VerticalAlignment="Center"
+                                          Icon="Refresh"
+                                          Label="{TemplateBinding RefreshText}" />
+                        </Grid>
+                        
+                        <ProgressBar x:Name="LoadingMoreIndicator"
+                                     Grid.Row="1"
+                                     Visibility="Collapsed"
+                                     IsIndeterminate="True" />
+
+                        <ContentPresenter x:Name="ContentContainer"
+                                          Grid.Row="2"
+                                          Margin="{TemplateBinding Padding}" />
+
+                        <Border x:Name="LoadingIndicator"
+                                Grid.Row="2"
+                                Visibility="Collapsed"
+                                Background="{TemplateBinding Background}">
+                            <ProgressRing IsActive="True" />
+                        </Border>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="None" />
+                                
+                                <VisualState x:Name="Loading">
+                                    <VisualState.Setters>
+                                        <Setter Target="LoadingIndicator.Visibility"
+                                                Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                
+                                <VisualState x:Name="LoadingMore">
+                                    <VisualState.Setters>
+                                        <Setter Target="LoadingMoreIndicator.Visibility"
+                                                Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="Loaded" />
+
+                                <VisualState x:Name="LoadedUsingCache">
+                                    <VisualState.Setters>
+                                        <Setter Target="ErrorIndicator.Visibility"
+                                                Value="Visible" />
+                                        <Setter Target="CacheIndicator.Visibility"
+                                                Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="Error">
+                                    <VisualState.Setters>
+                                        <Setter Target="ErrorIndicator.Visibility"
+                                                Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

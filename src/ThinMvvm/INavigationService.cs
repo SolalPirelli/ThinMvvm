@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinMvvm.Infrastructure;
 
 namespace ThinMvvm
 {
@@ -7,6 +8,20 @@ namespace ThinMvvm
     /// </summary>
     public interface INavigationService
     {
+        /// <summary>
+        /// Occurs after navigating to a ViewModel.
+        /// </summary>
+        /// <remarks>
+        /// This event is guaranteed to be fired after <see cref="IViewModel.OnNavigatedFromAsync" /> in the source ViewModel,
+        /// and before <see cref="IViewModel.OnNavigatedToAsync" /> in the target ViewModel.
+        /// </remarks>
+        event EventHandler<NavigatedEventArgs> Navigated;
+
+        /// <summary>
+        /// Gets a value indicating whether the navigation service can navigate back.
+        /// </summary>
+        bool CanNavigateBack { get; }
+
         /// <summary>
         /// Navigates to the specified parameterless ViewModel.
         /// </summary>
@@ -29,8 +44,8 @@ namespace ThinMvvm
         void NavigateBack();
 
         /// <summary>
-        /// Occurs after navigating to a ViewModel.
+        /// Resets the service, as if no navigation had occurred.
         /// </summary>
-        event EventHandler<NavigatedEventArgs> Navigated;
+        void Reset();
     }
 }

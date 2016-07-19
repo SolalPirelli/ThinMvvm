@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace ThinMvvm
 {
@@ -7,14 +8,17 @@ namespace ThinMvvm
     /// Represents an optional value.
     /// </summary>
     /// <typeparam name="T">The value's type.</typeparam>
+    [DataContract]
     public struct Optional<T> : IEquatable<Optional<T>>
     {
+        [DataMember]
         private readonly T _value;
 
         /// <summary>
         /// Indicates whether there is a value.
         /// </summary>
-        public bool HasValue { get; }
+        [DataMember]
+        public bool HasValue { get; private set; }
 
         /// <summary>
         /// Gets the value, if there is any.
@@ -45,6 +49,16 @@ namespace ThinMvvm
             HasValue = true;
         }
 
+
+        public static bool operator ==( Optional<T> left, Optional<T> right )
+        {
+            return left.Equals( right );
+        }
+
+        public static bool operator !=( Optional<T> left, Optional<T> right )
+        {
+            return !( left == right );
+        }
 
         /// <summary>
         /// Indicates whether the current object is equal to the specified object.

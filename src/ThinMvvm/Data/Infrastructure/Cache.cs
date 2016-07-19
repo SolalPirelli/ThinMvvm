@@ -8,27 +8,24 @@ namespace ThinMvvm.Data.Infrastructure
     /// </summary>
     public sealed class Cache
     {
-        // "Namespace" the default ID to ensure nobody accidentally uses it
-        private const string DefaultId = "#ThinMvvm_Default";
-
         private readonly IDataStore _store;
         private readonly string _idPrefix;
         private readonly string _expirationDatePrefix;
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Cache{T}" /> class, belonging to the specified owner,
+        /// Initializes a new instance of the <see cref="Cache{T}" /> class, with the specified ID,
         /// using the specified data store, and optionally using metadata provided by the specified function.
         /// If no metadata provider is specified, all data will be considered to have the same ID, and to never expire.
         /// </summary>
-        /// <param name="owner">The object that owns this cache.</param>
+        /// <param name="id">The cache ID.</param>
         /// <param name="store">The data store to use for cached data.</param>
         /// <param name="metadataProvider">The metadata provider, if any.</param>
-        public Cache( object owner, IDataStore store )
+        public Cache( string id, IDataStore store )
         {
-            if( owner == null )
+            if( id == null )
             {
-                throw new ArgumentNullException( nameof( owner ) );
+                throw new ArgumentNullException( nameof( id ) );
             }
             if( store == null )
             {
@@ -36,8 +33,8 @@ namespace ThinMvvm.Data.Infrastructure
             }
 
             _store = store;
-            _idPrefix = "cache:" + owner.GetType().FullName + ".";
-            _expirationDatePrefix = _idPrefix + "ExpirationDate.";
+            _idPrefix = "Cache_" + id + "_";
+            _expirationDatePrefix = _idPrefix + "Date_";
         }
 
 
@@ -45,7 +42,7 @@ namespace ThinMvvm.Data.Infrastructure
         {
             if( id == null )
             {
-                id = DefaultId;
+                throw new ArgumentNullException( nameof( id ) );
             }
 
             var storedExpirationDate = await _store.LoadAsync<DateTimeOffset>( _expirationDatePrefix + id );
@@ -57,11 +54,11 @@ namespace ThinMvvm.Data.Infrastructure
             return default( Optional<T> );
         }
 
-        public async Task StoreAsync( object value, string id, DateTimeOffset? expirationDate )
+        public async Task StoreAsync( string id, object value, DateTimeOffset? expirationDate )
         {
             if( id == null )
             {
-                id = DefaultId;
+                throw new ArgumentNullException( nameof( id ) );
             }
 
             // Technically, null is treated the same as the max representable date here,

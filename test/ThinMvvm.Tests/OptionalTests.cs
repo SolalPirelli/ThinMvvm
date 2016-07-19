@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
 namespace ThinMvvm.Tests
@@ -38,154 +41,41 @@ namespace ThinMvvm.Tests
         }
 
         [Fact]
-        public void IEquatableEqualsReturnsTrueWhenBothHaveSameValue()
+        public void CanBeDataContractSerialized()
         {
-            var optional1 = new Optional<int>( 42 );
-            var optional2 = new Optional<int>( 42 );
+            var optional = new Optional<int>( 42 );
 
-            Assert.True( optional1.Equals( optional2 ) );
+            var serializer = new DataContractJsonSerializer( optional.GetType() );
+            var stream = new MemoryStream();
+
+            serializer.WriteObject( stream, optional );
+
+            stream.Seek( 0, SeekOrigin.Begin );
+            var roundtrippedOptional = (Optional<int>) serializer.ReadObject( stream );
+
+            Assert.Equal( optional, roundtrippedOptional );
         }
 
         [Fact]
-        public void IEquatableEqualsReturnsTrueWhenBothHaveNullValue()
+        public void Equality()
         {
-            var optional1 = new Optional<string>( null );
-            var optional2 = new Optional<string>( null );
+            EqualityTests.For( default( Optional<string> ) )
+                .WithUnequal( new Optional<string>( null ) )
+                .WithUnequal( new Optional<string>( "" ) )
+                .WithUnequal( new Optional<string>( "abc" ) )
+                .Test();
 
-            Assert.True( optional1.Equals( optional2 ) );
-        }
+            EqualityTests.For( new Optional<string>( null ) )
+                .WithUnequal( new Optional<string>( "" ) )
+                .WithUnequal( new Optional<string>( "abc" ) )
+                .Test();
 
-        [Fact]
-        public void IEquatableEqualsReturnsTrueWhenBothLackValues()
-        {
-            var optional1 = new Optional<int>();
-            var optional2 = new Optional<int>();
+            EqualityTests.For( new Optional<string>( "" ) )
+                .WithUnequal( new Optional<string>( "abc" ) )
+                .Test();
 
-            Assert.True( optional1.Equals( optional2 ) );
-        }
-
-        [Fact]
-        public void IEquatableEqualsReturnsFalseWhenOnlyFirstLacksValue()
-        {
-            var optional1 = new Optional<int>();
-            var optional2 = new Optional<int>( 0 );
-
-            Assert.False( optional1.Equals( optional2 ) );
-        }
-
-        [Fact]
-        public void IEquatableEqualsReturnsFalseWhenOnlySecondLacksValue()
-        {
-            var optional1 = new Optional<int>( 0 );
-            var optional2 = new Optional<int>();
-
-            Assert.False( optional1.Equals( optional2 ) );
-        }
-
-        [Fact]
-        public void IEquatableEqualsReturnsFalseWhenBothHaveDifferentValues()
-        {
-            var optional1 = new Optional<int>( 0 );
-            var optional2 = new Optional<int>( 1 );
-
-            Assert.False( optional1.Equals( optional2 ) );
-        }
-
-        [Fact]
-        public void EqualsReturnsTrueWhenBothHaveSameValue()
-        {
-            var optional1 = new Optional<int>( 42 );
-            var optional2 = new Optional<int>( 42 );
-
-            Assert.True( optional1.Equals( (object) optional2 ) );
-        }
-
-        [Fact]
-        public void EqualsReturnsTrueWhenBothHaveNullValue()
-        {
-            var optional1 = new Optional<string>( null );
-            var optional2 = new Optional<string>( null );
-
-            Assert.True( optional1.Equals( (object) optional2 ) );
-        }
-
-        [Fact]
-        public void EqualsReturnsTrueWhenBothLackValues()
-        {
-            var optional1 = new Optional<int>();
-            var optional2 = new Optional<int>();
-
-            Assert.True( optional1.Equals( (object) optional2 ) );
-        }
-
-        [Fact]
-        public void EqualsReturnsFalseWhenOnlyFirstLacksValue()
-        {
-            var optional1 = new Optional<int>();
-            var optional2 = new Optional<int>( 0 );
-
-            Assert.False( optional1.Equals( (object) optional2 ) );
-        }
-
-        [Fact]
-        public void EqualsReturnsFalseWhenOnlySecondLacksValue()
-        {
-            var optional1 = new Optional<int>( 0 );
-            var optional2 = new Optional<int>();
-
-            Assert.False( optional1.Equals( (object) optional2 ) );
-        }
-
-        [Fact]
-        public void EqualsReturnsFalseWhenBothHaveDifferentValues()
-        {
-            var optional1 = new Optional<int>( 0 );
-            var optional2 = new Optional<int>( 1 );
-
-            Assert.False( optional1.Equals( (object) optional2 ) );
-        }
-
-        [Fact]
-        public void EqualsReturnsFalseWhenOtherIsOfDifferentType()
-        {
-            var optional = new Optional<int>( 0 );
-
-            Assert.False( optional.Equals( "abc" ) );
-        }
-
-        [Fact]
-        public void EqualsReturnsFalseWhenGivenNull()
-        {
-            var optional = new Optional<int>();
-
-            Assert.False( optional.Equals( null ) );
-        }
-
-        [Fact]
-        public void HashCodeIsSameWhenBothLackValues()
-        {
-            var optional1 = new Optional<int>();
-            var optional2 = new Optional<int>();
-
-            Assert.Equal( optional1.GetHashCode(), optional2.GetHashCode() );
-        }
-
-        [Fact]
-        public void HashCodeIsSameWhenBothHaveSameValue()
-        {
-            var optional1 = new Optional<int>( 42 );
-            var optional2 = new Optional<int>( 42 );
-
-            Assert.Equal( optional1.GetHashCode(), optional2.GetHashCode() );
-        }
-
-        [Fact]
-        public void HashCodeIsSameWhenBothHaveNullValue()
-        {
-            var optional1 = new Optional<string>( null );
-            var optional2 = new Optional<string>( null );
-
-            Assert.Equal( optional1.GetHashCode(), optional2.GetHashCode() );
+            EqualityTests.For( new Optional<string>( "abc" ) )
+                .Test();
         }
 
         [Fact]

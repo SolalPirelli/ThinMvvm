@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using Xunit;
 
 namespace ThinMvvm.Tests
@@ -105,6 +108,42 @@ namespace ThinMvvm.Tests
             var obj = new ObservableInt();
 
             Assert.Throws<ArgumentNullException>( () => obj.SetWithNullName() );
+        }
+
+
+        [DataContract]
+        private sealed class SerializableInt : ObservableObject
+        {
+            private int _value;
+
+            [DataMember]
+            public int Value
+            {
+                get { return _value; }
+                private set { Set( ref _value, value ); }
+            }
+
+
+            public SerializableInt( int value )
+            {
+                Value = value;
+            }
+        }
+
+        [Fact]
+        public void SubclassesCanBeDataContractSerialized()
+        {
+            var obj = new SerializableInt( 42 );
+
+            var serializer = new DataContractJsonSerializer( obj.GetType() );
+            var stream = new MemoryStream();
+
+            serializer.WriteObject( stream, obj );
+
+            stream.Seek( 0, SeekOrigin.Begin );
+            var roundtrippedObj = (SerializableInt) serializer.ReadObject( stream );
+
+            Assert.Equal( obj.Value, roundtrippedObj.Value );
         }
     }
 }

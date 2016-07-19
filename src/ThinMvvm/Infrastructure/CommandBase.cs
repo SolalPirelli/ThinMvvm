@@ -15,9 +15,10 @@ namespace ThinMvvm.Infrastructure
         /// Occurs when the command is executed.
         /// </summary>
         public event EventHandler<CommandExecutedEventArgs> Executed;
+
         /// <summary>
         /// Occurs when changes occur that affect whether or not the command can execute.
-        /// </summary>x:\Projects\ThinMvvm\src\ThinMvvm\Infrastructure\CommandBase.cs
+        /// </summary>
         public event EventHandler CanExecuteChanged;
 
 

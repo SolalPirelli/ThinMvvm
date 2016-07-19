@@ -16,6 +16,11 @@
         Loading,
 
         /// <summary>
+        /// Data was previously loaded, and more related data is being loaded.
+        /// </summary>
+        LoadingMore,
+
+        /// <summary>
         /// Data was successfully loaded.
         /// </summary>
         Loaded,

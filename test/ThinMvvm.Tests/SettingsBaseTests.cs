@@ -39,6 +39,11 @@ namespace ThinMvvm.Tests
 
                 _values[key] = value;
             }
+
+            public void Delete( string key )
+            {
+                throw new NotSupportedException( "This method should not be called." );
+            }
         }
 
         private sealed class ObservableInt : ObservableObject

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 using ThinMvvm.Tests.TestInfrastructure;
+using Xunit;
 
 namespace ThinMvvm.Data.Tests
 {
@@ -33,7 +33,9 @@ namespace ThinMvvm.Data.Tests
             {
                 var source = new IntDataSource( _ => Task.FromResult( 0 ) );
 
+                Assert.False( source.CanFetchMore );
                 Assert.Equal( 0, source.Value );
+                Assert.Equal( source.Value, source.RawValue );
                 Assert.Equal( null, source.LastException );
                 Assert.Equal( DataStatus.None, source.Status );
             }
@@ -56,6 +58,7 @@ namespace ThinMvvm.Data.Tests
                 var task = source.RefreshAsync();
 
                 Assert.Equal( 0, source.Value );
+                Assert.Equal( source.Value, source.RawValue );
                 Assert.Equal( null, source.LastException );
                 Assert.Equal( DataStatus.Loading, source.Status );
 
@@ -88,6 +91,7 @@ namespace ThinMvvm.Data.Tests
                 await source.RefreshAsync();
 
                 Assert.Equal( 42, source.Value );
+                Assert.Equal( source.Value, source.RawValue );
                 Assert.Equal( null, source.LastException );
                 Assert.Equal( DataStatus.Loaded, source.Status );
 
@@ -99,7 +103,7 @@ namespace ThinMvvm.Data.Tests
             public async Task FailedRefresh()
             {
                 var ex = new MyException();
-                var source = new IntDataSource( _ => Task.FromException<int>( ex ) );
+                var source = new IntDataSource( _ => TaskEx.FromException<int>( ex ) );
 
                 DataStatus? status = null;
                 int countAfterStatus = 0;
@@ -119,6 +123,7 @@ namespace ThinMvvm.Data.Tests
                 await source.RefreshAsync();
 
                 Assert.Equal( 0, source.Value );
+                Assert.Equal( source.Value, source.RawValue );
                 Assert.Equal( ex, source.LastException );
                 Assert.Equal( DataStatus.NoData, source.Status );
 
@@ -191,7 +196,8 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.False( await source.TryFetchMoreAsync() );
+                Assert.False( source.CanFetchMore );
+                await Assert.ThrowsAsync<NotSupportedException>( () => source.FetchMoreAsync() );
             }
         }
 
@@ -297,7 +303,7 @@ namespace ThinMvvm.Data.Tests
                 public IntDataSource( Func<CancellationToken, Task<int>> fetch, Func<CacheMetadata> metadataCreator )
                 {
                     Fetch = fetch;
-                    EnableCache( new InMemoryDataStore(), metadataCreator );
+                    EnableCache( "X", new InMemoryDataStore(), metadataCreator );
                 }
 
 
@@ -321,7 +327,7 @@ namespace ThinMvvm.Data.Tests
             public async Task FailedRefresh()
             {
                 var ex = new MyException();
-                var source = new IntDataSource( _ => Task.FromException<int>( ex ), null );
+                var source = new IntDataSource( _ => TaskEx.FromException<int>( ex ), null );
 
                 await source.RefreshAsync();
 
@@ -339,7 +345,7 @@ namespace ThinMvvm.Data.Tests
                 await source.RefreshAsync();
 
                 var ex = new MyException();
-                source.Fetch = _ => Task.FromException<int>( ex );
+                source.Fetch = _ => TaskEx.FromException<int>( ex );
 
                 await source.RefreshAsync();
 
@@ -358,7 +364,7 @@ namespace ThinMvvm.Data.Tests
                 await source.RefreshAsync();
 
                 var ex = new MyException();
-                source.Fetch = _ => Task.FromException<int>( ex );
+                source.Fetch = _ => TaskEx.FromException<int>( ex );
                 id = "id2";
 
                 await source.RefreshAsync();
@@ -372,12 +378,12 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task StaleDataIsNotUsed()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 42 ), () => new CacheMetadata( null, DateTimeOffset.MinValue ) );
+                var source = new IntDataSource( _ => Task.FromResult( 42 ), () => new CacheMetadata( "", DateTimeOffset.MinValue ) );
 
                 await source.RefreshAsync();
 
                 var ex = new MyException();
-                source.Fetch = _ => Task.FromException<int>( ex );
+                source.Fetch = _ => TaskEx.FromException<int>( ex );
 
                 await source.RefreshAsync();
 
@@ -395,7 +401,7 @@ namespace ThinMvvm.Data.Tests
                 await source.RefreshAsync();
 
                 var ex = new MyException();
-                source.Fetch = _ => Task.FromException<int>( ex );
+                source.Fetch = _ => TaskEx.FromException<int>( ex );
 
                 await source.RefreshAsync();
 
@@ -405,12 +411,54 @@ namespace ThinMvvm.Data.Tests
                 Assert.Equal( CacheStatus.Unused, source.CacheStatus );
             }
 
+            [Fact]
+            public async Task SuccessfulRefreshButMetadataCreatorThrows()
+            {
+                var ex = new MyException();
+                var source = new IntDataSource( _ => Task.FromResult( 42 ), () => { throw ex; } );
+
+                await source.RefreshAsync();
+
+                Assert.Equal( 0, source.Value );
+                Assert.Equal( ex, source.LastException );
+                Assert.Equal( DataStatus.NoData, source.Status );
+                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+            }
+
+            [Fact]
+            public async Task FailedRefreshAfterSuccessfulOneButMetadataCreatorThrows()
+            {
+                bool shouldThrow = false;
+                var cacheEx = new MyException();
+                var source = new IntDataSource( _ => Task.FromResult( 42 ), () =>
+                {
+                    if( shouldThrow )
+                    {
+                        throw cacheEx;
+                    }
+
+                    return CacheMetadata.Default;
+                } );
+
+                await source.RefreshAsync();
+
+                var ex = new MyException();
+                source.Fetch = _ => TaskEx.FromException<int>( ex );
+
+                shouldThrow = true;
+                await source.RefreshAsync();
+
+                Assert.Equal( 0, source.Value );
+                Assert.Equal( cacheEx, source.LastException );
+                Assert.Equal( DataStatus.NoData, source.Status );
+                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+            }
 
             private sealed class DataSourceWithNullCacheStore : DataSource<int>
             {
                 public DataSourceWithNullCacheStore()
                 {
-                    EnableCache( null );
+                    EnableCache( "X", null );
                 }
 
                 protected override Task<int> FetchAsync( CancellationToken cancellationToken )
@@ -426,12 +474,32 @@ namespace ThinMvvm.Data.Tests
             }
 
 
+            private sealed class DataSourceWithNullCacheId : DataSource<int>
+            {
+                public DataSourceWithNullCacheId()
+                {
+                    EnableCache( null, new InMemoryDataStore() );
+                }
+
+                protected override Task<int> FetchAsync( CancellationToken cancellationToken )
+                {
+                    return Task.FromResult( 0 );
+                }
+            }
+
+            [Fact]
+            public void NullCacheIdFails()
+            {
+                Assert.Throws<ArgumentNullException>( () => new DataSourceWithNullCacheId() );
+            }
+
+
             private sealed class DataSourceEnablingCacheTwice : DataSource<int>
             {
                 public DataSourceEnablingCacheTwice()
                 {
-                    EnableCache( new InMemoryDataStore() );
-                    EnableCache( new InMemoryDataStore() );
+                    EnableCache( "X", new InMemoryDataStore() );
+                    EnableCache( "X", new InMemoryDataStore() );
                 }
 
                 protected override Task<int> FetchAsync( CancellationToken cancellationToken )
@@ -459,7 +527,7 @@ namespace ThinMvvm.Data.Tests
                 {
                     Fetch = fetch;
                     Transformer = transformer;
-                    EnableCache( new InMemoryDataStore(), metadataCreator );
+                    EnableCache( "X", new InMemoryDataStore(), metadataCreator );
                 }
 
 
@@ -479,7 +547,7 @@ namespace ThinMvvm.Data.Tests
                 await source.RefreshAsync();
 
                 var ex = new MyException();
-                source.Fetch = _ => Task.FromException<int>( ex );
+                source.Fetch = _ => TaskEx.FromException<int>( ex );
 
                 await source.RefreshAsync();
 

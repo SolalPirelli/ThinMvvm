@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinMvvm.Data.Infrastructure;
@@ -16,17 +17,35 @@ namespace ThinMvvm.Data
     {
         private Optional<TToken> _paginationToken;
         private ObservableCollection<TItem> _writeableValue;
-        private ReadOnlyObservableCollection<TItem> _value;
+        private ReadOnlyObservableCollection<TItem> _values;
         private List<TItem> _originalValue;
 
 
         /// <summary>
-        /// Gets the last successfully retrieved value.
+        /// Gets a value indicating whether there is more data to fetch.
         /// </summary>
-        public ReadOnlyObservableCollection<TItem> Value
+        public override bool CanFetchMore
         {
-            get { return _value; }
-            private set { Set( ref _value, value ); }
+            get { return _paginationToken != default( Optional<TToken> ); }
+        }
+
+        /// <summary>
+        /// Infrastructure.
+        /// Do not use this property; use <see cref="Values" /> instead.
+        /// </summary>
+        [EditorBrowsable( EditorBrowsableState.Never )]
+        public override object RawValue
+        {
+            get { return Values; }
+        }
+
+        /// <summary>
+        /// Gets the last successfully retrieved values.
+        /// </summary>
+        public ReadOnlyObservableCollection<TItem> Values
+        {
+            get { return _values; }
+            private set { Set( ref _values, value ); }
         }
 
 
@@ -46,7 +65,11 @@ namespace ThinMvvm.Data
         public override sealed Task RefreshAsync()
         {
             return LoadAsync(
-                () => _paginationToken = default( Optional<TToken> ),
+                () =>
+                {
+                    Status = DataStatus.Loading;
+                    _paginationToken = default( Optional<TToken> );
+                },
                 t => FetchAsync( _paginationToken, t ),
                 ( result, cacheStatus ) =>
                 {
@@ -55,13 +78,13 @@ namespace ThinMvvm.Data
                     {
                         _originalValue = new List<TItem>( result.Items );
                         _paginationToken = result.Token;
-                        UpdateValue( _originalValue, false );
+                        UpdateValues( _originalValue, false );
                         Status = DataStatus.Loaded;
                     }
                     else
                     {
                         _originalValue = null;
-                        Value = null;
+                        Values = null;
                         Status = DataStatus.NoData;
                     }
                 }
@@ -69,22 +92,18 @@ namespace ThinMvvm.Data
         }
 
         /// <summary>
-        /// Asynchronously attempts to fetch more data.
+        /// Asynchronously fetches more data.
         /// </summary>
-        /// <returns>
-        /// A task that representa the fetch operation. 
-        /// The value will be <c>true</c> if a fetch operation was performed (even if it failed),
-        /// and <c>false</c> if the source had no more data available.
-        /// </returns>
-        public override async Task<bool> TryFetchMoreAsync()
+        /// <returns>A task that representa the fetch operation.</returns>
+        public override async Task FetchMoreAsync()
         {
-            if( !_paginationToken.HasValue )
+            if( !CanFetchMore )
             {
-                return false;
+                return;
             }
 
             await LoadAsync(
-                () => { }, // No initialization needed
+                () => Status = DataStatus.LoadingMore,
                 t => FetchAsync( _paginationToken, t ),
                 ( result, cacheStatus ) =>
                 {
@@ -98,14 +117,12 @@ namespace ThinMvvm.Data
                     {
                         _paginationToken = result.Token;
                         _originalValue.AddRange( result.Items );
-                        UpdateValue( result.Items, true );
+                        UpdateValues( result.Items, true );
                     }
 
                     Status = DataStatus.Loaded;
                 }
             );
-
-            return true;
         }
 
 
@@ -133,33 +150,34 @@ namespace ThinMvvm.Data
         }
 
         /// <summary>
-        /// Updates the value by re-applying <see cref="Transform" />.
+        /// Updates the values by re-applying <see cref="Transform" />.
         /// This method will not fetch any new data.
         /// </summary>
-        protected void UpdateValue()
+        protected void UpdateValues()
         {
             if( _originalValue == null )
             {
-                throw new InvalidOperationException( $"{nameof( UpdateValue )} can only be called after data has been successfully loaded." );
+                throw new InvalidOperationException( $"{nameof( UpdateValues )} can only be called after data has been successfully loaded." );
             }
 
-            UpdateValue( _originalValue, false );
+            UpdateValues( _originalValue, false );
         }
 
         /// <summary>
         /// Enables caching for this source.
         /// </summary>
+        /// <param name="id">The source's ID.</param>
         /// <param name="dataStore">The data store for cached values.</param>
         /// <param name="metadataCreator">The metadata creator, if any.</param>
-        protected void EnableCache( IDataStore dataStore, Func<Optional<TToken>, CacheMetadata> metadataCreator = null )
+        protected void EnableCache( string id, IDataStore dataStore, Func<Optional<TToken>, CacheMetadata> metadataCreator = null )
         {
             if( metadataCreator == null )
             {
-                EnableCache( dataStore, () => CacheMetadata.Default );
+                EnableCache( id, dataStore, () => CacheMetadata.Default );
             }
             else
             {
-                EnableCache( dataStore, () => metadataCreator( _paginationToken ) );
+                EnableCache( id, dataStore, () => metadataCreator( _paginationToken ) );
             }
         }
 
@@ -167,21 +185,25 @@ namespace ThinMvvm.Data
         /// <summary>
         /// Updates the value by re-applying the transform on the specified values.
         /// </summary>
-        private void UpdateValue( IReadOnlyList<TItem> items, bool isIncremental )
+        private void UpdateValues( IReadOnlyList<TItem> items, bool isIncremental )
         {
-            var value = Transform( items, isIncremental );
+            var values = Transform( items, isIncremental );
+            if( values == null )
+            {
+                throw new InvalidOperationException( "The transformed values cannot be null." );
+            }
 
             if( isIncremental )
             {
-                foreach( var item in value )
+                foreach( var item in values )
                 {
                     _writeableValue.Add( item );
                 }
             }
             else
             {
-                _writeableValue = new ObservableCollection<TItem>( value );
-                Value = new ReadOnlyObservableCollection<TItem>( _writeableValue );
+                _writeableValue = new ObservableCollection<TItem>( values );
+                Values = new ReadOnlyObservableCollection<TItem>( _writeableValue );
             }
         }
     }

@@ -21,7 +21,13 @@ namespace ThinMvvm.Tests.TestInfrastructure
         public Task StoreAsync<T>( string id, T value )
         {
             _values[id] = value;
-            return Task.CompletedTask;
+            return TaskEx.CompletedTask;
+        }
+
+        public Task DeleteAsync( string id )
+        {
+            _values.Remove( id );
+            return TaskEx.CompletedTask;
         }
     }
 }

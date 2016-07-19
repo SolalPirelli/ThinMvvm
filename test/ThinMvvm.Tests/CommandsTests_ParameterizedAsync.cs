@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
 namespace ThinMvvm.Tests
@@ -20,7 +21,7 @@ namespace ThinMvvm.Tests
         public async Task ExecuteInvokesTheFunction()
         {
             int value = 0;
-            var command = new AsyncCommand<int>( n => { value = n; return Task.CompletedTask; } );
+            var command = new AsyncCommand<int>( n => { value = n; return TaskEx.CompletedTask; } );
 
             await command.ExecuteAsync( 42 );
 
@@ -31,7 +32,7 @@ namespace ThinMvvm.Tests
         public async Task ExecuteInvokesTheFunctionAsManyTimesAsItIsInvoked()
         {
             int counter = 0;
-            var command = new AsyncCommand<int>( n => { counter += n; return Task.CompletedTask; } );
+            var command = new AsyncCommand<int>( n => { counter += n; return TaskEx.CompletedTask; } );
 
             for( int n = 0; n < 10; n++ )
             {
@@ -44,7 +45,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void CanExecuteReturnsTrueIfNotProvided()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
 
             bool result = command.CanExecute( 0 );
 
@@ -54,7 +55,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void CanExecuteInvokesTheFunctionWhenProvided()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask, n => n % 2 == 0 );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask, n => n % 2 == 0 );
 
             bool actual1 = command.CanExecute( 1 );
 
@@ -93,7 +94,7 @@ namespace ThinMvvm.Tests
         public void ICommandExecuteInvokesTheFunction()
         {
             int value = 0;
-            var command = new AsyncCommand<int>( n => { value = n; return Task.CompletedTask; } );
+            var command = new AsyncCommand<int>( n => { value = n; return TaskEx.CompletedTask; } );
 
             ( (ICommand) command ).Execute( 42 );
 
@@ -103,7 +104,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandCanExecuteReturnsTrueIfNotProvided()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
 
             bool result = ( (ICommand) command ).CanExecute( 0 );
 
@@ -113,7 +114,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandCanExecuteInvokesTheFunctionWhenProvided()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask, n => n % 2 == 0 );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask, n => n % 2 == 0 );
 
             bool actual1 = ( (ICommand) command ).CanExecute( 1 );
 
@@ -128,7 +129,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandExecuteThrowsWhenParameterIsOfWrongType()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
 
             Assert.Throws<InvalidCastException>( () => ( (ICommand) command ).Execute( "X" ) );
         }
@@ -136,7 +137,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandCanExecuteThrowsWhenParameterIsOfWrongType()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
 
             Assert.Throws<InvalidCastException>( () => ( (ICommand) command ).CanExecute( "X" ) );
         }
@@ -144,7 +145,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public async Task ExecuteTriggersExecuted()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
             bool fired = false;
             command.Executed += ( _, __ ) => fired = true;
 
@@ -156,7 +157,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public async Task ExecutedHasNullArgument()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
             object arg = null;
             command.Executed += ( _, e ) => arg = e.Argument;
 
@@ -168,7 +169,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandExecuteTriggersExecuted()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
             bool fired = false;
             command.Executed += ( _, __ ) => fired = true;
 
@@ -180,7 +181,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void ICommandExecuteDoesNotPassArgumentToExecuted()
         {
-            var command = new AsyncCommand<int>( _ => Task.CompletedTask );
+            var command = new AsyncCommand<int>( _ => TaskEx.CompletedTask );
             object arg = null;
             command.Executed += ( _, e ) => arg = e.Argument;
 

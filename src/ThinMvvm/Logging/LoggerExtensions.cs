@@ -4,7 +4,7 @@ using ThinMvvm.Infrastructure;
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// Extensions to <see cref="ILogger" /> to ease common scenarios.
+    /// Extensions to <see cref="ILogger" /> to facilitate common scenarios.
     /// </summary>
     public static class LoggerExtensions
     {
@@ -17,6 +17,19 @@ namespace ThinMvvm.Logging
         /// <returns>An object to perform other log registrations for the same ViewModel.</returns>
         public static ViewModelRegistration Register( this ILogger logger, IViewModel viewModel, string id )
         {
+            if( logger == null )
+            {
+                throw new ArgumentNullException( nameof( logger ) );
+            }
+            if( viewModel == null )
+            {
+                throw new ArgumentNullException( nameof( viewModel ) );
+            }
+            if( id == null )
+            {
+                throw new ArgumentNullException( nameof( id ) );
+            }
+
             viewModel.NavigatedTo += ( _, __ ) => logger.LogNavigation( id, true );
             viewModel.NavigatedFrom += ( _, __ ) => logger.LogNavigation( id, false );
 
@@ -54,6 +67,15 @@ namespace ThinMvvm.Logging
             /// <returns>The current <see cref="ViewModelRegistration" />, for method call chaining.</returns>
             public ViewModelRegistration WithCommand( Command command, string id, Func<string> labelCreator = null )
             {
+                if( command == null )
+                {
+                    throw new ArgumentNullException( nameof( command ) );
+                }
+                if( id == null )
+                {
+                    throw new ArgumentNullException( nameof( id ) );
+                }
+
                 command.Executed += ( _, __ ) => _logger.LogEvent( _viewModelId, id, labelCreator?.Invoke() );
                 return this;
             }
@@ -68,6 +90,15 @@ namespace ThinMvvm.Logging
             /// <returns>The current <see cref="ViewModelRegistration" />, for method call chaining.</returns>
             public ViewModelRegistration WithCommand<T>( Command<T> command, string id, Func<T, string> labelCreator = null )
             {
+                if( command == null )
+                {
+                    throw new ArgumentNullException( nameof( command ) );
+                }
+                if( id == null )
+                {
+                    throw new ArgumentNullException( nameof( id ) );
+                }
+
                 command.Executed += ( _, e ) => _logger.LogEvent( _viewModelId, id, labelCreator?.Invoke( (T) e.Argument ) );
                 return this;
             }
@@ -81,6 +112,15 @@ namespace ThinMvvm.Logging
             /// <returns>The current <see cref="ViewModelRegistration" />, for method call chaining.</returns>
             public ViewModelRegistration WithCommand( AsyncCommand command, string id, Func<string> labelCreator = null )
             {
+                if( command == null )
+                {
+                    throw new ArgumentNullException( nameof( command ) );
+                }
+                if( id == null )
+                {
+                    throw new ArgumentNullException( nameof( id ) );
+                }
+
                 command.Executed += ( _, __ ) => _logger.LogEvent( _viewModelId, id, labelCreator?.Invoke() );
                 return this;
             }
@@ -95,6 +135,15 @@ namespace ThinMvvm.Logging
             /// <returns>The current <see cref="ViewModelRegistration" />, for method call chaining.</returns>
             public ViewModelRegistration WithCommand<T>( AsyncCommand<T> command, string id, Func<T, string> labelCreator = null )
             {
+                if( command == null )
+                {
+                    throw new ArgumentNullException( nameof( command ) );
+                }
+                if( id == null )
+                {
+                    throw new ArgumentNullException( nameof( id ) );
+                }
+
                 command.Executed += ( _, e ) => _logger.LogEvent( _viewModelId, id, labelCreator?.Invoke( (T) e.Argument ) );
                 return this;
             }

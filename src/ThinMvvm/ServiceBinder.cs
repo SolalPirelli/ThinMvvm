@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using ThinMvvm.Infrastructure;
 
 namespace ThinMvvm
 {
@@ -9,7 +10,7 @@ namespace ThinMvvm
     /// Binds services to concrete implementations.
     /// All implementations are instanciated only once.
     /// </summary>
-    public sealed class ServiceBinder
+    public sealed class ServiceBinder : IServiceCreator
     {
         private readonly Dictionary<Type, object> _instances;
 
@@ -40,7 +41,7 @@ namespace ThinMvvm
                 throw new ArgumentException( "The implementation type cannot be abstract." );
             }
 
-            var instance = (TImplementation) Get( typeof( TImplementation ), null );
+            var instance = (TImplementation) ( (IServiceCreator) this ).Create( typeof( TImplementation ), null );
             Bind<TInterface>( instance );
             return instance;
         }
@@ -65,6 +66,7 @@ namespace ThinMvvm
             _instances.Add( typeof( TInterface ), instance );
         }
 
+
         /// <summary>
         /// Infrastructure.
         /// Gets an instance of the specified type, optionally using the specified argument.
@@ -73,8 +75,7 @@ namespace ThinMvvm
         /// <param name="type">The type.</param>
         /// <param name="arg">The argument, if needed.</param>
         /// <returns>An instance of the type.</returns>
-        [EditorBrowsable( EditorBrowsableState.Advanced )]
-        public object Get( Type type, object arg )
+        object IServiceCreator.Create( Type type, object arg )
         {
             if( type == null )
             {
@@ -105,7 +106,7 @@ namespace ThinMvvm
                 }
                 else
                 {
-                    arguments[n] = Get( parameters[n].ParameterType, null );
+                    arguments[n] = ( (IServiceCreator) this ).Create( parameters[n].ParameterType, null );
                 }
             }
 

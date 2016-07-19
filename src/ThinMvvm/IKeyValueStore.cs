@@ -20,5 +20,11 @@
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         void Set<T>( string key, T value );
+
+        /// <summary>
+        /// Deletes the specified key and its associated value, if it exists.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        void Delete( string key );
     }
 }
