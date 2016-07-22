@@ -49,6 +49,8 @@
     <Compile Include="CommandsTests_ParameterizedSync.cs" />
     <Compile Include="CommandsTests_Sync.cs" />
     <Compile Include="Data\CacheMetatadaTests.cs" />
+    <Compile Include="Data\DataChunkTests.cs" />
+    <Compile Include="Data\DataErrorsTests.cs" />
     <Compile Include="Data\DataSourceTests.cs" />
     <Compile Include="Data\Infrastructure\CacheTests.cs" />
     <Compile Include="Data\PaginatedDataSourceTests.cs" />

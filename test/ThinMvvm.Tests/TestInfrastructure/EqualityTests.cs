@@ -42,15 +42,18 @@ namespace ThinMvvm.Tests.TestInfrastructure
             return this;
         }
 
-        public void Test()
+        public void Test( bool includeOperators = true )
         {
             var equalsOp = typeof( T ).GetTypeInfo().GetDeclaredMethod( "op_Equality" );
             var unequalsOp = typeof( T ).GetTypeInfo().GetDeclaredMethod( "op_Inequality" );
 
-            Assert.False( equalsOp == null,
-                "The == op must be declared." );
-            Assert.False( unequalsOp == null,
-                "The != op must be declared." );
+            if( includeOperators )
+            {
+                Assert.False( equalsOp == null,
+                    "The == op must be declared." );
+                Assert.False( unequalsOp == null,
+                    "The != op must be declared." );
+            }
 
             Func<T, T, bool> eq = ( a, b ) =>
             {
@@ -67,26 +70,36 @@ namespace ThinMvvm.Tests.TestInfrastructure
             Assert.False( _value.Equals( null ),
                 "Equals must return false on null." );
 
-            Assert.True( eq( default( T ), default( T ) ),
-                "default == default must return true." );
+            if( includeOperators )
+            {
+                Assert.True( eq( default( T ), default( T ) ),
+                    "default == default must return true." );
+            }
+
 
             if( !typeof( T ).GetTypeInfo().IsValueType )
             {
                 Assert.False( _value.Equals( (T) (object) null ),
                     "IEquatable.Equals must return false on null." );
 
-                Assert.False( eq( _value, (T) (object) null ),
-                    "<non-null> == null must return false." );
+                if( includeOperators )
+                {
+                    Assert.False( eq( _value, (T) (object) null ),
+                        "<non-null> == null must return false." );
 
-                Assert.False( eq( (T) (object) null, _value ),
-                    "null == <non-null> must return false." );
+                    Assert.False( eq( (T) (object) null, _value ),
+                        "null == <non-null> must return false." );
+                }
             }
 
             Assert.True( _value.Equals( _value ),
                 "Equals must be reflexive." );
 
-            Assert.True( eq( _value, _value ),
-                "== must be reflexive." );
+            if( includeOperators )
+            {
+                Assert.True( eq( _value, _value ),
+                    "== must be reflexive." );
+            }
 
             Assert.True( _value.GetHashCode() == _value.GetHashCode(),
                 "GetHashCode must be reflexive." );
@@ -106,11 +119,14 @@ namespace ThinMvvm.Tests.TestInfrastructure
                 Assert.True( item.Equals( _value ),
                     "IEquatable.Equals must return true for equal items." );
 
-                Assert.True( eq( _value, item ),
-                    "== must return true for equal items." );
+                if( includeOperators )
+                {
+                    Assert.True( eq( _value, item ),
+                        "== must return true for equal items." );
 
-                Assert.True( eq( item, _value ),
-                    "== must return true for equal items." );
+                    Assert.True( eq( item, _value ),
+                        "== must return true for equal items." );
+                }
 
                 Assert.True( _value.GetHashCode() == item.GetHashCode(),
                     "GetHashCode must return the same value for equal objects." );
@@ -130,11 +146,14 @@ namespace ThinMvvm.Tests.TestInfrastructure
                 Assert.False( item.Equals( _value ),
                     "Equals must return false for unequal items." );
 
-                Assert.False( eq( _value, item ),
-                    "== must return false for unequal items." );
+                if( includeOperators )
+                {
+                    Assert.False( eq( _value, item ),
+                        "== must return false for unequal items." );
 
-                Assert.False( eq( item, _value ),
-                    "== must return false for unequal items." );
+                    Assert.False( eq( item, _value ),
+                        "== must return false for unequal items." );
+                }
             }
         }
     }

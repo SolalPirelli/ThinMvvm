@@ -21,6 +21,12 @@
                 <Source>.*\\NoParameter\.cs</Source>
               </Exclude>
             </Sources>
+            <Functions>
+              <Exclude>
+                <!-- Exclude the Delete method on SettingsBase's cache, since it is never used. -->
+                <Function>ThinMvvm\.SettingsBase\.StoreCache\.Delete\(string\)</Function>
+              </Exclude>
+            </Functions>
           </CodeCoverage>
         </Configuration>
       </DataCollector>

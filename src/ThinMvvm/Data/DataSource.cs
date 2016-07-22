@@ -1,5 +1,6 @@
 ﻿using System;
-using System.ComponentModel;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinMvvm.Data.Infrastructure;
@@ -10,38 +11,49 @@ namespace ThinMvvm.Data
     /// Base class for data sources that fetch a single value.
     /// </summary>
     /// <typeparam name="T">The value type.</typeparam>
-    public abstract class DataSource<T> : DataSource
+    public abstract class DataSource<T> : ObservableObject, IDataSource
     {
-        private T _value;
-        private Optional<T> _originalValue;
+        // Locks changes to all properties, to ensure atomicity.
+        private readonly object _lock;
+        // Creates tokens for refresh operations.
+        private readonly CancellationTokenCreator _cancellationTokens;
+
+        // Cache and its associated metadata creator. May be null, but will be changed only once.
+        private Cache _cache;
+        private Func<CacheMetadata> _cacheMetadataCreator;
+
+        // Data before the transformation is applied.
+        private DataChunk<T> _originalData;
+        // Data after the transformation, publicly visible.
+        private DataChunk<T> _data;
+        // Data exposed to satisfy the IDataSource contract.
+        private ReadOnlyCollection<IDataChunk> _rawData;
+
+        // Current status.
+        private DataSourceStatus _status;
+
 
         /// <summary>
-        /// Infrastructure.
-        /// Gets a value indicating whether there is more data to fetch.
+        /// Gets the data loaded by the source, if any.
         /// </summary>
-        [EditorBrowsable( EditorBrowsableState.Never )]
-        public override bool CanFetchMore
+        public DataChunk<T> Data
         {
-            get { return false; }
+            get { return _data; }
+            private set
+            {
+                _rawData = new ReadOnlyCollection<IDataChunk>( new[] { value } );
+
+                Set( ref _data, value );
+            }
         }
 
         /// <summary>
-        /// Infrastructure.
-        /// Do not use this property; use <see cref="Value" /> instead.
+        /// Gets the source's status.
         /// </summary>
-        [EditorBrowsable( EditorBrowsableState.Never )]
-        public override object RawValue
+        public DataSourceStatus Status
         {
-            get { return Value; }
-        }
-
-        /// <summary>
-        /// Gets the last successfully retrieved value.
-        /// </summary>
-        public T Value
-        {
-            get { return _value; }
-            private set { Set( ref _value, value ); }
+            get { return _status; }
+            private set { Set( ref _status, value ); }
         }
 
 
@@ -50,7 +62,8 @@ namespace ThinMvvm.Data
         /// </summary>
         protected DataSource()
         {
-            // Nothing. This constructor is there for its access modifier only.
+            _lock = new object();
+            _cancellationTokens = new CancellationTokenCreator();
         }
 
 
@@ -58,38 +71,30 @@ namespace ThinMvvm.Data
         /// Asynchronously refreshes the data.
         /// </summary>
         /// <returns>A task that represents the refresh operation.</returns>
-        public override sealed Task RefreshAsync()
+        public async Task RefreshAsync()
         {
-            return LoadAsync(
-                () => Status = DataStatus.Loading,
-                FetchAsync,
-                ( result, cacheStatus ) =>
-                {
-                    CacheStatus = cacheStatus;
-                    if( CacheStatus == CacheStatus.Used || LastException == null )
-                    {
-                        _originalValue = new Optional<T>( result );
-                        UpdateValue();
-                        Status = DataStatus.Loaded;
-                    }
-                    else
-                    {
-                        _originalValue = default( Optional<T> );
-                        Value = default( T );
-                        Status = DataStatus.NoData;
-                    }
-                }
-            );
-        }
+            Status = DataSourceStatus.Loading;
 
-        /// <summary>
-        /// This method is not supported.
-        /// </summary>
-        /// <returns>Never returns; always throws a <see cref="NotSupportedException" />.</returns>
-        [EditorBrowsable( EditorBrowsableState.Never )]
-        public override Task FetchMoreAsync()
-        {
-            throw new NotSupportedException();
+            var token = _cancellationTokens.CreateAndCancelPrevious();
+
+            var value = await DataLoader.LoadAsync( () => FetchAsync( token ) );
+
+            if( _cache != null )
+            {
+                value = await DataLoader.CacheAsync( value, _cache, _cacheMetadataCreator );
+            }
+
+            var transformedValue = DataLoader.Transform( value, Transform );
+
+            lock( _lock )
+            {
+                if( !token.IsCancellationRequested )
+                {
+                    _originalData = value;
+                    Data = transformedValue;
+                    Status = DataSourceStatus.Loaded;
+                }
+            }
         }
 
 
@@ -116,12 +121,17 @@ namespace ThinMvvm.Data
         /// </summary>
         protected void UpdateValue()
         {
-            if( !_originalValue.HasValue )
+            if( _originalData == null )
             {
                 throw new InvalidOperationException( $"{nameof( UpdateValue )} can only be called after data has been successfully loaded." );
             }
 
-            Value = Transform( _originalValue.Value );
+            lock( _lock )
+            {
+                // TODO: Use e.g. versioning to avoid having the transform in the lock.
+                Data = DataLoader.Transform( _originalData, Transform );
+                OnPropertyChanged( nameof( Status ) );
+            }
         }
 
         /// <summary>
@@ -130,9 +140,48 @@ namespace ThinMvvm.Data
         /// <param name="id">The source's ID.</param>
         /// <param name="dataStore">The data store for cached values.</param>
         /// <param name="metadataCreator">The metadata creator, if any.</param>
-        protected new void EnableCache( string id, IDataStore dataStore, Func<CacheMetadata> metadataCreator = null )
+        protected void EnableCache( string id, IDataStore dataStore, Func<CacheMetadata> metadataCreator = null )
         {
-            base.EnableCache( id, dataStore, metadataCreator ?? ( () => CacheMetadata.Default ) );
+            if( id == null )
+            {
+                throw new ArgumentNullException( nameof( id ) );
+            }
+            if( dataStore == null )
+            {
+                throw new ArgumentNullException( nameof( dataStore ) );
+            }
+
+            if( _cache != null )
+            {
+                throw new InvalidOperationException( "Caching has already been enabled." );
+            }
+
+            // The rest of the code assumes that if _cache is set then _cacheMetadataCreator also is.
+            _cacheMetadataCreator = metadataCreator ?? ( () => CacheMetadata.Default );
+            _cache = new Cache( id, dataStore );
+        }
+
+
+        /// <summary>
+        /// Infrastructure.
+        /// Gets the data loaded by the source.
+        /// </summary>
+        IReadOnlyList<IDataChunk> IDataSource.Data => _rawData;
+
+        /// <summary>
+        /// Infrastructure.
+        /// Gets a value indicating whether this source can fetch more data, which is never the case.
+        /// </summary>
+        bool IDataSource.CanFetchMore => false;
+
+        /// <summary>
+        /// Infrastructure.
+        /// This method is not supported.
+        /// </summary>
+        /// <returns>Never returns; always throws a <see cref="NotSupportedException" />.</returns>
+        Task IDataSource.FetchMoreAsync()
+        {
+            throw new NotSupportedException();
         }
     }
 }

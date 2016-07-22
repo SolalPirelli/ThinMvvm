@@ -145,7 +145,7 @@ namespace ThinMvvm.Windows.Controls
             switch( ContentSource.Status )
             {
                 case DataStatus.None:
-                case DataStatus.NoData:
+                case DataStatus.Error:
                     if( ContentSource.LastException == null )
                     {
                         VisualStateManager.GoToState( this, "Loaded", true );

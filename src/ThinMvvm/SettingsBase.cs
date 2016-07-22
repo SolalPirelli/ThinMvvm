@@ -16,13 +16,6 @@ namespace ThinMvvm
         private readonly StoreCache _store;
         private readonly string _keyPrefix;
 
-
-        /// <summary>
-        /// Occurs when a property value changes.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SettingsBase" /> class, using the specified store.
         /// </summary>
@@ -38,6 +31,12 @@ namespace ThinMvvm
             _keyPrefix = GetType().FullName + ".";
         }
 
+
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+        
 
         /// <summary>
         /// Gets a property, using the specified default value.

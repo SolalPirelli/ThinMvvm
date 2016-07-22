@@ -25,7 +25,8 @@ namespace ThinMvvm.Data.Tests
                 }
 
 
-                protected override Task<int> FetchAsync( CancellationToken cancellationToken ) => Fetch( cancellationToken );
+                protected override Task<int> FetchAsync( CancellationToken cancellationToken )
+                    => Fetch( cancellationToken );
             }
 
             [Fact]
@@ -33,11 +34,11 @@ namespace ThinMvvm.Data.Tests
             {
                 var source = new IntDataSource( _ => Task.FromResult( 0 ) );
 
-                Assert.False( source.CanFetchMore );
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( source.Value, source.RawValue );
-                Assert.Equal( null, source.LastException );
-                Assert.Equal( DataStatus.None, source.Status );
+                Assert.Null( source.Data );
+                Assert.Equal( DataSourceStatus.None, source.Status );
+
+                Assert.Null( ( (IDataSource) source ).Data );
+                Assert.False( ( (IDataSource) source ).CanFetchMore );
             }
 
             [Fact]
@@ -46,23 +47,24 @@ namespace ThinMvvm.Data.Tests
                 var taskSource = new TaskCompletionSource<int>();
                 var source = new IntDataSource( _ => taskSource.Task );
 
-                DataStatus? status = null;
+                var hits = new List<string>();
                 source.PropertyChanged += ( _, e ) =>
                 {
-                    if( e.PropertyName == nameof( IntDataSource.Status ) )
+                    hits.Add( e.PropertyName );
+
+                    if( e.PropertyName == nameof( IDataSource.Status ) && hits.Count == 0 )
                     {
-                        status = source.Status;
+                        Assert.Null( source.Data );
+                        Assert.Equal( DataSourceStatus.Loading, source.Status );
+
+                        Assert.Null( ( (IDataSource) source ).Data );
+                        Assert.False( ( (IDataSource) source ).CanFetchMore );
                     }
                 };
 
                 var task = source.RefreshAsync();
 
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( source.Value, source.RawValue );
-                Assert.Equal( null, source.LastException );
-                Assert.Equal( DataStatus.Loading, source.Status );
-
-                Assert.Equal( source.Status, status );
+                Assert.Equal( new[] { nameof( IDataSource.Status ) }, hits );
 
                 taskSource.SetResult( 0 );
                 await task;
@@ -71,64 +73,60 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task SuccessfulRefresh()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 42 ) );
+                var taskSource = new TaskCompletionSource<int>();
+                var source = new IntDataSource( _ => taskSource.Task );
 
-                DataStatus? status = null;
-                int countAfterStatus = 0;
+                var task = source.RefreshAsync();
+
+                var hits = new List<string>();
                 source.PropertyChanged += ( _, e ) =>
                 {
+                    hits.Add( e.PropertyName );
+
                     if( e.PropertyName == nameof( IntDataSource.Status ) )
                     {
-                        status = source.Status;
-                        countAfterStatus = 0;
-                    }
-                    else
-                    {
-                        countAfterStatus++;
+                        Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ), source.Data );
+                        Assert.Equal( DataSourceStatus.Loaded, source.Status );
+
+                        Assert.Equal<IDataChunk>( new[] { source.Data }, ( (IDataSource) source ).Data );
+                        Assert.False( ( (IDataSource) source ).CanFetchMore );
                     }
                 };
 
-                await source.RefreshAsync();
+                taskSource.SetResult( 42 );
+                await task;
 
-                Assert.Equal( 42, source.Value );
-                Assert.Equal( source.Value, source.RawValue );
-                Assert.Equal( null, source.LastException );
-                Assert.Equal( DataStatus.Loaded, source.Status );
-
-                Assert.Equal( source.Status, status );
-                Assert.Equal( 0, countAfterStatus );
+                Assert.Equal( new[] { nameof( IDataSource.Data ), nameof( IDataSource.Status ) }, hits );
             }
 
             [Fact]
             public async Task FailedRefresh()
             {
                 var ex = new MyException();
-                var source = new IntDataSource( _ => TaskEx.FromException<int>( ex ) );
+                var taskSource = new TaskCompletionSource<int>();
+                var source = new IntDataSource( _ => taskSource.Task );
 
-                DataStatus? status = null;
-                int countAfterStatus = 0;
+                var task = source.RefreshAsync();
+
+                var hits = new List<string>();
                 source.PropertyChanged += ( _, e ) =>
                 {
+                    hits.Add( e.PropertyName );
+
                     if( e.PropertyName == nameof( IntDataSource.Status ) )
                     {
-                        status = source.Status;
-                        countAfterStatus = 0;
-                    }
-                    else
-                    {
-                        countAfterStatus++;
+                        Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( ex, null, null ) ), source.Data );
+                        Assert.Equal( DataSourceStatus.Loaded, source.Status );
+
+                        Assert.Equal<IDataChunk>( new[] { source.Data }, ( (IDataSource) source ).Data );
+                        Assert.False( ( (IDataSource) source ).CanFetchMore );
                     }
                 };
 
-                await source.RefreshAsync();
+                taskSource.SetException( ex );
+                await task;
 
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( source.Value, source.RawValue );
-                Assert.Equal( ex, source.LastException );
-                Assert.Equal( DataStatus.NoData, source.Status );
-
-                Assert.Equal( source.Status, status );
-                Assert.Equal( 0, countAfterStatus );
+                Assert.Equal( new[] { nameof( IDataSource.Data ), nameof( IDataSource.Status ) }, hits );
             }
 
             [Fact]
@@ -164,7 +162,8 @@ namespace ThinMvvm.Data.Tests
                 await task;
                 await task2;
 
-                Assert.Equal( 42, source.Value );
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
@@ -186,18 +185,18 @@ namespace ThinMvvm.Data.Tests
                 await task;
                 await task2;
 
-                Assert.Equal( DataStatus.Loaded, source.Status );
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
-            public async Task CannotFetchMore()
+            public async Task FetchMoreThrows()
             {
                 var source = new IntDataSource( _ => Task.FromResult( 0 ) );
 
                 await source.RefreshAsync();
 
-                Assert.False( source.CanFetchMore );
-                await Assert.ThrowsAsync<NotSupportedException>( () => source.FetchMoreAsync() );
+                await Assert.ThrowsAsync<NotSupportedException>( ( (IDataSource) source ).FetchMoreAsync );
             }
         }
 
@@ -216,11 +215,14 @@ namespace ThinMvvm.Data.Tests
                 }
 
 
-                public new void UpdateValue() => base.UpdateValue();
+                public new void UpdateValue()
+                    => base.UpdateValue();
 
-                protected override Task<int> FetchAsync( CancellationToken cancellationToken ) => Fetch( cancellationToken );
+                protected override Task<int> FetchAsync( CancellationToken cancellationToken )
+                    => Fetch( cancellationToken );
 
-                protected override int Transform( int value ) => Transformer( value );
+                protected override int Transform( int value )
+                    => Transformer( value );
             }
 
             [Fact]
@@ -230,23 +232,26 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 42, source.Value );
-                Assert.Equal( null, source.LastException );
-                Assert.Equal( DataStatus.Loaded, source.Status );
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
             public async Task FailedTransform()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 42 ), _ => { throw new MyException(); } );
+                var ex = new MyException();
+                var source = new IntDataSource( _ => Task.FromResult( 42 ), _ => { throw ex; } );
 
-                await Assert.ThrowsAsync<MyException>( source.RefreshAsync );
+                await source.RefreshAsync();
+
+                Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( null, null, ex ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
             public async Task SuccessfulUpdatedTransform()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 84 ), n => n * 2 );
+                var source = new IntDataSource( _ => Task.FromResult( 84 ), n => n );
 
                 await source.RefreshAsync();
 
@@ -254,28 +259,31 @@ namespace ThinMvvm.Data.Tests
 
                 source.UpdateValue();
 
-                Assert.Equal( 42, source.Value );
-                Assert.Equal( null, source.LastException );
-                Assert.Equal( DataStatus.Loaded, source.Status );
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
             public async Task FailedUpdatedTransform()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 84 ), n => n * 2 );
+                var source = new IntDataSource( _ => Task.FromResult( 42 ), n => n );
 
                 await source.RefreshAsync();
 
-                source.Transformer = _ => { throw new MyException(); };
+                var ex = new MyException();
+                source.Transformer = _ => { throw ex; };
 
-                Assert.Throws<MyException>( () => source.UpdateValue() );
+                source.UpdateValue();
+
+                Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( null, null, ex ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
             public async Task UpdateDoesNotFetchAgain()
             {
-                int count = 0;
-                var source = new IntDataSource( _ => { count++; return Task.FromResult( 21 ); }, n => n * 2 );
+                var count = 0;
+                var source = new IntDataSource( _ => { count++; return Task.FromResult( 42 ); }, n => n );
 
                 await source.RefreshAsync();
 
@@ -300,14 +308,17 @@ namespace ThinMvvm.Data.Tests
                 public Func<CancellationToken, Task<int>> Fetch;
 
 
-                public IntDataSource( Func<CancellationToken, Task<int>> fetch, Func<CacheMetadata> metadataCreator )
+                public IntDataSource( Func<CancellationToken, Task<int>> fetch, Func<CacheMetadata> metadataCreator,
+                                      IDataStore dataStore = null )
                 {
                     Fetch = fetch;
-                    EnableCache( "X", new InMemoryDataStore(), metadataCreator );
+
+                    EnableCache( "X", dataStore ?? new InMemoryDataStore(), metadataCreator );
                 }
 
 
-                protected override Task<int> FetchAsync( CancellationToken cancellationToken ) => Fetch( cancellationToken );
+                protected override Task<int> FetchAsync( CancellationToken cancellationToken )
+                    => Fetch( cancellationToken );
             }
 
             [Fact]
@@ -317,10 +328,8 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 42, source.Value );
-                Assert.Equal( null, source.LastException );
-                Assert.Equal( DataStatus.Loaded, source.Status );
-                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
@@ -331,10 +340,8 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( ex, source.LastException );
-                Assert.Equal( DataStatus.NoData, source.Status );
-                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( ex, null, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
@@ -349,10 +356,8 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 42, source.Value );
-                Assert.Equal( ex, source.LastException );
-                Assert.Equal( DataStatus.Loaded, source.Status );
-                Assert.Equal( CacheStatus.Used, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Cached, new DataErrors( ex, null, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
@@ -369,10 +374,8 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( ex, source.LastException );
-                Assert.Equal( DataStatus.NoData, source.Status );
-                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( ex, null, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
@@ -387,14 +390,12 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( ex, source.LastException );
-                Assert.Equal( DataStatus.NoData, source.Status );
-                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( ex, null, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
-            public async Task CacheIsNotUsedWhenMetadataIsNull()
+            public async Task DataIsNotUsedWhenMetadataIsNull()
             {
                 var source = new IntDataSource( _ => Task.FromResult( 42 ), () => null );
 
@@ -405,10 +406,8 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( ex, source.LastException );
-                Assert.Equal( DataStatus.NoData, source.Status );
-                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( ex, null, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
@@ -419,10 +418,8 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( ex, source.LastException );
-                Assert.Equal( DataStatus.NoData, source.Status );
-                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, new DataErrors( null, ex, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
@@ -442,17 +439,89 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
+                var fetchEx = new MyException();
+                source.Fetch = _ => TaskEx.FromException<int>( fetchEx );
+                shouldThrow = true;
+
+                await source.RefreshAsync();
+
+                Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( fetchEx, cacheEx, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
+            }
+
+
+            private sealed class DataStoreFailingToRead : IDataStore
+            {
+                public readonly Exception Exception = new MyException();
+
+
+                public Task<Optional<T>> LoadAsync<T>( string id )
+                {
+                    return TaskEx.FromException<Optional<T>>( Exception );
+                }
+
+                public Task StoreAsync<T>( string id, T data )
+                {
+                    return TaskEx.CompletedTask;
+                }
+
+                public Task DeleteAsync( string id )
+                {
+                    throw new NotSupportedException();
+                }
+            }
+
+            [Fact]
+            public async Task CacheFailsToRead()
+            {
+                var store = new DataStoreFailingToRead();
+                var source = new IntDataSource( _ => Task.FromResult( 42 ), null, store );
+
+                await source.RefreshAsync();
+
                 var ex = new MyException();
                 source.Fetch = _ => TaskEx.FromException<int>( ex );
 
-                shouldThrow = true;
                 await source.RefreshAsync();
 
-                Assert.Equal( 0, source.Value );
-                Assert.Equal( cacheEx, source.LastException );
-                Assert.Equal( DataStatus.NoData, source.Status );
-                Assert.Equal( CacheStatus.Unused, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( ex, store.Exception, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
+
+
+            private sealed class DataStoreFailingToWrite : IDataStore
+            {
+                public readonly Exception Exception = new MyException();
+
+
+                public Task<Optional<T>> LoadAsync<T>( string id )
+                {
+                    return Task.FromResult( default( Optional<T> ) );
+                }
+
+                public Task StoreAsync<T>( string id, T data )
+                {
+                    return TaskEx.FromException<T>( Exception );
+                }
+
+                public Task DeleteAsync( string id )
+                {
+                    throw new NotSupportedException();
+                }
+            }
+
+            [Fact]
+            public async Task CacheFailsToWrite()
+            {
+                var store = new DataStoreFailingToWrite();
+                var source = new IntDataSource( _ => Task.FromResult( 42 ), null, store );
+
+                await source.RefreshAsync();
+
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, new DataErrors( null, store.Exception, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
+            }
+
 
             private sealed class DataSourceWithNullCacheStore : DataSource<int>
             {
@@ -531,11 +600,14 @@ namespace ThinMvvm.Data.Tests
                 }
 
 
-                public new void UpdateValue() => base.UpdateValue();
+                public new void UpdateValue()
+                    => base.UpdateValue();
 
-                protected override Task<int> FetchAsync( CancellationToken cancellationToken ) => Fetch( cancellationToken );
+                protected override Task<int> FetchAsync( CancellationToken cancellationToken )
+                    => Fetch( cancellationToken );
 
-                protected override int Transform( int value ) => Transformer( value );
+                protected override int Transform( int value )
+                    => Transformer( value );
             }
 
 
@@ -551,10 +623,8 @@ namespace ThinMvvm.Data.Tests
 
                 await source.RefreshAsync();
 
-                Assert.Equal( 42, source.Value );
-                Assert.Equal( ex, source.LastException );
-                Assert.Equal( DataStatus.Loaded, source.Status );
-                Assert.Equal( CacheStatus.Used, source.CacheStatus );
+                Assert.Equal( new DataChunk<int>( 42, DataStatus.Cached, new DataErrors( ex, null, null ) ), source.Data );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
         }
     }

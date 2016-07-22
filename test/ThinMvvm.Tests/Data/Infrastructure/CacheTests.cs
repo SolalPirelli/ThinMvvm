@@ -22,6 +22,22 @@ namespace ThinMvvm.Data.Infrastructure.Tests
             Assert.Throws<ArgumentNullException>( () => new Cache( "X", null ) );
         }
 
+        [Fact]
+        public async Task CannotGetWithNullId()
+        {
+            var cache = new Cache( "X", new InMemoryDataStore() );
+
+            await Assert.ThrowsAsync<ArgumentNullException>( () => cache.GetAsync<int>( null ) );
+        }
+
+        [Fact]
+        public async Task CannotStoreWithNullId()
+        {
+            var cache = new Cache( "X", new InMemoryDataStore() );
+
+            await Assert.ThrowsAsync<ArgumentNullException>( () => cache.StoreAsync( null, 1, null ) );
+        }
+
 
         [Fact]
         public async Task ValuesAreCachedWithNoMetadata()

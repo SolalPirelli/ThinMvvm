@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using ThinMvvm.Data.Infrastructure;
@@ -9,43 +8,60 @@ using ThinMvvm.Data.Infrastructure;
 namespace ThinMvvm.Data
 {
     /// <summary>
-    /// Base class for data sources that fetch paginated chunks of items.
+    /// Base class for data sources that fetch paginated items.
     /// </summary>
-    /// <typeparam name="TItem">The item type.</typeparam>
+    /// <typeparam name="TData">The data type.</typeparam>
     /// <typeparam name="TToken">The pagination token type.</typeparam>
-    public abstract class PaginatedDataSource<TItem, TToken> : DataSource
+    public abstract class PaginatedDataSource<TData, TToken> : ObservableObject, IDataSource
     {
+        // Locks changes to all properties, to ensure atomicity.
+        private readonly object _lock;
+        // Creates tokens for fetch operations.
+        private readonly CancellationTokenCreator _cancellationTokens;
+
+        // Cache and its associated metadata creator. May be null, but will be changed only once.
+        private Cache _cache;
+        private Func<Optional<TToken>, CacheMetadata> _cacheMetadataCreator;
+
+        // Values before the transformation is applied.
+        private List<DataChunk<TData>> _originalValues;
+        // Writable version of the values after transformation.
+        private ObservableCollection<DataChunk<TData>> _writeableValues;
+        // Read-only values, publicly visible.
+        private ReadOnlyObservableCollection<DataChunk<TData>> _values;
+
+        // Current pagination token.
         private Optional<TToken> _paginationToken;
-        private ObservableCollection<TItem> _writeableValue;
-        private ReadOnlyObservableCollection<TItem> _values;
-        private List<TItem> _originalValue;
+
+        // Current status.
+        private DataSourceStatus _status;
 
 
         /// <summary>
-        /// Gets a value indicating whether there is more data to fetch.
+        /// Gets the values loaded by the source, if any.
         /// </summary>
-        public override bool CanFetchMore
-        {
-            get { return _paginationToken != default( Optional<TToken> ); }
-        }
-
-        /// <summary>
-        /// Infrastructure.
-        /// Do not use this property; use <see cref="Values" /> instead.
-        /// </summary>
-        [EditorBrowsable( EditorBrowsableState.Never )]
-        public override object RawValue
-        {
-            get { return Values; }
-        }
-
-        /// <summary>
-        /// Gets the last successfully retrieved values.
-        /// </summary>
-        public ReadOnlyObservableCollection<TItem> Values
+        public ReadOnlyObservableCollection<DataChunk<TData>> Data
         {
             get { return _values; }
             private set { Set( ref _values, value ); }
+        }
+
+        /// <summary>
+        /// Gets the source's status.
+        /// </summary>
+        public DataSourceStatus Status
+        {
+            get { return _status; }
+            private set { Set( ref _status, value ); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether there is more data to be fetched.
+        /// If this is <c>true</c>, calling <see cref="FetchMoreAsync" /> will add a chunk to <see cref="Data" />.
+        /// </summary>
+        public bool CanFetchMore
+        {
+            get { return _paginationToken != default( Optional<TToken> ); }
         }
 
 
@@ -54,7 +70,8 @@ namespace ThinMvvm.Data
         /// </summary>
         protected PaginatedDataSource()
         {
-            // Nothing. This constructor is there for its access modifier only.
+            _lock = new object();
+            _cancellationTokens = new CancellationTokenCreator();
         }
 
 
@@ -62,67 +79,23 @@ namespace ThinMvvm.Data
         /// Asynchronously refreshes the data.
         /// </summary>
         /// <returns>A task that represents the refresh operation.</returns>
-        public override sealed Task RefreshAsync()
+        public Task RefreshAsync()
         {
-            return LoadAsync(
-                () =>
-                {
-                    Status = DataStatus.Loading;
-                    _paginationToken = default( Optional<TToken> );
-                },
-                t => FetchAsync( _paginationToken, t ),
-                ( result, cacheStatus ) =>
-                {
-                    CacheStatus = cacheStatus;
-                    if( CacheStatus == CacheStatus.Used || LastException == null )
-                    {
-                        _originalValue = new List<TItem>( result.Items );
-                        _paginationToken = result.Token;
-                        UpdateValues( _originalValue, false );
-                        Status = DataStatus.Loaded;
-                    }
-                    else
-                    {
-                        _originalValue = null;
-                        Values = null;
-                        Status = DataStatus.NoData;
-                    }
-                }
-            );
+            return FetchAsync( false );
         }
 
         /// <summary>
         /// Asynchronously fetches more data.
         /// </summary>
         /// <returns>A task that representa the fetch operation.</returns>
-        public override async Task FetchMoreAsync()
+        public Task FetchMoreAsync()
         {
             if( !CanFetchMore )
             {
-                return;
+                throw new InvalidOperationException( $"Cannot call {nameof( FetchMoreAsync )} when {nameof( CanFetchMore )} is false." );
             }
 
-            await LoadAsync(
-                () => Status = DataStatus.LoadingMore,
-                t => FetchAsync( _paginationToken, t ),
-                ( result, cacheStatus ) =>
-                {
-                    // Don't overwrite an existing 'used' status
-                    if( cacheStatus == CacheStatus.Used )
-                    {
-                        CacheStatus = cacheStatus;
-                    }
-
-                    if( CacheStatus == CacheStatus.Used || LastException == null )
-                    {
-                        _paginationToken = result.Token;
-                        _originalValue.AddRange( result.Items );
-                        UpdateValues( result.Items, true );
-                    }
-
-                    Status = DataStatus.Loaded;
-                }
-            );
+            return FetchAsync( true );
         }
 
 
@@ -132,7 +105,7 @@ namespace ThinMvvm.Data
         /// <param name="paginationToken">The pagination token, if any.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that represents the fetch operation.</returns>
-        protected abstract Task<PaginatedData<TItem, TToken>> FetchAsync( Optional<TToken> paginationToken, CancellationToken cancellationToken );
+        protected abstract Task<PaginatedData<TData, TToken>> FetchAsync( Optional<TToken> paginationToken, CancellationToken cancellationToken );
 
         /// <summary>
         /// Transforms the specified values into new ones if necessary.
@@ -144,7 +117,7 @@ namespace ThinMvvm.Data
         /// Otherwise, the return value of this method will replace the source's current value.
         /// </param>
         /// <returns>Either the existing values if no transformation was needed, or new values.</returns>
-        protected virtual IEnumerable<TItem> Transform( IReadOnlyList<TItem> values, bool isIncremental )
+        protected virtual TData Transform( TData values, bool isIncremental )
         {
             return values;
         }
@@ -155,12 +128,25 @@ namespace ThinMvvm.Data
         /// </summary>
         protected void UpdateValues()
         {
-            if( _originalValue == null )
+            if( _originalValues == null )
             {
                 throw new InvalidOperationException( $"{nameof( UpdateValues )} can only be called after data has been successfully loaded." );
             }
 
-            UpdateValues( _originalValue, false );
+            lock( _lock )
+            {
+                // TODO: Use e.g. versioning to avoid having the transform in the lock.
+                var transformed = new List<DataChunk<TData>>();
+                for( int n = 0; n < _originalValues.Count; n++ )
+                {
+                    transformed.Add( DataLoader.Transform( _originalValues[n], items => Transform( items, n == 0 ) ) );
+                }
+
+                _writeableValues = new ObservableCollection<DataChunk<TData>>( transformed );
+                Data = new ReadOnlyObservableCollection<DataChunk<TData>>( _writeableValues );
+
+                OnPropertyChanged( string.Empty );
+            }
         }
 
         /// <summary>
@@ -171,40 +157,75 @@ namespace ThinMvvm.Data
         /// <param name="metadataCreator">The metadata creator, if any.</param>
         protected void EnableCache( string id, IDataStore dataStore, Func<Optional<TToken>, CacheMetadata> metadataCreator = null )
         {
-            if( metadataCreator == null )
+            if( id == null )
             {
-                EnableCache( id, dataStore, () => CacheMetadata.Default );
+                throw new ArgumentNullException( nameof( id ) );
             }
-            else
+            if( dataStore == null )
             {
-                EnableCache( id, dataStore, () => metadataCreator( _paginationToken ) );
+                throw new ArgumentNullException( nameof( dataStore ) );
+            }
+
+            if( _cache != null )
+            {
+                throw new InvalidOperationException( "Caching has already been enabled." );
+            }
+
+            // The rest of the code assumes that if _cache is set then _cacheMetadataCreator also is.
+            _cacheMetadataCreator = metadataCreator ?? ( _ => CacheMetadata.Default );
+            _cache = new Cache( id, dataStore );
+        }
+
+
+        /// <summary>
+        /// Asynchronously fetches data, incrementally or not.
+        /// </summary>
+        private async Task FetchAsync( bool isIncremental )
+        {
+            Status = isIncremental ? DataSourceStatus.LoadingMore : DataSourceStatus.Loading;
+
+            var paginationToken = isIncremental ? _paginationToken : default( Optional<TToken> );
+            var cancellationToken = _cancellationTokens.CreateAndCancelPrevious();
+
+            var chunk = await DataLoader.LoadAsync( () => FetchAsync( paginationToken, cancellationToken ) );
+
+            if( _cache != null )
+            {
+                chunk = await DataLoader.CacheAsync( chunk, _cache, () => _cacheMetadataCreator( paginationToken ) );
+            }
+
+            var itemsChunk = new DataChunk<TData>( chunk.Value == null ? default( TData ) : chunk.Value.Value, chunk.Status, chunk.Errors );
+            var transformedChunk = DataLoader.Transform( itemsChunk, items => Transform( items, isIncremental ) );
+
+            lock( _lock )
+            {
+                if( !cancellationToken.IsCancellationRequested )
+                {
+                    _paginationToken = chunk.Value?.Token ?? default( Optional<TToken> );
+                    OnPropertyChanged( nameof( CanFetchMore ) );
+
+                    if( isIncremental )
+                    {
+                        _originalValues.Add( itemsChunk );
+                        _writeableValues.Add( transformedChunk );
+                    }
+                    else
+                    {
+                        _originalValues = new List<DataChunk<TData>> { itemsChunk };
+                        _writeableValues = new ObservableCollection<DataChunk<TData>> { transformedChunk };
+                        Data = new ReadOnlyObservableCollection<DataChunk<TData>>( _writeableValues );
+                    }
+
+                    Status = DataSourceStatus.Loaded;
+                }
             }
         }
 
 
         /// <summary>
-        /// Updates the value by re-applying the transform on the specified values.
+        /// Infrastructure.
+        /// Gets the data loaded by the source.
         /// </summary>
-        private void UpdateValues( IReadOnlyList<TItem> items, bool isIncremental )
-        {
-            var values = Transform( items, isIncremental );
-            if( values == null )
-            {
-                throw new InvalidOperationException( "The transformed values cannot be null." );
-            }
-
-            if( isIncremental )
-            {
-                foreach( var item in values )
-                {
-                    _writeableValue.Add( item );
-                }
-            }
-            else
-            {
-                _writeableValue = new ObservableCollection<TItem>( values );
-                Values = new ReadOnlyObservableCollection<TItem>( _writeableValue );
-            }
-        }
+        IReadOnlyList<IDataChunk> IDataSource.Data => Data;
     }
 }

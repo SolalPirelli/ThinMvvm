@@ -36,11 +36,16 @@
   <ItemGroup>
     <Compile Include="Commands.cs" />
     <Compile Include="Data\CacheMetadata.cs" />
-    <Compile Include="Data\CacheStatus.cs" />
+    <Compile Include="Data\DataChunk.cs" />
+    <Compile Include="Data\DataErrors.cs" />
     <Compile Include="Data\DataSource.cs" />
-    <Compile Include="Data\DataStatus.cs" />
+    <Compile Include="Data\DataSourceStatus.cs" />
+    <Compile Include="Data\IDataChunk.cs" />
+    <Compile Include="Data\IDataSource.cs" />
     <Compile Include="Data\Infrastructure\Cache.cs" />
-    <Compile Include="Data\Infrastructure\DataSource.cs" />
+    <Compile Include="Data\Infrastructure\CancellationTokenCreator.cs" />
+    <Compile Include="Data\Infrastructure\DataLoader.cs" />
+    <Compile Include="Data\DataStatus.cs" />
     <Compile Include="Data\PaginatedData.cs" />
     <Compile Include="Data\PaginatedDataSource.cs" />
     <Compile Include="Data\SimpleDataSource.cs" />

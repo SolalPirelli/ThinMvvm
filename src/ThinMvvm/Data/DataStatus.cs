@@ -1,33 +1,23 @@
 ﻿namespace ThinMvvm.Data
 {
     /// <summary>
-    /// Represents the possible states a data source can be in.
+    /// The possible states a data chunk can be in.
     /// </summary>
     public enum DataStatus
     {
         /// <summary>
-        /// No data has been requested.
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// Data is being loaded.
-        /// </summary>
-        Loading,
-
-        /// <summary>
-        /// Data was previously loaded, and more related data is being loaded.
-        /// </summary>
-        LoadingMore,
-
-        /// <summary>
         /// Data was successfully loaded.
         /// </summary>
-        Loaded,
+        Normal,
 
         /// <summary>
-        /// The loading operation yielded no data.
+        /// Data failed to load, but cached data is used instead.
         /// </summary>
-        NoData
+        Cached,
+
+        /// <summary>
+        /// Data failed to load, and no cached data was available.
+        /// </summary>
+        Error
     }
 }
