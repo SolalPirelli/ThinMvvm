@@ -60,7 +60,7 @@ namespace ThinMvvm
         /// This method is called when the ViewModel needs to be inflated from previously stored data,
         /// for instance when navigating back to it if it had been tombstoned by the operating system.
         /// </remarks>
-        public void LoadState( IKeyValueStore store )
+        public virtual void LoadState( IKeyValueStore store )
         {
             // Nothing.
         }
@@ -73,7 +73,7 @@ namespace ThinMvvm
         /// This method is called when the operating system tombstones the ViewModel, 
         /// for instance because it needs to free memory.
         /// </remarks>
-        public void SaveState( IKeyValueStore store )
+        public virtual void SaveState( IKeyValueStore store )
         {
             // Nothing.
         }

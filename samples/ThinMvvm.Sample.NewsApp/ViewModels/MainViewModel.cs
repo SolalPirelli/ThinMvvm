@@ -25,6 +25,8 @@ namespace ThinMvvm.Sample.NewsApp.ViewModels
 
             logger.Register( this, "Main" )
                   .WithCommand( ViewItemCommand, "ViewItem", i => i.Title );
+
+            logger.Register( News );
         }
 
 

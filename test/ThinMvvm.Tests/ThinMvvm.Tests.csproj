@@ -66,6 +66,8 @@
     <Compile Include="TestInfrastructure\EqualityTests.cs" />
     <Compile Include="TestInfrastructure\InMemoryDataStore.cs" />
     <Compile Include="TestInfrastructure\MyException.cs" />
+    <Compile Include="ViewBinderTests.cs" />
+    <Compile Include="ViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

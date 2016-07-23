@@ -23,11 +23,11 @@ namespace ThinMvvm
         {
             if( _views.ContainsKey( typeof( TViewModel ) ) )
             {
-                throw new ArgumentException( "The ViewModel was already bound to a View." );
+                throw new InvalidOperationException( "The ViewModel was already bound to a View." );
             }
             if( _viewModels.ContainsKey( typeof( TView ) ) )
             {
-                throw new ArgumentException( "The View was already bound to a ViewModel." );
+                throw new InvalidOperationException( "The View was already bound to a ViewModel." );
             }
 
             _views.Add( typeof( TViewModel ), typeof( TView ) );
