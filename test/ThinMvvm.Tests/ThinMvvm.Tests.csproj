@@ -55,7 +55,8 @@
     <Compile Include="Data\Infrastructure\CacheTests.cs" />
     <Compile Include="Data\PaginatedDataSourceTests.cs" />
     <Compile Include="Data\PaginatedDataTests.cs" />
-    <Compile Include="Logging\LoggerExtensionsTests.cs" />
+    <Compile Include="Logging\DataLoggerExtensionsTests.cs" />
+    <Compile Include="Logging\NavigationLoggerExtensionsTests.cs" />
     <Compile Include="NavigatedEventArgsTests.cs" />
     <Compile Include="ObservableObjectTests.cs" />
     <Compile Include="OptionalTests.cs" />

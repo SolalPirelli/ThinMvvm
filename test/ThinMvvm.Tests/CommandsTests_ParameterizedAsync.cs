@@ -6,9 +6,6 @@ using Xunit;
 
 namespace ThinMvvm.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="AsyncCommand{T}" />.
-    /// </summary>
     public sealed class CommandsTests_ParameterizedAsync
     {
         [Fact]

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace ThinMvvm.Tests.Logging
 {
-    public sealed class LoggerExtensionsTests
+    public sealed class NavigationLoggerExtensionsTests
     {
         private sealed class MyViewModel : ViewModel<NoParameter> { }
 
@@ -25,6 +25,11 @@ namespace ThinMvvm.Tests.Logging
                 Log( $"EVENT: {viewModelId} {eventId} {( label == null ? "-" : label )}" );
             }
 
+            public void LogError( string name, Exception exception )
+            {
+                throw new NotSupportedException();
+            }
+
             private void Log( string text )
             {
                 if( Event != null )
@@ -34,6 +39,24 @@ namespace ThinMvvm.Tests.Logging
 
                 Event = text;
             }
+        }
+
+        [Fact]
+        public void CannotRegisterWithNullLogger()
+        {
+            Assert.Throws<ArgumentNullException>( () => NavigationLoggerExtensions.Register( null, new MyViewModel(), "VM" ) );
+        }
+
+        [Fact]
+        public void CannotRegisterWithNullViewModel()
+        {
+            Assert.Throws<ArgumentNullException>( () => NavigationLoggerExtensions.Register( new Logger(), null, "VM" ) );
+        }
+
+        [Fact]
+        public void CannotRegisterWithNullId()
+        {
+            Assert.Throws<ArgumentNullException>( () => NavigationLoggerExtensions.Register( new Logger(), new MyViewModel(), null ) );
         }
 
         [Fact]
@@ -60,6 +83,22 @@ namespace ThinMvvm.Tests.Logging
             await vm.OnNavigatedFromAsync( NavigationKind.Forwards );
 
             Assert.Equal( "NAVIGATION: myVM False", logger.Event );
+        }
+
+        [Fact]
+        public void CannotRegisterNullParameterlessCommand()
+        {
+            var registration = new Logger().Register( new MyViewModel(), "myVM" );
+
+            Assert.Throws<ArgumentNullException>( () => registration.WithCommand( (Command) null, "myCommand" ) );
+        }
+
+        [Fact]
+        public void CannotRegisterParameterlessCommandWithNullId()
+        {
+            var registration = new Logger().Register( new MyViewModel(), "myVM" );
+
+            Assert.Throws<ArgumentNullException>( () => registration.WithCommand( new Command( () => { } ), null ) );
         }
 
         [Fact]
@@ -93,6 +132,22 @@ namespace ThinMvvm.Tests.Logging
         }
 
         [Fact]
+        public void CannotRegisterNullCommand()
+        {
+            var registration = new Logger().Register( new MyViewModel(), "myVM" );
+
+            Assert.Throws<ArgumentNullException>( () => registration.WithCommand( (Command<int>) null, "myCommand" ) );
+        }
+
+        [Fact]
+        public void CannotRegisterCommandWithNullId()
+        {
+            var registration = new Logger().Register( new MyViewModel(), "myVM" );
+
+            Assert.Throws<ArgumentNullException>( () => registration.WithCommand( new Command<int>( _ => { } ), null ) );
+        }
+
+        [Fact]
         public void CommandWithoutLabel()
         {
             var vm = new MyViewModel();
@@ -123,6 +178,22 @@ namespace ThinMvvm.Tests.Logging
         }
 
         [Fact]
+        public void CannotRegisterNullParameterlessAsyncCommand()
+        {
+            var registration = new Logger().Register( new MyViewModel(), "myVM" );
+
+            Assert.Throws<ArgumentNullException>( () => registration.WithCommand( (AsyncCommand) null, "myCommand" ) );
+        }
+
+        [Fact]
+        public void CannotRegisterParameterlessAsyncCommandWithNullId()
+        {
+            var registration = new Logger().Register( new MyViewModel(), "myVM" );
+
+            Assert.Throws<ArgumentNullException>( () => registration.WithCommand( new AsyncCommand( () => TaskEx.CompletedTask ), null ) );
+        }
+
+        [Fact]
         public async Task ParameterlessAsyncCommandWithoutLabel()
         {
             var vm = new MyViewModel();
@@ -150,6 +221,22 @@ namespace ThinMvvm.Tests.Logging
             await command.ExecuteAsync();
 
             Assert.Equal( "EVENT: myVM myCommand hello", logger.Event );
+        }
+
+        [Fact]
+        public void CannotRegisterNullAsyncCommand()
+        {
+            var registration = new Logger().Register( new MyViewModel(), "myVM" );
+
+            Assert.Throws<ArgumentNullException>( () => registration.WithCommand( (AsyncCommand<int>) null, "myCommand" ) );
+        }
+
+        [Fact]
+        public void CannotRegisterAsyncCommandWithNullId()
+        {
+            var registration = new Logger().Register( new MyViewModel(), "myVM" );
+
+            Assert.Throws<ArgumentNullException>( () => registration.WithCommand( new AsyncCommand<int>( _ => Task.FromResult( 0 ) ), null ) );
         }
 
         [Fact]

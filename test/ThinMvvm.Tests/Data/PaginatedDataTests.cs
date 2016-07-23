@@ -5,9 +5,6 @@ using Xunit;
 
 namespace ThinMvvm.Data.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="PaginatedData{TValue, TToken}" />.
-    /// </summary>
     public sealed class PaginatedDataTests
     {
         [Fact]

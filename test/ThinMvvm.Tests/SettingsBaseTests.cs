@@ -7,10 +7,7 @@ using Xunit;
 
 namespace ThinMvvm.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="SettingsBase" />.
-    /// The <see cref="GC.KeepAlive" /> method is used to force evaluation of arguments, without actually using them.
-    /// </summary>
+    // The GC.KeepAlive method is used to force evaluation of arguments, without actually using them.
     public sealed class SettingsBaseTests
     {
         private sealed class InMemoryStore : IKeyValueStore

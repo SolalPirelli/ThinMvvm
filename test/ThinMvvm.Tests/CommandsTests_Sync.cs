@@ -4,9 +4,6 @@ using Xunit;
 
 namespace ThinMvvm.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="Command" />.
-    /// </summary>
     public sealed class CommandsTests_Sync
     {
         [Fact]

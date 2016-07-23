@@ -6,9 +6,6 @@ using Xunit;
 
 namespace ThinMvvm.Data.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="CacheMetadata" />.
-    /// </summary>
     public sealed class CacheMetatadaTests
     {
         [Fact]

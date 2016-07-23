@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using ThinMvvm.Data;
-using ThinMvvm.Data.Infrastructure;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -16,7 +17,7 @@ namespace ThinMvvm.Windows.Controls
     [TemplateVisualState( Name = "Loading" )]
     [TemplateVisualState( Name = "LoadingMore" )]
     [TemplateVisualState( Name = "Loaded" )]
-    [TemplateVisualState( Name = "LoadedUsingCache" )]
+    [TemplateVisualState( Name = "Cached" )]
     [TemplateVisualState( Name = "Error" )]
     [TemplatePart( Name = "ContentContainer", Type = typeof( ContentPresenter ) )]
     public sealed class DataContainer : Control
@@ -31,26 +32,26 @@ namespace ThinMvvm.Windows.Controls
             DependencyProperty.Register( "ContentTemplate", typeof( DataTemplate ), typeof( DataContainer ), new PropertyMetadata( null ) );
 
 
-        public DataSource ContentSource
+        public IDataSource ContentSource
         {
-            get { return (DataSource) GetValue( ContentSourceProperty ); }
+            get { return (IDataSource) GetValue( ContentSourceProperty ); }
             set { SetValue( ContentSourceProperty, value ); }
         }
 
         public static readonly DependencyProperty ContentSourceProperty =
-            DependencyProperty.Register( "ContentSource", typeof( DataSource ), typeof( DataContainer ), new PropertyMetadata( null, ContentSourceChanged ) );
+            DependencyProperty.Register( "ContentSource", typeof( IDataSource ), typeof( DataContainer ), new PropertyMetadata( null, ContentSourceChanged ) );
 
         private static void ContentSourceChanged( DependencyObject d, DependencyPropertyChangedEventArgs e )
         {
             var container = (DataContainer) d;
 
-            var oldSource = (DataSource) e.OldValue;
+            var oldSource = (IDataSource) e.OldValue;
             if( oldSource != null )
             {
                 oldSource.PropertyChanged -= container.DataSourcePropertyChanged;
             }
 
-            var source = (DataSource) e.NewValue;
+            var source = (IDataSource) e.NewValue;
             if( source != null )
             {
                 source.PropertyChanged += container.DataSourcePropertyChanged;
@@ -114,7 +115,6 @@ namespace ThinMvvm.Windows.Controls
 
 
         private ContentPresenter _contentContainer;
-        private object _previousValue;
 
         public AsyncCommand RefreshCommand { get; }
 
@@ -136,7 +136,7 @@ namespace ThinMvvm.Windows.Controls
 
         private void Update()
         {
-            if( ContentSource == null )
+            if( ContentSource == null || ContentSource.Status == DataSourceStatus.None )
             {
                 VisualStateManager.GoToState( this, "None", true );
                 return;
@@ -144,45 +144,56 @@ namespace ThinMvvm.Windows.Controls
 
             switch( ContentSource.Status )
             {
-                case DataStatus.None:
-                case DataStatus.Error:
-                    if( ContentSource.LastException == null )
-                    {
-                        VisualStateManager.GoToState( this, "Loaded", true );
-                    }
-                    else
-                    {
-                        VisualStateManager.GoToState( this, "Error", true );
-                    }
-
-                    break;
-
-                case DataStatus.Loading:
+                case DataSourceStatus.Loading:
                     VisualStateManager.GoToState( this, "Loading", true );
                     break;
 
-                case DataStatus.LoadingMore:
+                case DataSourceStatus.LoadingMore:
                     VisualStateManager.GoToState( this, "LoadingMore", true );
                     break;
 
-                case DataStatus.Loaded:
-                    if( ContentSource.CacheStatus == CacheStatus.Unused )
+                case DataSourceStatus.Loaded:
+                    if( ContentSource.Data.Count > 1 )
                     {
-                        VisualStateManager.GoToState( this, "Loaded", true );
+                        if( ContentSource.Data.All( d => d.Status == DataStatus.Normal ) )
+                        {
+                            VisualStateManager.GoToState( this, "Loaded", true );
+                        }
+                        else if( ContentSource.Data[ContentSource.Data.Count - 1].Status == DataStatus.Error )
+                        {
+                            // Other chunks can't have errors otherwise a new chunk couldn't have been loaded
+                            VisualStateManager.GoToState( this, "Error", true );
+                        }
+                        else
+                        {
+                            VisualStateManager.GoToState( this, "Cached", true );
+                        }
                     }
                     else
                     {
-                        VisualStateManager.GoToState( this, "LoadedUsingCache", true );
-                    }
+                        // Initial data, reset stuff
+                        var data = ContentSource.Data[0];
 
-
-                    if( _previousValue != ContentSource.RawValue )
-                    {
-                        _previousValue = ContentSource.RawValue;
-
-                        if( DisplayRawValue || !( ContentSource.RawValue is IList ) )
+                        switch( data.Status )
                         {
-                            _contentContainer.Content = ContentSource.RawValue;
+                            case DataStatus.Normal:
+                                VisualStateManager.GoToState( this, "Loaded", true );
+                                break;
+
+                            case DataStatus.Cached:
+                                VisualStateManager.GoToState( this, "Cached", true );
+                                break;
+
+                            case DataStatus.Error:
+                                VisualStateManager.GoToState( this, "Error", true );
+                                return; // Nothing to display.
+                        }
+
+                        // Show a normal content presenter for non-paginated data that is not a list,
+                        // and an listview for everything else. (unless overridden)
+                        if( DisplayRawValue || ( !ContentSource.CanFetchMore && !( data.Value is IList ) ) )
+                        {
+                            _contentContainer.Content = data.Value;
                             _contentContainer.SetBinding( ContentPresenter.ContentTemplateProperty, new Binding
                             {
                                 Source = this,
@@ -209,13 +220,12 @@ namespace ThinMvvm.Windows.Controls
                             }
                             else
                             {
-                                container.ItemsSource = ContentSource.RawValue;
+                                container.ItemsSource = data.Value;
                             }
 
                             _contentContainer.Content = container;
                         }
                     }
-
                     break;
             }
         }
@@ -223,7 +233,7 @@ namespace ThinMvvm.Windows.Controls
 
         private void DataSourcePropertyChanged( object sender, PropertyChangedEventArgs e )
         {
-            if( e.PropertyName == nameof( DataSource.Status ) )
+            if( e.PropertyName == nameof( IDataSource.Status ) )
             {
                 Update();
             }
@@ -232,7 +242,8 @@ namespace ThinMvvm.Windows.Controls
 
         private sealed class PaginatedCollectionFromSource : ObservableObject, IList, INotifyCollectionChanged, ISupportIncrementalLoading
         {
-            private readonly DataSource _source;
+            private readonly IDataSource _source;
+            private readonly bool _areValuesLists;
             private readonly IList _items;
 
 
@@ -255,10 +266,21 @@ namespace ThinMvvm.Windows.Controls
             }
 
 
-            public PaginatedCollectionFromSource( DataSource source )
+            public PaginatedCollectionFromSource( IDataSource source )
             {
                 _source = source;
-                _items = (IList) source.RawValue;
+
+                var items = source.Data[0].Value as IList;
+                if( items == null )
+                {
+                    _areValuesLists = false;
+                    _items = new List<object>() { source.Data[0].Value };
+                }
+                else
+                {
+                    _areValuesLists = true;
+                    _items = new List<object>( items.Cast<object>() );
+                }
             }
 
 
@@ -269,20 +291,41 @@ namespace ThinMvvm.Windows.Controls
             {
                 return AsyncInfo.Run( async _ =>
                 {
-                    var oldCount = _items.Count;
-
                     await _source.FetchMoreAsync();
 
-                    for( int n = oldCount; n < _items.Count; n++ )
+                    var newData = _source.Data[_source.Data.Count - 1];
+                    if( newData.Status == DataStatus.Error )
                     {
-                        var args = new NotifyCollectionChangedEventArgs( NotifyCollectionChangedAction.Add, _items[n], n );
-                        CollectionChanged?.Invoke( this, args );
+                        return new LoadMoreItemsResult { Count = 0 };
                     }
 
-                    return new LoadMoreItemsResult
+                    if( _areValuesLists )
                     {
-                        Count = (uint) ( _items.Count - oldCount )
-                    };
+                        var newItems = (IList) newData.Value;
+                        for( int n = 0; n < newItems.Count; n++ )
+                        {
+                            _items.Add( newItems[0] );
+                            var args = new NotifyCollectionChangedEventArgs( NotifyCollectionChangedAction.Add, newItems[n], _items.Count - 1 );
+                            CollectionChanged?.Invoke( this, args );
+                        }
+
+                        return new LoadMoreItemsResult
+                        {
+                            Count = (uint) newItems.Count
+                        };
+                    }
+                    else
+                    {
+
+                        _items.Add( newData.Value );
+                        var args = new NotifyCollectionChangedEventArgs( NotifyCollectionChangedAction.Add, newData.Value, _items.Count - 1 );
+                        CollectionChanged?.Invoke( this, args );
+
+                        return new LoadMoreItemsResult
+                        {
+                            Count = 1
+                        };
+                    }
                 } );
             }
 

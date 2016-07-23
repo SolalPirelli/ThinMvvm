@@ -8,9 +8,6 @@ using Xunit;
 
 namespace ThinMvvm.Data.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="PaginatedDataSource{TItem, TToken}" />.
-    /// </summary>
     public sealed class PaginatedDataSourceTests
     {
         private static PaginatedData<int, int> Paginated( int value, Optional<int> token = default( Optional<int> ) )

@@ -57,8 +57,9 @@
     <Compile Include="Infrastructure\IServiceCreator.cs" />
     <Compile Include="Infrastructure\IViewModel.cs" />
     <Compile Include="Infrastructure\IViewRegistry.cs" />
+    <Compile Include="Logging\DataLoggerExtensions.cs" />
     <Compile Include="Logging\ILogger.cs" />
-    <Compile Include="Logging\LoggerExtensions.cs" />
+    <Compile Include="Logging\NavigationLoggerExtensions.cs" />
     <Compile Include="NavigatedEventArgs.cs" />
     <Compile Include="NavigationKind.cs" />
     <Compile Include="NoParameter.cs" />

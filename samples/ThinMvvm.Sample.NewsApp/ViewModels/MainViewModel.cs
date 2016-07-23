@@ -30,7 +30,7 @@ namespace ThinMvvm.Sample.NewsApp.ViewModels
 
         protected override async Task OnNavigatedToAsync( NavigationKind navigationKind )
         {
-            if( News.Status == DataStatus.None )
+            if( News.Status == DataSourceStatus.None )
             {
                 await News.RefreshAsync();
             }

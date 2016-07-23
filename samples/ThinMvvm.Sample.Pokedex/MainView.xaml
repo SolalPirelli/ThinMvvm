@@ -7,8 +7,13 @@
         <DataTemplate x:Key="PokemonTemplate">
             <RelativePanel Margin="0,8">
                 <Image x:Name="Image"
-                       Source="{Binding PictureUrl}"
-                       Stretch="None" />
+                       Stretch="None">
+                    <Image.Source>
+                        <BitmapImage UriSource="{Binding PictureUrl}"
+                                     DecodePixelWidth="96"
+                                     DecodePixelHeight="96" />
+                    </Image.Source>
+                </Image>
 
                 <TextBlock x:Name="Title"
                            Text="{Binding Name}"

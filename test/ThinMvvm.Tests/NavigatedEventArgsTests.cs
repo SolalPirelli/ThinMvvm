@@ -3,9 +3,6 @@ using Xunit;
 
 namespace ThinMvvm.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="NavigatedEventArgs" />.
-    /// </summary>
     public sealed class NavigatedEventArgsTests
     {
         private sealed class MyViewModel : ViewModel<NoParameter> { }

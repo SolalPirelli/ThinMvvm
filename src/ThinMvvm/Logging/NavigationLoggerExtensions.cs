@@ -4,9 +4,9 @@ using ThinMvvm.Infrastructure;
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// Extensions to <see cref="ILogger" /> to facilitate common scenarios.
+    /// Extensions to <see cref="ILogger" /> to facilitate navigation logging.
     /// </summary>
-    public static class LoggerExtensions
+    public static class NavigationLoggerExtensions
     {
         /// <summary>
         /// Registers the specified ViewModel for navigation logging.

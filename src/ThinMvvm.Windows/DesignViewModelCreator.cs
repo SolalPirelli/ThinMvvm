@@ -139,6 +139,11 @@ namespace ThinMvvm.Windows
             {
                 // Nothing.
             }
+
+            public void LogError( string name, Exception exception )
+            {
+                // Nothing.
+            }
         }
     }
 }

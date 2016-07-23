@@ -1,4 +1,6 @@
-﻿namespace ThinMvvm.Logging
+﻿using System;
+
+namespace ThinMvvm.Logging
 {
     /// <summary>
     /// Logs events.
@@ -19,5 +21,12 @@
         /// <param name="eventId">The event's ID.</param>
         /// <param name="label">The label, if any.</param>
         void LogEvent( string viewModelId, string eventId, string label );
+
+        /// <summary>
+        /// Logs an error.
+        /// </summary>
+        /// <param name="name">The error name.</param>
+        /// <param name="exception">The exception associated with the error.</param>
+        void LogError( string name, Exception exception );
     }
 }

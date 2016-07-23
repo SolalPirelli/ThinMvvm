@@ -5,9 +5,6 @@ using Xunit;
 
 namespace ThinMvvm.Data.Infrastructure.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="Cache" />.
-    /// </summary>
     public sealed class CacheTests
     {
         [Fact]

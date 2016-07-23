@@ -17,10 +17,7 @@ namespace ThinMvvm.Sample.Pokedex
 
         public async Task<PokemonInfo> GetPokemonAsync( int index )
         {
-            if(index>20)
-            {
-                throw new System.Exception();
-            }
+            System.Diagnostics.Debug.WriteLine( "POKE " + index );
 
             var url = $"http://pokeapi.co/api/v2/pokemon-species/{index}/";
             var json = await _client.GetStringAsync( url );

@@ -7,9 +7,6 @@ using Xunit;
 
 namespace ThinMvvm.Data.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="DataSource{T}" />.
-    /// </summary>
     public sealed class DataSourceTests
     {
         public sealed class Basic

@@ -18,7 +18,7 @@ namespace ThinMvvm.Sample.Pokedex
 
         protected override async Task OnNavigatedToAsync( NavigationKind navigationKind )
         {
-            if( Pokemons.Status == DataStatus.None )
+            if( Pokemons.Status == DataSourceStatus.None )
             {
                 await Pokemons.RefreshAsync();
             }
@@ -41,18 +41,10 @@ namespace ThinMvvm.Sample.Pokedex
             protected override async Task<PaginatedData<PokemonInfo, int>> FetchAsync( Optional<int> paginationToken, CancellationToken cancellationToken )
             {
                 var index = paginationToken.HasValue ? paginationToken.Value : _pokedex.MinPokemonIndex;
-                var maxIndex = index + 10;
+                var pokemon = await _pokedex.GetPokemonAsync( index );
+                var nextToken = index < _pokedex.MaxPokemonIndex ? new Optional<int>( index + 1 ) : default( Optional<int> );
 
-                var pokemons = new List<PokemonInfo>();
-
-                for( int n = index; n < maxIndex && n <= _pokedex.MaxPokemonIndex; n++ )
-                {
-                    pokemons.Add( await _pokedex.GetPokemonAsync( n ) );
-                }
-
-                var nextToken = maxIndex < _pokedex.MaxPokemonIndex ? new Optional<int>( maxIndex ) : default( Optional<int> );
-
-                return new PaginatedData<PokemonInfo, int>( pokemons, nextToken );
+                return new PaginatedData<PokemonInfo, int>( pokemon, nextToken );
             }
         }
     }

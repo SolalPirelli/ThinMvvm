@@ -6,9 +6,6 @@ using Xunit;
 
 namespace ThinMvvm.Tests
 {
-    /// <summary>
-    /// Tests for <see cref="ObservableObject" />.
-    /// </summary>
     public sealed class ObservableObjectTests
     {
         private sealed class ObservableInt : ObservableObject
