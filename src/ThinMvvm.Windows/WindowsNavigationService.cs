@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ThinMvvm.DependencyInjection;
 using ThinMvvm.DependencyInjection.Infrastructure;
 using ThinMvvm.Infrastructure;

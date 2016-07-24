@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ThinMvvm.DependencyInjection;
 using ThinMvvm.ViewServices;
 using Windows.UI.Core;

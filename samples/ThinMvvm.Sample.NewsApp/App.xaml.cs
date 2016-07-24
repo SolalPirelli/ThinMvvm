@@ -1,4 +1,4 @@
-﻿using ThinMvvm.DependencyInjection;
+using ThinMvvm.DependencyInjection;
 using ThinMvvm.Logging;
 using ThinMvvm.Sample.NewsApp.Services;
 using ThinMvvm.Sample.NewsApp.ViewModels;

@@ -1,4 +1,4 @@
-﻿namespace ThinMvvm.Sample.NewsApp.Models
+namespace ThinMvvm.Sample.NewsApp.Models
 {
     public sealed class NewsFeed
     {

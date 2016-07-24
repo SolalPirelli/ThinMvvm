@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ThinMvvm.Data;
 using ThinMvvm.Data.Infrastructure;
 

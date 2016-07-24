@@ -1,4 +1,4 @@
-﻿using ThinMvvm.Logging;
+using ThinMvvm.Logging;
 using ThinMvvm.Sample.NewsApp.Models;
 
 namespace ThinMvvm.Sample.NewsApp.ViewModels

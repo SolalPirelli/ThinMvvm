@@ -1,4 +1,4 @@
-﻿namespace ThinMvvm.Data
+namespace ThinMvvm.Data
 {
     /// <summary>
     /// The states a data chunk can be in.

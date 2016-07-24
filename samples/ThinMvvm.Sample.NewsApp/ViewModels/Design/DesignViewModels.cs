@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using ThinMvvm.DependencyInjection;
 using ThinMvvm.Sample.NewsApp.Models;

@@ -1,4 +1,4 @@
-﻿namespace ThinMvvm
+namespace ThinMvvm
 {
     /// <summary>
     /// Stores small key-value pairs that can be quickly and synchronously retrieved.

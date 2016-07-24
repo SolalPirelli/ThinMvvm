@@ -1,4 +1,4 @@
-﻿namespace ThinMvvm
+namespace ThinMvvm
 {
     /// <summary>
     /// Special class to denote that a <see cref="ViewModel{TParameter}" /> has no constructor parameter.

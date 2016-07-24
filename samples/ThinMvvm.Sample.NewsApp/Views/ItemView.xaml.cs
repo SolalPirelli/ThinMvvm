@@ -1,4 +1,4 @@
-﻿using ThinMvvm.Sample.NewsApp.ViewModels;
+using ThinMvvm.Sample.NewsApp.ViewModels;
 
 namespace ThinMvvm.Sample.NewsApp.Views
 {

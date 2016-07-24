@@ -1,4 +1,4 @@
-﻿using ThinMvvm.Data;
+using ThinMvvm.Data;
 using ThinMvvm.Data.Infrastructure;
 using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using ThinMvvm.Data;
 using ThinMvvm.Logging;
 using ThinMvvm.Sample.NewsApp.Models;

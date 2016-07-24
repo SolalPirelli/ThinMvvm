@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using ThinMvvm.Sample.NewsApp.Models;
 
 namespace ThinMvvm.Sample.NewsApp.Services

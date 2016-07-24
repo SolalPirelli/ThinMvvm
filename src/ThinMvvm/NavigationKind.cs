@@ -1,4 +1,4 @@
-﻿namespace ThinMvvm
+namespace ThinMvvm
 {
     /// <summary>
     /// Navigation kinds.

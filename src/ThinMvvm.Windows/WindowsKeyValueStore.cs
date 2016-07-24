@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ThinMvvm.Windows.Infrastructure;
 using Windows.Storage;
 
