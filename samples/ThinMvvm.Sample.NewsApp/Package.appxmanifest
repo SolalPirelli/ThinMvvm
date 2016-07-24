@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
   <Identity Name="79e3baca-4d5c-4cf4-896b-33f0323bf1a4" Publisher="CN=ThinMvvm" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="79e3baca-4d5c-4cf4-896b-33f0323bf1a4" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
