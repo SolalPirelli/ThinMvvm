@@ -1,4 +1,5 @@
 ﻿using System;
+using ThinMvvm.DependencyInjection;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -39,22 +40,23 @@ namespace ThinMvvm.Windows
         }
 
 
+        protected virtual void ConfigureServices( ServiceCollection services )
+        {
+            services.AddSingleton<IKeyValueStore>( () => new WindowsKeyValueStore( null ) );
+            services.AddSingleton<IDataStore>( () => new WindowsDataStore( null ) );
+        }
+
+        protected abstract void ConfigureViews( ViewBinder<Page> binder );
+
         protected virtual WindowsApplicationSkeleton ConfigureSkeleton()
         {
             var frame = new Frame
             {
                 CacheSize = 5
             };
+
             return new WindowsApplicationSkeleton( frame, frame );
         }
-
-        protected virtual void ConfigureServices( ServiceBinder binder )
-        {
-            binder.Bind<IKeyValueStore>( new WindowsKeyValueStore( null ) );
-            binder.Bind<IDataStore>( new WindowsDataStore( null ) );
-        }
-
-        protected abstract void ConfigureViews( ViewBinder<Page> binder );
 
 
         protected void Initialize()
@@ -64,16 +66,16 @@ namespace ThinMvvm.Windows
                 return;
             }
 
-            var skeleton = ConfigureSkeleton();
-            var serviceBinder = new ServiceBinder();
+            var services = new ServiceCollection();
+            ConfigureServices( services );
+
             var viewBinder = new ViewBinder<Page>();
-
-            _navigationService = new WindowsNavigationService( serviceBinder, viewBinder, skeleton.NavigationFrame );
-            _navigationService.Navigated += NavigationServiceNavigated;
-            serviceBinder.Bind<INavigationService>( _navigationService );
-
-            ConfigureServices( serviceBinder );
             ConfigureViews( viewBinder );
+
+            var skeleton = ConfigureSkeleton();
+
+            _navigationService = new WindowsNavigationService( services, viewBinder, skeleton.NavigationFrame );
+            _navigationService.Navigated += NavigationServiceNavigated;
 
             Window.Current.Content = skeleton.Root;
         }
@@ -83,8 +85,7 @@ namespace ThinMvvm.Windows
         {
             UpdateBackButtonVisibility();
         }
-
-
+        
         private void UpdateBackButtonVisibility()
         {
             if( BackButtonEnabled && NavigationService.CanNavigateBack )

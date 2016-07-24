@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ThinMvvm.DependencyInjection;
+using ThinMvvm.DependencyInjection.Infrastructure;
 using ThinMvvm.Infrastructure;
 using ThinMvvm.Logging;
 
@@ -8,23 +10,23 @@ namespace ThinMvvm.Windows
 {
     public abstract class DesignViewModelCreator
     {
-        private readonly IServiceCreator _services;
+        private readonly ObjectCreator _creator;
 
 
         protected DesignViewModelCreator()
         {
-            var binder = new ServiceBinder();
-            ConfigureServices( binder );
-            _services = binder;
+            var services = new ServiceCollection();
+            ConfigureServices( services );
+            _creator = services.BuildCreator();
         }
 
 
-        protected virtual void ConfigureServices( ServiceBinder binder )
+        protected virtual void ConfigureServices( ServiceCollection services )
         {
-            binder.Bind<INavigationService, FakeNavigationService>();
-            binder.Bind<IKeyValueStore, FakeKeyValueStore>();
-            binder.Bind<IDataStore, FakeDataStore>();
-            binder.Bind<ILogger, FakeLogger>();
+            services.AddSingleton<INavigationService, FakeNavigationService>();
+            services.AddSingleton<IKeyValueStore, FakeKeyValueStore>();
+            services.AddSingleton<IDataStore, FakeDataStore>();
+            services.AddSingleton<ILogger, FakeLogger>();
         }
 
         protected TViewModel Create<TViewModel>()
@@ -43,7 +45,7 @@ namespace ThinMvvm.Windows
         private TViewModel Create<TViewModel>( object arg )
             where TViewModel : IViewModel
         {
-            var value = (TViewModel) _services.Create( typeof( TViewModel ), arg );
+            var value = (TViewModel) _creator.Create( typeof( TViewModel ), arg );
             value.OnNavigatedToAsync( NavigationKind.Forwards ).Wait();
             return value;
         }

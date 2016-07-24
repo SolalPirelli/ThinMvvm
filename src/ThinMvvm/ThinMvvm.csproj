@@ -49,12 +49,13 @@
     <Compile Include="Data\PaginatedData.cs" />
     <Compile Include="Data\PaginatedDataSource.cs" />
     <Compile Include="Data\SimpleDataSource.cs" />
+    <Compile Include="DependencyInjection\Infrastructure\ObjectCreator.cs" />
+    <Compile Include="DependencyInjection\Infrastructure\ServiceDescriptor.cs" />
     <Compile Include="IDataStore.cs" />
     <Compile Include="IKeyValueStore.cs" />
     <Compile Include="INavigationService.cs" />
     <Compile Include="Infrastructure\CommandBase.cs" />
     <Compile Include="Infrastructure\CommandExecutedEventArgs.cs" />
-    <Compile Include="Infrastructure\IServiceCreator.cs" />
     <Compile Include="Infrastructure\IViewModel.cs" />
     <Compile Include="Infrastructure\IViewRegistry.cs" />
     <Compile Include="Logging\DataLoggerExtensions.cs" />
@@ -66,7 +67,7 @@
     <Compile Include="ObservableObject.cs" />
     <Compile Include="Optional.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceBinder.cs" />
+    <Compile Include="DependencyInjection\ServiceCollection.cs" />
     <Compile Include="SettingsBase.cs" />
     <Compile Include="ViewBinder.cs" />
     <Compile Include="ViewModel.cs" />

@@ -1,4 +1,5 @@
-﻿using ThinMvvm.Logging;
+﻿using ThinMvvm.DependencyInjection;
+using ThinMvvm.Logging;
 using ThinMvvm.Sample.NewsApp.Services;
 using ThinMvvm.Sample.NewsApp.ViewModels;
 using ThinMvvm.Sample.NewsApp.Views;
@@ -16,12 +17,12 @@ namespace ThinMvvm.Sample.NewsApp
         }
 
 
-        protected override void ConfigureServices( ServiceBinder binder )
+        protected override void ConfigureServices( ServiceCollection services )
         {
-            base.ConfigureServices( binder );
+            base.ConfigureServices( services );
 
-            binder.Bind<ILogger, DebugLogger>();
-            binder.Bind<INewsService, GoogleNewsService>();
+            services.AddSingleton<ILogger, DebugLogger>();
+            services.AddTransient<INewsService, GoogleNewsService>();
         }
 
         protected override void ConfigureViews( ViewBinder<Page> binder )
@@ -29,7 +30,7 @@ namespace ThinMvvm.Sample.NewsApp
             binder.Bind<MainViewModel, MainView>();
             binder.Bind<ItemViewModel, ItemView>();
         }
-        
+
 
         protected override void OnLaunched( LaunchActivatedEventArgs e )
         {

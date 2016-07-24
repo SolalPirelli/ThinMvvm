@@ -1,4 +1,5 @@
-﻿using Windows.ApplicationModel.Activation;
+﻿using ThinMvvm.DependencyInjection;
+using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -12,11 +13,11 @@ namespace ThinMvvm.Sample.Pokedex
         }
 
 
-        protected override void ConfigureServices( ServiceBinder binder )
+        protected override void ConfigureServices( ServiceCollection services )
         {
-            base.ConfigureServices( binder );
+            base.ConfigureServices( services );
 
-            binder.Bind<IPokedex, PokeapiPokedex>();
+            services.AddTransient<IPokedex, PokeapiPokedex>();
         }
 
         protected override void ConfigureViews( ViewBinder<Page> binder )

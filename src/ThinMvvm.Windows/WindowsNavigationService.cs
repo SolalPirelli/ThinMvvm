@@ -1,4 +1,6 @@
 ﻿using System;
+using ThinMvvm.DependencyInjection;
+using ThinMvvm.DependencyInjection.Infrastructure;
 using ThinMvvm.Infrastructure;
 using ThinMvvm.Windows.Infrastructure;
 using Windows.ApplicationModel;
@@ -27,7 +29,7 @@ namespace ThinMvvm.Windows
         // HACK, see RestorePreviousState
         private static readonly object FakeNavigationParameter = new object();
 
-        private readonly IServiceCreator _services;
+        private readonly ObjectCreator _viewModelCreator;
         private readonly IViewRegistry _views;
         private readonly WindowsKeyValueStore _dataStore;
         private readonly Frame _frame;
@@ -41,10 +43,12 @@ namespace ThinMvvm.Windows
         }
 
 
-        public WindowsNavigationService( IServiceCreator services, IViewRegistry views, Frame frame )
+        public WindowsNavigationService( ServiceCollection services, IViewRegistry views, Frame frame )
         {
+            services.AddInstance<INavigationService>( this );
+
             _views = views;
-            _services = services;
+            _viewModelCreator = services.BuildCreator();
             _dataStore = new WindowsKeyValueStore( "ThinMvvm.Navigation" );
             _frame = frame;
 
@@ -246,7 +250,7 @@ namespace ThinMvvm.Windows
                 }
 
                 var viewModelType = _views.GetViewModelType( view.GetType() );
-                view.DataContext = _services.Create( viewModelType, arg );
+                view.DataContext = _viewModelCreator.Create( viewModelType, arg );
             }
 
             var viewModel = (IViewModel) view.DataContext;

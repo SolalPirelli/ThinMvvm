@@ -60,7 +60,7 @@
     <Compile Include="NavigatedEventArgsTests.cs" />
     <Compile Include="ObservableObjectTests.cs" />
     <Compile Include="OptionalTests.cs" />
-    <Compile Include="ServiceBinderTests.cs" />
+    <Compile Include="DependencyInjection\ServiceTests.cs" />
     <Compile Include="SettingsBaseTests.cs" />
     <Compile Include="TestInfrastructure\Compatibility.cs" />
     <Compile Include="TestInfrastructure\EqualityTests.cs" />

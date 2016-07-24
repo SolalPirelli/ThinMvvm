@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ThinMvvm.DependencyInjection;
 using ThinMvvm.Sample.NewsApp.Models;
 using ThinMvvm.Sample.NewsApp.Services;
 using ThinMvvm.Windows;
@@ -13,11 +14,11 @@ namespace ThinMvvm.Sample.NewsApp.ViewModels.Design
         public ItemViewModel Item => Create<ItemViewModel, NewsItem>( DesignNewsService.FirstItem );
 
 
-        protected override void ConfigureServices( ServiceBinder binder )
+        protected override void ConfigureServices( ServiceCollection services )
         {
-            base.ConfigureServices( binder );
+            base.ConfigureServices( services );
 
-            binder.Bind<INewsService, DesignNewsService>();
+            services.AddSingleton<INewsService, DesignNewsService>();
         }
 
 
@@ -31,7 +32,7 @@ namespace ThinMvvm.Sample.NewsApp.ViewModels.Design
             };
             public static readonly NewsItem SecondItem = new NewsItem
             {
-                Title = "Has Science Gone Too Far? Scientist Creates Fake News Item For Designer Data",
+                Title = "Has Science Gone Too Far? Computer Scientist Creates Fake News Item For Designer Data",
                 Date = DateTimeOffset.Now.AddSeconds( -1234567 ),
                 Description = "Nah, it's fine."
             };
