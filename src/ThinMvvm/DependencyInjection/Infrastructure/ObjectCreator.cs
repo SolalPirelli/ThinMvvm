@@ -21,7 +21,7 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
 
 
         /// <summary>
-        /// Creates an instance of the specified type, optionally using the specified argument.
+        /// Creates an instance of the specified type, optionally with the specified argument.
         /// </summary>
         public object Create( Type type, object arg )
         {
@@ -30,6 +30,37 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
                 throw new ArgumentNullException( nameof( type ) );
             }
 
+            var typeInfo = type.GetTypeInfo();
+            if( typeInfo.IsAbstract )
+            {
+                throw new ArgumentException( $"Cannot instantiate unknown abstract type '{type.FullName}'." );
+            }
+
+            var constructor = GetSinglePublicConstructor( typeInfo );
+            var parameters = constructor.GetParameters();
+            var arguments = new object[parameters.Length];
+            for( int n = 0; n < parameters.Length; n++ )
+            {
+                if( arg != null && parameters[n].ParameterType == arg.GetType() )
+                {
+                    arguments[n] = arg;
+                    arg = null;
+                }
+                else
+                {
+                    arguments[n] = GetService( parameters[n].ParameterType );
+                }
+            }
+
+            return constructor.Invoke( arguments );
+        }
+
+
+        /// <summary>
+        /// Gets an instance of the specified service type, creating it if needed.
+        /// </summary>
+        private object GetService( Type type )
+        {
             ServiceDescriptor service;
             if( _services.TryGetValue( type, out service ) )
             {
@@ -46,7 +77,7 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
 
                 if( service.Factory == null )
                 {
-                    instance = CreateCore( service.ImplementationType, null );
+                    instance = Create( service.ImplementationType, null );
                 }
                 else
                 {
@@ -66,39 +97,7 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
                 return instance;
             }
 
-            return CreateCore( type, arg );
-        }
-
-
-        /// <summary>
-        /// Creates an instance of the specified type, optionally with the specified argument.
-        /// Does not look at the services; always creates an instance.
-        /// </summary>
-        private object CreateCore( Type type, object arg )
-        {
-            var typeInfo = type.GetTypeInfo();
-            if( typeInfo.IsAbstract )
-            {
-                throw new ArgumentException( $"Cannot instantiate unknown abstract type '{type.FullName}'." );
-            }
-
-            var constructor = GetSinglePublicConstructor( typeInfo );
-            var parameters = constructor.GetParameters();
-            var arguments = new object[parameters.Length];
-            for( int n = 0; n < parameters.Length; n++ )
-            {
-                if( arg != null && parameters[n].ParameterType == arg.GetType() )
-                {
-                    arguments[n] = arg;
-                    arg = null;
-                }
-                else
-                {
-                    arguments[n] = Create( parameters[n].ParameterType, null );
-                }
-            }
-
-            return constructor.Invoke( arguments );
+            return Create( type, null );
         }
 
 

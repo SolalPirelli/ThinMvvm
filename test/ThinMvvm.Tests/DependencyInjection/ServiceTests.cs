@@ -180,6 +180,13 @@ namespace ThinMvvm.Tests
 
         public sealed class CreateErrors
         {
+            private interface IDependency { }
+
+            private sealed class DependentService
+            {
+                public DependentService( IDependency dependency ) { }
+            }
+
             [Fact]
             public void CannotCreateNullType()
             {
@@ -192,28 +199,20 @@ namespace ThinMvvm.Tests
             public void CannotCreateSingletonServiceIfFactoryReturnsNull()
             {
                 var collection = new ServiceCollection();
-                collection.AddSingleton<object>( () => null );
+                collection.AddSingleton<IDependency>( () => null );
                 var creator = collection.BuildCreator();
 
-                Assert.Throws<InvalidOperationException>( () => creator.Create( typeof( object ), null ) );
+                Assert.Throws<InvalidOperationException>( () => creator.Create( typeof( DependentService ), null ) );
             }
 
             [Fact]
             public void CannotCreateTransientServiceIfFactoryReturnsNull()
             {
                 var collection = new ServiceCollection();
-                collection.AddTransient<object>( () => null );
+                collection.AddTransient<IDependency>( () => null );
                 var creator = collection.BuildCreator();
 
-                Assert.Throws<InvalidOperationException>( () => creator.Create( typeof( object ), null ) );
-            }
-
-
-            private interface IDependency { }
-
-            private sealed class DependentService
-            {
-                public DependentService( IDependency dependency ) { }
+                Assert.Throws<InvalidOperationException>( () => creator.Create( typeof( DependentService ), null ) );
             }
 
             [Fact]
@@ -334,108 +333,100 @@ namespace ThinMvvm.Tests
 
         public sealed class Create
         {
-            private sealed class RecursivelyDependentService
-            {
-                public readonly DependentService12 Service;
-                public readonly IDependency1 Dependency;
+            private interface IDependency { }
 
-                public RecursivelyDependentService( DependentService12 service, IDependency1 dependency )
+            private sealed class Dependency : IDependency { }
+
+            private sealed class DependentService
+            {
+                public IDependency Dependency { get; }
+
+                public DependentService( IDependency dependency )
                 {
-                    Service = service;
                     Dependency = dependency;
                 }
             }
 
-            private sealed class SinglePublicConstructorService
+            private sealed class ConcreteDependentService
             {
-                public readonly int Value;
+                public Dependency Dependency { get; }
 
-                public SinglePublicConstructorService()
+                public ConcreteDependentService( Dependency dependency )
                 {
-                    Value = 0;
-                }
-
-                private SinglePublicConstructorService( int value )
-                {
-                    Value = value;
+                    Dependency = dependency;
                 }
             }
-
-
-            private interface IDependency1 { }
-
-            private sealed class Dependency1 : IDependency1 { }
 
             [Fact]
             public void CreateReturnsServiceInstance()
             {
                 var collection = new ServiceCollection();
-                var instance = new Dependency1();
-                collection.AddInstance<IDependency1>( instance );
+                var instance = new Dependency();
+                collection.AddInstance<IDependency>( instance );
 
-                var created = collection.BuildCreator().Create( typeof( IDependency1 ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
 
-                Assert.Same( instance, created );
+                Assert.Same( instance, created.Dependency );
             }
 
             [Fact]
             public void CreateReturnsSingletonImplementation()
             {
                 var collection = new ServiceCollection();
-                collection.AddSingleton<IDependency1, Dependency1>();
+                collection.AddSingleton<IDependency, Dependency>();
 
-                var created = collection.BuildCreator().Create( typeof( IDependency1 ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
 
-                Assert.IsType( typeof( Dependency1 ), created );
+                Assert.IsType( typeof( Dependency ), created.Dependency );
             }
 
             [Fact]
             public void CreateReturnsSameSingletonImplementationEachTime()
             {
                 var collection = new ServiceCollection();
-                collection.AddSingleton<IDependency1, Dependency1>();
+                collection.AddSingleton<IDependency, Dependency>();
                 var creator = collection.BuildCreator();
 
-                var created = creator.Create( typeof( IDependency1 ), null );
-                var created2 = creator.Create( typeof( IDependency1 ), null );
+                var created = (DependentService) creator.Create( typeof( DependentService ), null );
+                var created2 = (DependentService) creator.Create( typeof( DependentService ), null );
 
-                Assert.Same( created, created2 );
+                Assert.Same( created.Dependency, created2.Dependency );
             }
 
             [Fact]
             public void CreateReturnsSingletonService()
             {
                 var collection = new ServiceCollection();
-                collection.AddSingleton<Dependency1>();
+                collection.AddSingleton<Dependency>();
 
-                var created = collection.BuildCreator().Create( typeof( Dependency1 ), null );
+                var created = (ConcreteDependentService) collection.BuildCreator().Create( typeof( ConcreteDependentService ), null );
 
-                Assert.IsType( typeof( Dependency1 ), created );
+                Assert.IsType( typeof( Dependency ), created.Dependency );
             }
 
             [Fact]
             public void CreateReturnsSameSingletonServiceEachTime()
             {
                 var collection = new ServiceCollection();
-                collection.AddSingleton<Dependency1>();
+                collection.AddSingleton<Dependency>();
                 var creator = collection.BuildCreator();
 
-                var created = creator.Create( typeof( Dependency1 ), null );
-                var created2 = creator.Create( typeof( Dependency1 ), null );
+                var created = (ConcreteDependentService) creator.Create( typeof( ConcreteDependentService ), null );
+                var created2 = (ConcreteDependentService) creator.Create( typeof( ConcreteDependentService ), null );
 
-                Assert.Same( created, created2 );
+                Assert.Same( created.Dependency, created2.Dependency );
             }
 
             [Fact]
             public void CreateReturnsSingletonFactoryResult()
             {
                 var collection = new ServiceCollection();
-                var instance = new Dependency1();
-                collection.AddSingleton<IDependency1>( () => instance );
+                var instance = new Dependency();
+                collection.AddSingleton<IDependency>( () => instance );
 
-                var created = collection.BuildCreator().Create( typeof( IDependency1 ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
 
-                Assert.Same( instance, created );
+                Assert.Same( instance, created.Dependency );
             }
 
             [Fact]
@@ -443,11 +434,11 @@ namespace ThinMvvm.Tests
             {
                 var collection = new ServiceCollection();
                 var count = 0;
-                collection.AddSingleton<IDependency1>( () => { count++; return new Dependency1(); } );
+                collection.AddSingleton<IDependency>( () => { count++; return new Dependency(); } );
                 var creator = collection.BuildCreator();
 
-                creator.Create( typeof( IDependency1 ), null );
-                creator.Create( typeof( IDependency1 ), null );
+                creator.Create( typeof( DependentService ), null );
+                creator.Create( typeof( DependentService ), null );
 
                 Assert.Equal( 1, count );
             }
@@ -456,36 +447,36 @@ namespace ThinMvvm.Tests
             public void CreateReturnsTransientImplementation()
             {
                 var collection = new ServiceCollection();
-                collection.AddTransient<IDependency1, Dependency1>();
+                collection.AddTransient<IDependency, Dependency>();
 
-                var created = collection.BuildCreator().Create( typeof( IDependency1 ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
 
-                Assert.IsType( typeof( Dependency1 ), created );
+                Assert.IsType( typeof( Dependency ), created.Dependency );
             }
 
             [Fact]
             public void CreateReturnsDifferentTransientImplementationEachTime()
             {
                 var collection = new ServiceCollection();
-                collection.AddTransient<IDependency1, Dependency1>();
+                collection.AddTransient<IDependency, Dependency>();
                 var creator = collection.BuildCreator();
 
-                var created = creator.Create( typeof( IDependency1 ), null );
-                var created2 = creator.Create( typeof( IDependency1 ), null );
+                var created = (DependentService) creator.Create( typeof( DependentService ), null );
+                var created2 = (DependentService) creator.Create( typeof( DependentService ), null );
 
-                Assert.NotSame( created, created2 );
+                Assert.NotSame( created.Dependency, created2.Dependency );
             }
 
             [Fact]
             public void CreateReturnsTransientFactoryResult()
             {
                 var collection = new ServiceCollection();
-                var instance = new Dependency1();
-                collection.AddTransient<IDependency1>( () => instance );
+                var instance = new Dependency();
+                collection.AddTransient<IDependency>( () => instance );
 
-                var created = collection.BuildCreator().Create( typeof( IDependency1 ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
 
-                Assert.Same( instance, created );
+                Assert.Same( instance, created.Dependency );
             }
 
             [Fact]
@@ -493,11 +484,11 @@ namespace ThinMvvm.Tests
             {
                 var collection = new ServiceCollection();
                 var count = 0;
-                collection.AddTransient<IDependency1>( () => { count++; return new Dependency1(); } );
+                collection.AddTransient<IDependency>( () => { count++; return new Dependency(); } );
                 var creator = collection.BuildCreator();
 
-                creator.Create( typeof( IDependency1 ), null );
-                creator.Create( typeof( IDependency1 ), null );
+                creator.Create( typeof( DependentService ), null );
+                creator.Create( typeof( DependentService ), null );
 
                 Assert.Equal( 2, count );
             }
@@ -525,41 +516,7 @@ namespace ThinMvvm.Tests
 
                 Assert.NotSame( created, created2 );
             }
-
-
-            private sealed class DependentService1
-            {
-                public readonly IDependency1 Dependency;
-
-                public DependentService1( IDependency1 dependency )
-                {
-                    Dependency = dependency;
-                }
-            }
-
-            [Fact]
-            public void CreateCanInstantiateUnknownClassesWithOneDependency()
-            {
-                var collection = new ServiceCollection();
-                collection.AddTransient<IDependency1, Dependency1>();
-
-                var created = (DependentService1) collection.BuildCreator().Create( typeof( DependentService1 ), null );
-
-                Assert.IsType( typeof( Dependency1 ), created.Dependency );
-            }
-
-            [Fact]
-            public void CreateCanInstantiateUnknownClassesWithOneInstanceDependency()
-            {
-                var collection = new ServiceCollection();
-                var instance = new Dependency1();
-                collection.AddInstance<IDependency1>( instance );
-
-                var created = (DependentService1) collection.BuildCreator().Create( typeof( DependentService1 ), null );
-
-                Assert.Same( instance, created.Dependency );
-            }
-
+            
 
             private interface IDependency2 { }
 
@@ -567,10 +524,10 @@ namespace ThinMvvm.Tests
 
             private sealed class DependentService12
             {
-                public readonly IDependency1 Dependency1;
+                public readonly IDependency Dependency1;
                 public readonly IDependency2 Dependency2;
 
-                public DependentService12( IDependency1 dependency1, IDependency2 dependency2 )
+                public DependentService12( IDependency dependency1, IDependency2 dependency2 )
                 {
                     Dependency1 = dependency1;
                     Dependency2 = dependency2;
@@ -581,20 +538,33 @@ namespace ThinMvvm.Tests
             public void CreateCanInstantiateUnknownClassesWithMultipleDependencies()
             {
                 var collection = new ServiceCollection();
-                collection.AddTransient<IDependency1, Dependency1>();
+                collection.AddTransient<IDependency, Dependency>();
                 collection.AddTransient<IDependency2, Dependency2>();
 
                 var created = (DependentService12) collection.BuildCreator().Create( typeof( DependentService12 ), null );
 
-                Assert.IsType( typeof( Dependency1 ), created.Dependency1 );
+                Assert.IsType( typeof( Dependency ), created.Dependency1 );
                 Assert.IsType( typeof( Dependency2 ), created.Dependency2 );
+            }
+
+
+            private sealed class RecursivelyDependentService
+            {
+                public readonly DependentService12 Service;
+                public readonly IDependency Dependency;
+
+                public RecursivelyDependentService( DependentService12 service, IDependency dependency )
+                {
+                    Service = service;
+                    Dependency = dependency;
+                }
             }
 
             [Fact]
             public void CreateResolvesDependenciesRecursively()
             {
                 var collection = new ServiceCollection();
-                collection.AddTransient<IDependency1, Dependency1>();
+                collection.AddTransient<IDependency, Dependency>();
                 collection.AddTransient<IDependency2, Dependency2>();
 
                 var created = (RecursivelyDependentService) collection.BuildCreator().Create( typeof( RecursivelyDependentService ), null );
@@ -628,10 +598,10 @@ namespace ThinMvvm.Tests
 
             private sealed class IntDependentService
             {
-                public readonly IDependency1 Dependency;
+                public readonly IDependency Dependency;
                 public readonly int Value;
 
-                public IntDependentService( IDependency1 dependency, int value )
+                public IntDependentService( IDependency dependency, int value )
                 {
                     Dependency = dependency;
                     Value = value;
@@ -642,11 +612,11 @@ namespace ThinMvvm.Tests
             public void CreateInstantiatesDependentServiceWithArgument()
             {
                 var collection = new ServiceCollection();
-                collection.AddTransient<IDependency1, Dependency1>();
+                collection.AddTransient<IDependency, Dependency>();
 
                 var service = (IntDependentService) collection.BuildCreator().Create( typeof( IntDependentService ), 100 );
 
-                Assert.IsType( typeof( Dependency1 ), service.Dependency );
+                Assert.IsType( typeof( Dependency ), service.Dependency );
                 Assert.Equal( 100, service.Value );
             }
 
@@ -656,9 +626,9 @@ namespace ThinMvvm.Tests
             {
                 var collection = new ServiceCollection();
                 var creator = collection.BuildCreator();
-                collection.AddTransient<IDependency1, Dependency1>();
+                collection.AddTransient<IDependency, Dependency>();
 
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( IDependency1 ), null ) );
+                Assert.Throws<ArgumentException>( () => creator.Create( typeof( IDependency ), null ) );
             }
         }
     }
