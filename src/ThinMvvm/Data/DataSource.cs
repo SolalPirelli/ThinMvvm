@@ -16,7 +16,7 @@ namespace ThinMvvm.Data
         // Locks changes to all properties, to ensure atomicity.
         private readonly object _lock;
         // Creates tokens for refresh operations.
-        private readonly CancellationTokenCreator _cancellationTokens;
+        private readonly CancellationTokenHolder _cancellationTokens;
 
         // Cache and its associated metadata creator. May be null, but will be changed only once.
         private Cache _cache;
@@ -63,7 +63,7 @@ namespace ThinMvvm.Data
         protected DataSource()
         {
             _lock = new object();
-            _cancellationTokens = new CancellationTokenCreator();
+            _cancellationTokens = new CancellationTokenHolder();
         }
 
 
@@ -77,14 +77,14 @@ namespace ThinMvvm.Data
 
             var token = _cancellationTokens.CreateAndCancelPrevious();
 
-            var value = await DataLoader.LoadAsync( () => FetchAsync( token ) );
+            var value = await DataOperations.FetchAsync( () => FetchAsync( token ) );
 
             if( _cache != null )
             {
-                value = await DataLoader.CacheAsync( value, _cache, _cacheMetadataCreator );
+                value = await DataOperations.CacheAsync( value, _cache, _cacheMetadataCreator );
             }
 
-            var transformedValue = DataLoader.Transform( value, Transform );
+            var transformedValue = DataOperations.Transform( value, Transform );
 
             lock( _lock )
             {
@@ -106,10 +106,10 @@ namespace ThinMvvm.Data
         protected abstract Task<T> FetchAsync( CancellationToken cancellationToken );
 
         /// <summary>
-        /// Transforms the specified value into a new one if necessary.
+        /// Transforms the specified value, if necessary.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <returns>Either the existing value if no transformation was needed, or a new value.</returns>
+        /// <returns>The transformed value, which can be the existing value if no transformation was necessary.</returns>
         protected virtual T Transform( T value )
         {
             return value;
@@ -129,13 +129,13 @@ namespace ThinMvvm.Data
             lock( _lock )
             {
                 // TODO: Use e.g. versioning to avoid having the transform in the lock.
-                Data = DataLoader.Transform( _originalData, Transform );
+                Data = DataOperations.Transform( _originalData, Transform );
                 OnPropertyChanged( nameof( Status ) );
             }
         }
 
         /// <summary>
-        /// Enables caching for this source.
+        /// Enables caching for the source.
         /// </summary>
         /// <param name="id">The source's ID.</param>
         /// <param name="dataStore">The data store for cached values.</param>
@@ -161,24 +161,14 @@ namespace ThinMvvm.Data
             _cache = new Cache( id, dataStore );
         }
 
-
-        /// <summary>
-        /// Infrastructure.
-        /// Gets the data loaded by the source.
-        /// </summary>
+        
+        // Explicitly implemented to provide a typed value instead.
         IReadOnlyList<IDataChunk> IDataSource.Data => _rawData;
 
-        /// <summary>
-        /// Infrastructure.
-        /// Gets a value indicating whether this source can fetch more data, which is never the case.
-        /// </summary>
+        // This class does not support pagination.
         bool IDataSource.CanFetchMore => false;
 
-        /// <summary>
-        /// Infrastructure.
-        /// This method is not supported.
-        /// </summary>
-        /// <returns>Never returns; always throws a <see cref="NotSupportedException" />.</returns>
+        // This class does not support pagination.
         Task IDataSource.FetchMoreAsync()
         {
             throw new NotSupportedException();

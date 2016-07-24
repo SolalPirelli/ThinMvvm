@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ThinMvvm.Data.Infrastructure;
 using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 

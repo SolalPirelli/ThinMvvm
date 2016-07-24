@@ -3,6 +3,7 @@ using ThinMvvm.Logging;
 using ThinMvvm.Sample.NewsApp.Services;
 using ThinMvvm.Sample.NewsApp.ViewModels;
 using ThinMvvm.Sample.NewsApp.Views;
+using ThinMvvm.ViewServices;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;

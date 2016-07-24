@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace ThinMvvm.DependencyInjection.Infrastructure
@@ -7,12 +8,17 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
     /// <summary>
     /// Creates objects by injecting known services in their constructors.
     /// </summary>
+    [EditorBrowsable( EditorBrowsableState.Advanced )]
     public sealed class ObjectCreator
     {
         private readonly Dictionary<Type, ServiceDescriptor> _services;
         private readonly Dictionary<Type, object> _singletons;
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ObjectCreator" /> class with the specified services.
+        /// </summary>
+        /// <param name="services">The services to use when resolving constructor parameters.</param>
         public ObjectCreator( Dictionary<Type, ServiceDescriptor> services )
         {
             _services = new Dictionary<Type, ServiceDescriptor>( services );

@@ -1,6 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 
-namespace ThinMvvm.Data
+namespace ThinMvvm.Data.Infrastructure
 {
     /// <summary>
     /// Infrastructure.
@@ -9,6 +10,7 @@ namespace ThinMvvm.Data
     /// <remarks>
     /// Implementations should only use IDataChunk members for equality purposes.
     /// </remarks>
+    [EditorBrowsable( EditorBrowsableState.Advanced )]
     public interface IDataChunk : IEquatable<IDataChunk>
     {
         /// <summary>
@@ -22,7 +24,7 @@ namespace ThinMvvm.Data
         DataStatus Status { get; }
 
         /// <summary>
-        /// Gets the errors that occurred while creating this chunk.
+        /// Gets the errors associated with this chunk, if any.
         /// </summary>
         DataErrors Errors { get; }
     }

@@ -2,6 +2,7 @@
 using ThinMvvm.DependencyInjection;
 using ThinMvvm.DependencyInjection.Infrastructure;
 using ThinMvvm.Infrastructure;
+using ThinMvvm.ViewServices.Infrastructure;
 using ThinMvvm.Windows.Infrastructure;
 using Windows.ApplicationModel;
 using Windows.UI.Core;
@@ -13,6 +14,8 @@ namespace ThinMvvm.Windows
 {
     /// <summary>
     /// <see cref="INavigationService" /> implementation for Windows.
+    /// 
+    /// Does not support asynchronous navigation.
     /// </summary>
     /// <remarks>
     /// This class assumes it has complete ownership of the provided frame,
@@ -30,20 +33,32 @@ namespace ThinMvvm.Windows
         private static readonly object FakeNavigationParameter = new object();
 
         private readonly ObjectCreator _viewModelCreator;
-        private readonly IViewRegistry _views;
+        private readonly ViewRegistry _views;
         private readonly WindowsKeyValueStore _dataStore;
         private readonly Frame _frame;
 
         private bool _removeCurrentFromBackStack;
 
 
+        /// <summary>
+        /// Gets a value indicating whether the navigation service can currently navigate back.
+        /// </summary>
         public bool CanNavigateBack
         {
             get { return _frame.BackStackDepth > ( _removeCurrentFromBackStack ? 1 : 0 ); }
         }
 
 
-        public WindowsNavigationService( ServiceCollection services, IViewRegistry views, Frame frame )
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WindowsNavigationService" /> class
+        /// with the specified services, views, and navigation frame.
+        /// 
+        /// The navigation service will add itself to the services.
+        /// </summary>
+        /// <param name="services">The services.</param>
+        /// <param name="views">The views.</param>
+        /// <param name="frame">The navigation frame.</param>
+        public WindowsNavigationService( ServiceCollection services, ViewRegistry views, Frame frame )
         {
             services.AddInstance<INavigationService>( this );
 
@@ -63,19 +78,32 @@ namespace ThinMvvm.Windows
         }
 
 
+        /// <summary>
+        /// Occurs after navigating to a ViewModel.
+        /// </summary>
         public event EventHandler<NavigatedEventArgs> Navigated;
 
 
+        /// <summary>
+        /// Navigates to the specified parameterless ViewModel type.
+        /// </summary>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
         public void NavigateTo<TViewModel>()
             where TViewModel : ViewModel<NoParameter>
         {
             NavigateTo( typeof( TViewModel ), null );
         }
 
-        public void NavigateTo<TViewModel, TParameter>( TParameter arg )
-            where TViewModel : ViewModel<TParameter>
+        /// <summary>
+        /// Navigates to the specified ViewModel type using the specified argument.
+        /// </summary>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
+        /// <typeparam name="TArg">The argument type.</typeparam>
+        /// <param name="arg">The argument.</param>
+        public void NavigateTo<TViewModel, TArg>( TArg arg )
+            where TViewModel : ViewModel<TArg>
         {
-            if( WindowsSerializer.IsTypeNativelySupported( typeof( TParameter ) ) )
+            if( WindowsSerializer.IsTypeNativelySupported( typeof( TArg ) ) )
             {
                 NavigateTo( typeof( TViewModel ), arg );
             }
@@ -87,11 +115,14 @@ namespace ThinMvvm.Windows
                 // deserialize the string to, we also need to store the type!
                 // Thus we use a special token that will hopefully never appear anywhere else.
                 var serialized = WindowsSerializer.Serialize( arg );
-                var typeName = typeof( TParameter ).AssemblyQualifiedName;
+                var typeName = typeof( TArg ).AssemblyQualifiedName;
                 NavigateTo( typeof( TViewModel ), typeName + SerializedParameterToken + serialized );
             }
         }
 
+        /// <summary>
+        /// Navigates back to the previous ViewModel.
+        /// </summary>
         public void NavigateBack()
         {
             if( _frame.CanGoBack )
@@ -106,6 +137,9 @@ namespace ThinMvvm.Windows
             }
         }
 
+        /// <summary>
+        /// Resets the service, as if no navigation had occurred.
+        /// </summary>
         public void Reset()
         {
             _frame.BackStack.Clear();
@@ -116,6 +150,10 @@ namespace ThinMvvm.Windows
             }
         }
 
+        /// <summary>
+        /// Restores navigation state from a previous app execution.
+        /// </summary>
+        /// <returns>True if state had to be restored and the restore was successful; false otherwise.</returns>
         public bool RestorePreviousState()
         {
             try
@@ -154,6 +192,9 @@ namespace ThinMvvm.Windows
         }
 
 
+        /// <summary>
+        /// Called when the frame is navigating.
+        /// </summary>
         private void FrameNavigating( object sender, NavigatingCancelEventArgs e )
         {
             // HACK, see RestorePreviousState
@@ -190,6 +231,9 @@ namespace ThinMvvm.Windows
             }
         }
 
+        /// <summary>
+        /// Called when the frame has finished navigating.
+        /// </summary>
         private void FrameNavigated( object sender, NavigationEventArgs e )
         {
             // HACK, see RestorePreviousState
@@ -210,6 +254,9 @@ namespace ThinMvvm.Windows
             EndNavigation( e.NavigationMode, e.Parameter );
         }
 
+        /// <summary>
+        /// Called when the app is about to be suspended.
+        /// </summary>
         private void ApplicationSuspending( object sender, SuspendingEventArgs e )
         {
             _dataStore.Set( DataKeys.SuspendDate, DateTimeOffset.UtcNow );
@@ -222,6 +269,9 @@ namespace ThinMvvm.Windows
             viewModel.SaveState( store );
         }
 
+        /// <summary>
+        /// Called when the user pressed the (hardware or software) back button.
+        /// </summary>
         private void BackRequested( object sender, BackRequestedEventArgs e )
         {
             NavigateBack();
@@ -229,12 +279,18 @@ namespace ThinMvvm.Windows
         }
 
 
+        /// <summary>
+        /// Navigates to the specified ViewModel type using the specified argument.
+        /// </summary>
         private void NavigateTo( Type viewModelType, object arg )
         {
             var viewType = _views.GetViewType( viewModelType );
             _frame.Navigate( viewType, arg );
         }
 
+        /// <summary>
+        /// Ends a navigation by storing necessary data and creating a ViewModel if necessary.
+        /// </summary>
         private void EndNavigation( NavigationMode navigationMode, object arg )
         {
             var view = (Page) _frame.Content;
@@ -246,7 +302,7 @@ namespace ThinMvvm.Windows
                 {
                     var parts = stringArg.Split( SerializedParameterTokenArray, 2, StringSplitOptions.None );
                     var type = Type.GetType( parts[0], throwOnError: true );
-                    arg = WindowsSerializer.DeserializeUnsafe( type, parts[1] );
+                    arg = WindowsSerializer.Deserialize( type, parts[1] );
                 }
 
                 var viewModelType = _views.GetViewModelType( view.GetType() );
@@ -268,12 +324,18 @@ namespace ThinMvvm.Windows
             viewModel.OnNavigatedToAsync( navigationKind );
         }
 
+        /// <summary>
+        /// Gets the current store, which changes at each navigation.
+        /// </summary>
         private WindowsKeyValueStore GetCurrentStateStore()
         {
             return new WindowsKeyValueStore( "ThinMvvm.Navigation." + _frame.BackStackDepth );
         }
 
 
+        /// <summary>
+        /// Holds string constants to use as keys for storage.
+        /// </summary>
         private static class DataKeys
         {
             public const string SuspendDate = "SuspendDate";

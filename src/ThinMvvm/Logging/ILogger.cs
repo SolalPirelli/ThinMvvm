@@ -3,7 +3,7 @@
 namespace ThinMvvm.Logging
 {
     /// <summary>
-    /// Logs events.
+    /// Logs application events.
     /// </summary>
     public interface ILogger
     {

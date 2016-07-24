@@ -1,7 +1,7 @@
 ﻿namespace ThinMvvm.Data
 {
     /// <summary>
-    /// The possible states a data source can be in.
+    /// The states a data source can be in.
     /// </summary>
     public enum DataSourceStatus
     {

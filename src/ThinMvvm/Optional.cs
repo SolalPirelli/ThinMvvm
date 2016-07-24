@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace ThinMvvm
 {
     /// <summary>
-    /// Represents an optional value.
+    /// Optional value.
     /// </summary>
     /// <typeparam name="T">The value's type.</typeparam>
     [DataContract]
@@ -32,6 +32,7 @@ namespace ThinMvvm
                 {
                     throw new InvalidOperationException( "Cannot get an optional's value if there is none." );
                 }
+
                 return _value;
             }
         }
@@ -50,21 +51,33 @@ namespace ThinMvvm
         }
 
 
+        /// <summary>
+        /// Indicates whether the two instances of <see cref="Optional{T}" /> are equal.
+        /// </summary>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns>A value indicating whether the instances are equal.</returns>
         public static bool operator ==( Optional<T> left, Optional<T> right )
         {
             return left.Equals( right );
         }
 
+        /// <summary>
+        /// Indicates whether the two instances of <see cref="Optional{T}" /> are unequal.
+        /// </summary>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns>A value indicating whether the instances are unequal.</returns>
         public static bool operator !=( Optional<T> left, Optional<T> right )
         {
             return !( left == right );
         }
 
         /// <summary>
-        /// Indicates whether the current object is equal to the specified object.
+        /// Indicates whether the <see cref="Optional{T}" /> is equal to the specified <see cref="Optional{T}" />.
         /// </summary>
-        /// <param name="other">The other object.</param>
-        /// <returns>A value indicating whether the current object is equal to the other object.</returns>
+        /// <param name="other">The other instance.</param>
+        /// <returns>A value indicating whether the two instances are equal.</returns>
         public bool Equals( Optional<T> other )
         {
             if( HasValue )
@@ -76,10 +89,10 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Indicates whether the current object is equal to the specified object.
+        /// Indicates whether the <see cref="Optional{T}" /> is equal to the specified object.
         /// </summary>
-        /// <param name="other">The other object.</param>
-        /// <returns>A value indicating whether the current object is equal to the other object.</returns>
+        /// <param name="obj">The object.</param>
+        /// <returns>A value indicating whether the two objects are equal.</returns>
         public override bool Equals( object obj )
         {
             var other = obj as Optional<T>?;
@@ -87,9 +100,9 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Gets a hash code for the object.
+        /// Returns the hash code of the object.
         /// </summary>
-        /// <returns>A hash code for the object.</returns>
+        /// <returns>The object's hash code.</returns>
         public override int GetHashCode()
         {
             if( HasValue )
@@ -106,9 +119,9 @@ namespace ThinMvvm
         }
 
         /// <summary>
-        /// Gets a string that represents the object.
+        /// Returns the string representation of the object.
         /// </summary>
-        /// <returns>A string that represents the object.</returns>
+        /// <returns>The object's string representation.</returns>
         public override string ToString()
         {
             if( HasValue )

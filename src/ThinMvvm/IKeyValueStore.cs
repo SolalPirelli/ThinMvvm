@@ -1,7 +1,7 @@
 ﻿namespace ThinMvvm
 {
     /// <summary>
-    /// Manages small key-value pairs that can be quickly and synchronously retrieved from persistent storage.
+    /// Stores small key-value pairs that can be quickly and synchronously retrieved.
     /// </summary>
     public interface IKeyValueStore
     {

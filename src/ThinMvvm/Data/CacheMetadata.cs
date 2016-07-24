@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace ThinMvvm.Data
 {
     /// <summary>
-    /// Contains metadata for cache entries. 
+    /// Metadata for cache entries.
     /// </summary>
     [DataContract]
     public sealed class CacheMetadata : IEquatable<CacheMetadata>
@@ -46,6 +46,12 @@ namespace ThinMvvm.Data
         }
 
 
+        /// <summary>
+        /// Indicates whether the two instances of <see cref="CacheMetadata" /> are equal.
+        /// </summary>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns>A value indicating whether the instances are equal.</returns>
         public static bool operator ==( CacheMetadata left, CacheMetadata right )
         {
             if( object.ReferenceEquals( left, null ) )
@@ -56,12 +62,22 @@ namespace ThinMvvm.Data
             return left.Equals( right );
         }
 
+        /// <summary>
+        /// Indicates whether the two instances of <see cref="CacheMetadata" /> are unequal.
+        /// </summary>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns>A value indicating whether the instances are unequal.</returns>
         public static bool operator !=( CacheMetadata left, CacheMetadata right )
         {
             return !( left == right );
         }
 
-
+        /// <summary>
+        /// Indicates whether the <see cref="CacheMetadata" /> is equal to the specified <see cref="CacheMetadata" />.
+        /// </summary>
+        /// <param name="other">The other instance.</param>
+        /// <returns>A value indicating whether the two instances are equal.</returns>
         public bool Equals( CacheMetadata other )
         {
             if( other == null )
@@ -71,11 +87,20 @@ namespace ThinMvvm.Data
             return Id == other.Id && ExpirationDate == other.ExpirationDate;
         }
 
+        /// <summary>
+        /// Indicates whether the <see cref="CacheMetadata" /> is equal to the specified object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns>A value indicating whether the two objects are equal.</returns>
         public override bool Equals( object obj )
         {
             return Equals( obj as CacheMetadata );
         }
 
+        /// <summary>
+        /// Returns the hash code of the object.
+        /// </summary>
+        /// <returns>The object's hash code.</returns>
         public override int GetHashCode()
         {
             return Id.GetHashCode() + 7 * ( ExpirationDate == null ? 0 : ExpirationDate.GetHashCode() );

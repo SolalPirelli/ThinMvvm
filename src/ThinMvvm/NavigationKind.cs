@@ -1,7 +1,7 @@
 ﻿namespace ThinMvvm
 {
     /// <summary>
-    /// Represents the available navigation kinds.
+    /// Navigation kinds.
     /// </summary>
     public enum NavigationKind
     {

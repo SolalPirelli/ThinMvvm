@@ -8,27 +8,27 @@ using ThinMvvm.Data.Infrastructure;
 namespace ThinMvvm.Data
 {
     /// <summary>
-    /// Base class for data sources that fetch paginated items.
+    /// Base class for data sources that fetch paginated values.
     /// </summary>
-    /// <typeparam name="TData">The data type.</typeparam>
+    /// <typeparam name="TValue">The value type.</typeparam>
     /// <typeparam name="TToken">The pagination token type.</typeparam>
-    public abstract class PaginatedDataSource<TData, TToken> : ObservableObject, IDataSource
+    public abstract class PaginatedDataSource<TValue, TToken> : ObservableObject, IDataSource
     {
         // Locks changes to all properties, to ensure atomicity.
         private readonly object _lock;
         // Creates tokens for fetch operations.
-        private readonly CancellationTokenCreator _cancellationTokens;
+        private readonly CancellationTokenHolder _cancellationTokens;
 
         // Cache and its associated metadata creator. May be null, but will be changed only once.
         private Cache _cache;
         private Func<Optional<TToken>, CacheMetadata> _cacheMetadataCreator;
 
         // Values before the transformation is applied.
-        private List<DataChunk<TData>> _originalValues;
+        private List<DataChunk<TValue>> _originalValues;
         // Writable version of the values after transformation.
-        private ObservableCollection<DataChunk<TData>> _writeableValues;
+        private ObservableCollection<DataChunk<TValue>> _writeableValues;
         // Read-only values, publicly visible.
-        private ReadOnlyObservableCollection<DataChunk<TData>> _values;
+        private ReadOnlyObservableCollection<DataChunk<TValue>> _values;
 
         // Current pagination token.
         private Optional<TToken> _paginationToken;
@@ -38,9 +38,9 @@ namespace ThinMvvm.Data
 
 
         /// <summary>
-        /// Gets the values loaded by the source, if any.
+        /// Gets the data loaded by the source, if any.
         /// </summary>
-        public ReadOnlyObservableCollection<DataChunk<TData>> Data
+        public ReadOnlyObservableCollection<DataChunk<TValue>> Data
         {
             get { return _values; }
             private set { Set( ref _values, value ); }
@@ -66,12 +66,12 @@ namespace ThinMvvm.Data
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PaginatedDataSource{TItem, TToken}" /> class.
+        /// Initializes a new instance of the <see cref="PaginatedDataSource{TValue, TToken}" /> class.
         /// </summary>
         protected PaginatedDataSource()
         {
             _lock = new object();
-            _cancellationTokens = new CancellationTokenCreator();
+            _cancellationTokens = new CancellationTokenHolder();
         }
 
 
@@ -105,21 +105,21 @@ namespace ThinMvvm.Data
         /// <param name="paginationToken">The pagination token, if any.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that represents the fetch operation.</returns>
-        protected abstract Task<PaginatedData<TData, TToken>> FetchAsync( Optional<TToken> paginationToken, CancellationToken cancellationToken );
+        protected abstract Task<PaginatedData<TValue, TToken>> FetchAsync( Optional<TToken> paginationToken, CancellationToken cancellationToken );
 
         /// <summary>
-        /// Transforms the specified values into new ones if necessary.
+        /// Transforms the specified value, if necessary.
         /// </summary>
-        /// <param name="values">The values.</param>
+        /// <param name="value">The value.</param>
         /// <param name="isIncremental">
         /// Whether the transformation is incremental.
         /// If <c>true</c>, the return value of this method will be added to the source's current value.
         /// Otherwise, the return value of this method will replace the source's current value.
         /// </param>
-        /// <returns>Either the existing values if no transformation was needed, or new values.</returns>
-        protected virtual TData Transform( TData values, bool isIncremental )
+        /// <returns>The transformed value, which can be the existing value if no transformation was necessary.</returns>
+        protected virtual TValue Transform( TValue value, bool isIncremental )
         {
-            return values;
+            return value;
         }
 
         /// <summary>
@@ -136,14 +136,14 @@ namespace ThinMvvm.Data
             lock( _lock )
             {
                 // TODO: Use e.g. versioning to avoid having the transform in the lock.
-                var transformed = new List<DataChunk<TData>>();
+                var transformed = new List<DataChunk<TValue>>();
                 for( int n = 0; n < _originalValues.Count; n++ )
                 {
-                    transformed.Add( DataLoader.Transform( _originalValues[n], items => Transform( items, n == 0 ) ) );
+                    transformed.Add( DataOperations.Transform( _originalValues[n], items => Transform( items, n == 0 ) ) );
                 }
 
-                _writeableValues = new ObservableCollection<DataChunk<TData>>( transformed );
-                Data = new ReadOnlyObservableCollection<DataChunk<TData>>( _writeableValues );
+                _writeableValues = new ObservableCollection<DataChunk<TValue>>( transformed );
+                Data = new ReadOnlyObservableCollection<DataChunk<TValue>>( _writeableValues );
 
                 OnPropertyChanged( string.Empty );
             }
@@ -187,15 +187,15 @@ namespace ThinMvvm.Data
             var paginationToken = isIncremental ? _paginationToken : default( Optional<TToken> );
             var cancellationToken = _cancellationTokens.CreateAndCancelPrevious();
 
-            var chunk = await DataLoader.LoadAsync( () => FetchAsync( paginationToken, cancellationToken ) );
+            var chunk = await DataOperations.FetchAsync( () => FetchAsync( paginationToken, cancellationToken ) );
 
             if( _cache != null )
             {
-                chunk = await DataLoader.CacheAsync( chunk, _cache, () => _cacheMetadataCreator( paginationToken ) );
+                chunk = await DataOperations.CacheAsync( chunk, _cache, () => _cacheMetadataCreator( paginationToken ) );
             }
 
-            var itemsChunk = new DataChunk<TData>( chunk.Value == null ? default( TData ) : chunk.Value.Value, chunk.Status, chunk.Errors );
-            var transformedChunk = DataLoader.Transform( itemsChunk, items => Transform( items, isIncremental ) );
+            var itemsChunk = new DataChunk<TValue>( chunk.Value == null ? default( TValue ) : chunk.Value.Value, chunk.Status, chunk.Errors );
+            var transformedChunk = DataOperations.Transform( itemsChunk, items => Transform( items, isIncremental ) );
 
             lock( _lock )
             {
@@ -211,9 +211,9 @@ namespace ThinMvvm.Data
                     }
                     else
                     {
-                        _originalValues = new List<DataChunk<TData>> { itemsChunk };
-                        _writeableValues = new ObservableCollection<DataChunk<TData>> { transformedChunk };
-                        Data = new ReadOnlyObservableCollection<DataChunk<TData>>( _writeableValues );
+                        _originalValues = new List<DataChunk<TValue>> { itemsChunk };
+                        _writeableValues = new ObservableCollection<DataChunk<TValue>> { transformedChunk };
+                        Data = new ReadOnlyObservableCollection<DataChunk<TValue>>( _writeableValues );
                     }
 
                     Status = DataSourceStatus.Loaded;
@@ -222,10 +222,7 @@ namespace ThinMvvm.Data
         }
 
 
-        /// <summary>
-        /// Infrastructure.
-        /// Gets the data loaded by the source.
-        /// </summary>
+        // Explicitly implemented to provide a typed value instead.
         IReadOnlyList<IDataChunk> IDataSource.Data => Data;
     }
 }

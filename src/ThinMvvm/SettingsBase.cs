@@ -8,8 +8,12 @@ namespace ThinMvvm
 {
     /// <summary>
     /// Base class for settings.
+    /// 
     /// If an object implementing <see cref="INotifyPropertyChanged" /> or <see cref="INotifyCollectionChanged" /> is stored,
     /// it will be re-written into the persistent store every time it fires a change notification.
+    /// 
+    /// Classes deriving from this must be injected as singletons (and not re-created each time),
+    /// so that changes will be propagated correctly.
     /// </summary>
     public abstract class SettingsBase : INotifyPropertyChanged
     {
@@ -36,7 +40,7 @@ namespace ThinMvvm
         /// Occurs when a property value changes.
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
-        
+
 
         /// <summary>
         /// Gets a property, using the specified default value.
@@ -58,7 +62,7 @@ namespace ThinMvvm
                 return stored.Value;
             }
 
-            ListenToChanges( name, defaultValue );
+            SetAndNotify( name, defaultValue );
             return defaultValue;
         }
 
@@ -66,10 +70,10 @@ namespace ThinMvvm
         /// Gets a property, using the specified lazy default value.
         /// </summary>
         /// <typeparam name="T">The property's type.</typeparam>
-        /// <param name="defaultValue">A function to create the property's default value.</param>
+        /// <param name="defaultValueFactory">A factory to create the property's default value.</param>
         /// <param name="name">The property's name.</param>
         /// <returns>The property's value.</returns>
-        protected T Get<T>( Func<T> defaultValueCreator, [CallerMemberName] string name = "" )
+        protected T Get<T>( Func<T> defaultValueFactory, [CallerMemberName] string name = "" )
         {
             if( name == null )
             {
@@ -82,13 +86,13 @@ namespace ThinMvvm
                 return stored.Value;
             }
 
-            var defaultValue = defaultValueCreator();
+            var defaultValue = defaultValueFactory();
             SetAndNotify( name, defaultValue );
             return defaultValue;
         }
 
         /// <summary>
-        /// Sets the specified property.
+        /// Sets the specified property to the specified value.
         /// </summary>
         /// <typeparam name="T">The property's type.</typeparam>
         /// <param name="value">The property's value.</param>
@@ -113,7 +117,7 @@ namespace ThinMvvm
         /// <summary>
         /// Sets the specified property to the specified value.
         /// </summary>
-        private void SetAndNotify( string name, object value )
+        private void SetAndNotify<T>( string name, T value )
         {
             var key = _keyPrefix + name;
             _store.Set( key, value );
@@ -135,7 +139,7 @@ namespace ThinMvvm
         /// </summary>
         /// <remarks>
         /// This method is generic in the hope that a smart compiler/JIT may eliminate it
-        /// for types that do not implement property or collection changes.
+        /// for types that do not support property or collection changes.
         /// </remarks>
         private void ListenToChanges<T>( string key, T value )
         {
@@ -168,7 +172,7 @@ namespace ThinMvvm
 
 
         /// <summary>
-        /// Cache for the store, in order to avoid calling <see cref="IKeyValueStore.TryGetValue" /> too much.
+        /// Cache for the store, in order to avoid calling <see cref="IKeyValueStore.Get" /> too much.
         /// This is because most stores serialize values before storing them, which incurs a non-trivial cost.
         /// </summary>
         private sealed class StoreCache : IKeyValueStore

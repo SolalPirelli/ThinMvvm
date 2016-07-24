@@ -1,7 +1,7 @@
 ﻿namespace ThinMvvm.Data
 {
     /// <summary>
-    /// The possible states a data chunk can be in.
+    /// The states a data chunk can be in.
     /// </summary>
     public enum DataStatus
     {

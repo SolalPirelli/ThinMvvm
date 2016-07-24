@@ -3,12 +3,12 @@
 namespace ThinMvvm.Data
 {
     /// <summary>
-    /// Holds errors that occur when creating a chunk of data.
+    /// Contains errors that occur when creating a chunk of data.
     /// </summary>
     public struct DataErrors : IEquatable<DataErrors>
     {
         /// <summary>
-        /// Gets the exception thrown by a fetching operation, if any.
+        /// Gets the exception thrown when fetching data, if any.
         /// </summary>
         public Exception Fetch { get; }
 
@@ -36,17 +36,33 @@ namespace ThinMvvm.Data
             Process = process;
         }
 
-
-        public static bool operator ==(DataErrors left, DataErrors right)
+        /// <summary>
+        /// Indicates whether the two instances of <see cref="DataErrors" /> are equal.
+        /// </summary>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns>A value indicating whether the instances are equal.</returns>
+        public static bool operator ==( DataErrors left, DataErrors right )
         {
             return left.Equals( right );
         }
 
+        /// <summary>
+        /// Indicates whether the two instances of <see cref="DataErrors" /> are unequal.
+        /// </summary>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns>A value indicating whether the instances are unequal.</returns>
         public static bool operator !=( DataErrors left, DataErrors right )
         {
             return !( left == right );
         }
 
+        /// <summary>
+        /// Indicates whether the <see cref="DataErrors" /> is equal to the specified <see cref="DataErrors" />.
+        /// </summary>
+        /// <param name="other">The other instance.</param>
+        /// <returns>A value indicating whether the two instances are equal.</returns>
         public bool Equals( DataErrors other )
         {
             return Fetch == other.Fetch
@@ -54,12 +70,21 @@ namespace ThinMvvm.Data
                 && Process == other.Process;
         }
 
+        /// <summary>
+        /// Indicates whether the <see cref="DataErrors" /> is equal to the specified object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns>A value indicating whether the two objects are equal.</returns>
         public override bool Equals( object obj )
         {
             var other = obj as DataErrors?;
             return other.HasValue && Equals( other.Value );
         }
 
+        /// <summary>
+        /// Returns the hash code of the object.
+        /// </summary>
+        /// <returns>The object's hash code.</returns>
         public override int GetHashCode()
         {
             var hash = 7;

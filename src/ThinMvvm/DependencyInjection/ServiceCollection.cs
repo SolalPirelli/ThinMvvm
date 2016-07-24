@@ -7,7 +7,7 @@ using ThinMvvm.DependencyInjection.Infrastructure;
 namespace ThinMvvm.DependencyInjection
 {
     /// <summary>
-    /// Contains bindings from service types to implementations.
+    /// Contains mappings from service types to implementations.
     /// </summary>
     public sealed class ServiceCollection
     {
@@ -25,6 +25,11 @@ namespace ThinMvvm.DependencyInjection
         }
 
 
+        /// <summary>
+        /// Adds the specified service instance.
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <param name="instance">The instance.</param>
         public void AddInstance<TService>( TService instance )
         {
             if( instance == null )
@@ -38,6 +43,12 @@ namespace ThinMvvm.DependencyInjection
         }
 
 
+        /// <summary>
+        /// Adds the specified service implementation as a singleton.
+        /// The implementation will be created the first time the service is needed, and reused afterwards.
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <typeparam name="TImplementation">The implementation type.</typeparam>
         public void AddSingleton<TService, TImplementation>()
             where TImplementation : TService
         {
@@ -47,6 +58,12 @@ namespace ThinMvvm.DependencyInjection
             _services.Add( typeof( TService ), new ServiceDescriptor( typeof( TImplementation ), true ) );
         }
 
+        /// <summary>
+        /// Adds a service as a singleton using the specified factory.
+        /// The factory will be used the first time the service is needed, and reused afterwards.
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <param name="factory">The factory.</param>
         public void AddSingleton<TService>( Func<TService> factory )
             where TService : class
         {
@@ -60,12 +77,23 @@ namespace ThinMvvm.DependencyInjection
             _services.Add( typeof( TService ), new ServiceDescriptor( factory, true ) );
         }
 
+        /// <summary>
+        /// Adds the specified service as a singleton.
+        /// The service will be created the first time it is needed, and reused afterwards.
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
         public void AddSingleton<TService>()
         {
             AddSingleton<TService, TService>();
         }
 
 
+        /// <summary>
+        /// Adds the specified service implementation.
+        /// The implementation will be created each time the service is needed.
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <typeparam name="TImplementation">The implementation type.</typeparam>
         public void AddTransient<TService, TImplementation>()
             where TImplementation : TService
         {
@@ -75,6 +103,12 @@ namespace ThinMvvm.DependencyInjection
             _services.Add( typeof( TService ), new ServiceDescriptor( typeof( TImplementation ), false ) );
         }
 
+        /// <summary>
+        /// Adds a service using the specified factory.
+        /// The factory will be used each time the service is needed.
+        /// </summary>
+        /// <typeparam name="TService">The service type.</typeparam>
+        /// <param name="factory">The factory.</param>
         public void AddTransient<TService>( Func<TService> factory )
             where TService : class
         {
@@ -91,7 +125,7 @@ namespace ThinMvvm.DependencyInjection
 
         /// <summary>
         /// Infrastructure.
-        /// Builds a <see cref="ObjectCreator" /> using the service implementations defined using this binder.
+        /// Builds a <see cref="ObjectCreator" /> using the service implementations defined with this collection.
         /// </summary>
         /// <returns>A <see cref="ObjectCreator" /> using the bound services.</returns>
         [EditorBrowsable( EditorBrowsableState.Advanced )]

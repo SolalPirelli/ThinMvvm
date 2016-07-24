@@ -8,11 +8,17 @@ using ThinMvvm.Logging;
 
 namespace ThinMvvm.Windows
 {
+    /// <summary>
+    /// Base class for design view model collections.
+    /// </summary>
     public abstract class DesignViewModelCreator
     {
         private readonly ObjectCreator _creator;
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DesignViewModelCreator" /> class.
+        /// </summary>
         protected DesignViewModelCreator()
         {
             var services = new ServiceCollection();
@@ -21,6 +27,12 @@ namespace ThinMvvm.Windows
         }
 
 
+        /// <summary>
+        /// Configures the design-time services.
+        /// 
+        /// The default implementation registers a design-time dummy for all ThinMvvm services.
+        /// </summary>
+        /// <param name="services"></param>
         protected virtual void ConfigureServices( ServiceCollection services )
         {
             services.AddSingleton<INavigationService, FakeNavigationService>();
@@ -29,19 +41,33 @@ namespace ThinMvvm.Windows
             services.AddSingleton<ILogger, FakeLogger>();
         }
 
+        /// <summary>
+        /// Creates a ViewModel of the specified type.
+        /// </summary>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
+        /// <returns>A ViewModel.</returns>
         protected TViewModel Create<TViewModel>()
             where TViewModel : ViewModel<NoParameter>
         {
             return Create<TViewModel>( null );
         }
 
-        protected TViewModel Create<TViewModel, TParameter>( TParameter arg )
-            where TViewModel : ViewModel<TParameter>
+        /// <summary>
+        /// Creates a ViewModel of the specified type using the specified argument.
+        /// </summary>
+        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
+        /// <typeparam name="TArg">The argument type.</typeparam>
+        /// <returns>A ViewModel.</returns>
+        protected TViewModel Create<TViewModel, TArg>( TArg arg )
+            where TViewModel : ViewModel<TArg>
         {
             return Create<TViewModel>( arg );
         }
 
 
+        /// <summary>
+        /// Creates a ViewModel of the specified type using the specified argument.
+        /// </summary>
         private TViewModel Create<TViewModel>( object arg )
             where TViewModel : IViewModel
         {
@@ -51,42 +77,57 @@ namespace ThinMvvm.Windows
         }
 
 
-        public sealed class FakeNavigationService : INavigationService
+        /// <summary>
+        /// Design-time dummy implementation of <see cref="INavigationService" />.
+        /// </summary>
+        protected sealed class FakeNavigationService : INavigationService
         {
-#pragma warning disable CS0067 // Event is never used
-            public event EventHandler<NavigatedEventArgs> Navigated;
-#pragma warning restore CS0067
+            event EventHandler<NavigatedEventArgs> INavigationService.Navigated
+            {
+                add
+                {
+                    // Nothing.
+                }
+                remove
+                {
+                    // Nothing.
+                }
+            }
 
-            public bool CanNavigateBack => false;
+            bool INavigationService.CanNavigateBack => false;
 
-            public void NavigateTo<TViewModel>()
-                where TViewModel : ViewModel<NoParameter>
+            void INavigationService.NavigateTo<TViewModel>()
             {
                 // Nothing.
             }
 
-            public void NavigateTo<TViewModel, TParameter>( TParameter arg )
-                where TViewModel : ViewModel<TParameter>
+            // The .NET Native compiler throws an internal error if this method is implemented explicitly.
+            // TODO: Once that bug is fixed, implement this method explicitly.
+            public void NavigateTo<TViewModel, TArg>( TArg arg )
+                where TViewModel : ViewModel<TArg>
             {
                 // Nothing.
             }
 
-            public void NavigateBack()
+            void INavigationService.NavigateBack()
             {
                 // Nothing.
             }
 
-            public void Reset()
+            void INavigationService.Reset()
             {
                 // Nothing.
             }
         }
 
-        public sealed class FakeKeyValueStore : IKeyValueStore
+        /// <summary>
+        /// Design-time dummy implementation of <see cref="IKeyValueStore" />.
+        /// </summary>
+        protected sealed class FakeKeyValueStore : IKeyValueStore
         {
             private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
 
-            public Optional<T> Get<T>( string key )
+            Optional<T> IKeyValueStore.Get<T>( string key )
             {
                 object value;
                 if( _values.TryGetValue( key, out value ) )
@@ -97,52 +138,59 @@ namespace ThinMvvm.Windows
                 return default( Optional<T> );
             }
 
-            public void Set<T>( string key, T value )
+            void IKeyValueStore.Set<T>( string key, T value )
             {
                 _values[key] = value;
             }
 
-            public void Delete( string key )
+            void IKeyValueStore.Delete( string key )
             {
                 _values.Remove( key );
             }
         }
 
-        public sealed class FakeDataStore : IDataStore
+        /// <summary>
+        /// Design-time dummy implementation of <see cref="IDataStore" />.
+        /// </summary>
+        protected sealed class FakeDataStore : IDataStore
         {
-            private readonly FakeKeyValueStore _store = new FakeKeyValueStore();
+            private readonly IKeyValueStore _store = new FakeKeyValueStore();
 
-            public Task<Optional<T>> LoadAsync<T>( string id )
+
+            Task<Optional<T>> IDataStore.LoadAsync<T>( string id )
             {
                 return Task.FromResult( _store.Get<T>( id ) );
             }
 
-            public Task StoreAsync<T>( string id, T data )
+            Task IDataStore.StoreAsync<T>( string id, T data )
             {
                 _store.Set( id, data );
                 return Task.CompletedTask;
             }
 
-            public Task DeleteAsync( string id )
+            Task IDataStore.DeleteAsync( string id )
             {
                 _store.Delete( id );
                 return Task.CompletedTask;
             }
         }
 
+        /// <summary>
+        /// Design-time dummy implementation of <see cref="ILogger" />.
+        /// </summary>
         public sealed class FakeLogger : ILogger
         {
-            public void LogEvent( string viewModelId, string eventId, string label )
+            void ILogger.LogNavigation( string viewModelId, bool isArriving )
             {
                 // Nothing.
             }
 
-            public void LogNavigation( string viewModelId, bool isArriving )
+            void ILogger.LogEvent( string viewModelId, string eventId, string label )
             {
                 // Nothing.
             }
 
-            public void LogError( string name, Exception exception )
+            void ILogger.LogError( string name, Exception exception )
             {
                 // Nothing.
             }

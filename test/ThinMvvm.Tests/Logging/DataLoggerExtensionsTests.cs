@@ -79,7 +79,7 @@ namespace ThinMvvm.Tests.Logging
         public void CannotRegisterWithNullLogger()
         {
             Assert.Throws<ArgumentNullException>(
-                () => DataLoggerExtensions.Register( null, new SimpleDataSource<int>( () => Task.FromResult( 0 ) ) )
+                () => DataLoggerExtensions.Register( null, new BasicDataSource<int>( () => Task.FromResult( 0 ) ) )
             );
         }
 

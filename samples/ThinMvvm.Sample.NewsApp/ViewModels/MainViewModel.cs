@@ -19,7 +19,7 @@ namespace ThinMvvm.Sample.NewsApp.ViewModels
                               ILogger logger,
                               INewsService newsService )
         {
-            News = new SimpleDataSource<NewsFeed>( newsService.GetFeedAsync ).WithCache( "Main", dataStore );
+            News = new BasicDataSource<NewsFeed>( newsService.GetFeedAsync ).WithCache( "Main", dataStore );
 
             ViewItemCommand = new Command<NewsItem>( navigationService.NavigateTo<ItemViewModel, NewsItem> );
 

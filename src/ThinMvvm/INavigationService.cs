@@ -1,5 +1,4 @@
 ﻿using System;
-using ThinMvvm.Infrastructure;
 
 namespace ThinMvvm
 {
@@ -9,34 +8,34 @@ namespace ThinMvvm
     public interface INavigationService
     {
         /// <summary>
-        /// Occurs after navigating to a ViewModel.
-        /// </summary>
-        /// <remarks>
-        /// This event is guaranteed to be fired after <see cref="IViewModel.OnNavigatedFromAsync" /> in the source ViewModel,
-        /// and before <see cref="IViewModel.OnNavigatedToAsync" /> in the target ViewModel.
-        /// </remarks>
-        event EventHandler<NavigatedEventArgs> Navigated;
-
-        /// <summary>
-        /// Gets a value indicating whether the navigation service can navigate back.
+        /// Gets a value indicating whether the navigation service can currently navigate back.
         /// </summary>
         bool CanNavigateBack { get; }
 
         /// <summary>
-        /// Navigates to the specified parameterless ViewModel.
+        /// Occurs after navigating to a ViewModel.
+        /// </summary>
+        /// <remarks>
+        /// This event is guaranteed to be fired after <see cref="ViewModel{TParameter}.OnNavigatedFromAsync" /> in the source ViewModel,
+        /// and before <see cref="ViewModel{TParameter}.OnNavigatedToAsync" /> in the target ViewModel.
+        /// </remarks>
+        event EventHandler<NavigatedEventArgs> Navigated;
+
+        /// <summary>
+        /// Navigates to the specified parameterless ViewModel type.
         /// </summary>
         /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
         void NavigateTo<TViewModel>()
             where TViewModel : ViewModel<NoParameter>;
 
         /// <summary>
-        /// Navigates to the specified parameterized ViewModel.
+        /// Navigates to the specified ViewModel type using the specified argument.
         /// </summary>
         /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
-        /// <typeparam name="TParameter">The type of the ViewModel's parameter.</typeparam>
+        /// <typeparam name="TArg">The argument type.</typeparam>
         /// <param name="arg">The argument.</param>
-        void NavigateTo<TViewModel, TParameter>( TParameter arg )
-            where TViewModel : ViewModel<TParameter>;
+        void NavigateTo<TViewModel, TArg>( TArg arg )
+            where TViewModel : ViewModel<TArg>;
 
         /// <summary>
         /// Navigates back to the previous ViewModel.

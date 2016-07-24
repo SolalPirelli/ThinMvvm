@@ -1,4 +1,5 @@
 ﻿using ThinMvvm.DependencyInjection;
+using ThinMvvm.ViewServices;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;

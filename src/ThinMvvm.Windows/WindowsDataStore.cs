@@ -24,7 +24,7 @@ namespace ThinMvvm.Windows
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsDataStore" /> class using the specified folder.
         /// </summary>
-        /// <param name="containerName">The folder name, or null to use the default folder.</param>
+        /// <param name="folderName">The folder name, or null to use the default folder.</param>
         public WindowsDataStore( string folderName )
         {
             _folderName = folderName;

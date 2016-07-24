@@ -1,5 +1,5 @@
 ﻿using System;
-using ThinMvvm.Infrastructure;
+using ThinMvvm.ViewServices;
 using Xunit;
 
 namespace ThinMvvm.Tests
@@ -33,7 +33,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void CannotGetViewTypeForNullViewModelType()
         {
-            var registry = (IViewRegistry) new ViewBinder<object>();
+            var registry = new ViewBinder<object>().BuildRegistry();
 
             Assert.Throws<ArgumentNullException>( () => registry.GetViewType( null ) );
         }
@@ -41,7 +41,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void CannotGetViewModelTypeForNullViewType()
         {
-            var registry = (IViewRegistry) new ViewBinder<object>();
+            var registry = new ViewBinder<object>().BuildRegistry();
 
             Assert.Throws<ArgumentNullException>( () => registry.GetViewModelType( null ) );
         }
@@ -49,7 +49,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void CannotGetUnregisteredViewType()
         {
-            var registry = (IViewRegistry) new ViewBinder<object>();
+            var registry =  new ViewBinder<object>().BuildRegistry();
 
             Assert.Throws<InvalidOperationException>( () => registry.GetViewType( typeof( MyViewModel ) ) );
         }
@@ -57,7 +57,7 @@ namespace ThinMvvm.Tests
         [Fact]
         public void CannotGetUnregisteredViewModelType()
         {
-            var registry = (IViewRegistry) new ViewBinder<object>();
+            var registry = new ViewBinder<object>().BuildRegistry();
 
             Assert.Throws<InvalidOperationException>( () => registry.GetViewModelType( typeof( int ) ) );
         }
@@ -66,11 +66,12 @@ namespace ThinMvvm.Tests
         public void BoundTypesAreInRegistry()
         {
             var binder = new ViewBinder<object>();
-
             binder.Bind<MyViewModel, int>();
 
-            Assert.Equal( typeof( int ), ( (IViewRegistry) binder ).GetViewType( typeof( MyViewModel ) ) );
-            Assert.Equal( typeof( MyViewModel ), ( (IViewRegistry) binder ).GetViewModelType( typeof( int ) ) );
+            var registry = binder.BuildRegistry();
+
+            Assert.Equal( typeof( int ), registry.GetViewType( typeof( MyViewModel ) ) );
+            Assert.Equal( typeof( MyViewModel ), registry.GetViewModelType( typeof( int ) ) );
         }
     }
 }

@@ -254,14 +254,14 @@ namespace ThinMvvm.Tests
         }
 
         [Fact]
-        public void DefaultValueIsNotImmediatelyStored()
+        public void DefaultValueIsImmediatelyStored()
         {
             var store = new InMemoryStore();
             var settings = new Settings( store );
 
             GC.KeepAlive( settings.IntWithDefault );
 
-            Assert.Equal( 0, store.WriteCount );
+            Assert.Equal( 1, store.WriteCount );
         }
 
         [Fact]
@@ -336,7 +336,8 @@ namespace ThinMvvm.Tests
 
             settings.ObservableInt.Value = 42;
 
-            Assert.Equal( writes + 1, store.WriteCount );
+            // 1 for the value, 1 for the change
+            Assert.Equal( writes + 2, store.WriteCount );
         }
 
         [Fact]
@@ -348,7 +349,8 @@ namespace ThinMvvm.Tests
 
             settings.ObservableBlackHole.Eat( 0 );
 
-            Assert.Equal( writes + 1, store.WriteCount );
+            // 1 for the value, 1 for the change
+            Assert.Equal( writes + 2, store.WriteCount );
         }
 
         [Fact]
@@ -360,7 +362,8 @@ namespace ThinMvvm.Tests
 
             settings.ObservableCollection.Add( 0 );
 
-            Assert.Equal( writes + 1, store.WriteCount );
+            // 1 for the value, 1 for the change
+            Assert.Equal( writes + 2, store.WriteCount );
         }
 
         [Fact]
@@ -372,7 +375,8 @@ namespace ThinMvvm.Tests
 
             settings.SpecialObservableCollection.Value = 1;
 
-            Assert.Equal( writes + 1, store.WriteCount );
+            // 1 for the value, 1 for the change
+            Assert.Equal( writes + 2, store.WriteCount );
         }
 
         [Fact]

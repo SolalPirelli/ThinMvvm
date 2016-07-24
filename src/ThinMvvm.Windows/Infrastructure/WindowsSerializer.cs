@@ -41,32 +41,17 @@ namespace ThinMvvm.Windows.Infrastructure
         }
 
 
+        // This method MUST be generic for .NET Native to generate the serialization code automatically.
         /// <summary>
-        /// Serializes the specified object into a string.
+        /// Serializes the specified value into a string.
         /// </summary>
-        public static string Serialize( object value )
+        /// <typeparam name="T">The value type.</typeparam>
+        public static string Serialize<T>( T value )
         {
-            if( value == null )
-            {
-                return null;
-            }
-
             using( var stream = new MemoryStream() )
             {
-                new DataContractJsonSerializer( value.GetType() ).WriteObject( stream, value );
+                new DataContractJsonSerializer( typeof( T ) ).WriteObject( stream, value );
                 return Encoding.UTF8.GetString( stream.ToArray(), 0, (int) stream.Length );
-            }
-        }
-
-        /// <summary>
-        /// Deserializes the specified object type from a non-null string.
-        /// </summary>
-        public static object DeserializeUnsafe( Type type, string serialized )
-        {
-            var serializedBytes = Encoding.UTF8.GetBytes( serialized );
-            using( var stream = new MemoryStream( serializedBytes ) )
-            {
-                return new DataContractJsonSerializer( type ).ReadObject( stream );
             }
         }
 
@@ -75,12 +60,24 @@ namespace ThinMvvm.Windows.Infrastructure
         /// </summary>
         public static T Deserialize<T>( string serialized )
         {
+            return (T) Deserialize( typeof( T ), serialized );
+        }
+
+        /// <summary>
+        /// Deserializes the specified object type from a string.
+        /// </summary>
+        public static object Deserialize( Type type, string serialized )
+        {
             if( serialized == null )
             {
-                return default( T );
+                return null;
             }
 
-            return (T) DeserializeUnsafe( typeof( T ), serialized );
+            var serializedBytes = Encoding.UTF8.GetBytes( serialized );
+            using( var stream = new MemoryStream( serializedBytes ) )
+            {
+                return new DataContractJsonSerializer( type ).ReadObject( stream );
+            }
         }
     }
 }

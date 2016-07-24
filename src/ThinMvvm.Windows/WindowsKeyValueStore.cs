@@ -84,7 +84,7 @@ namespace ThinMvvm.Windows
             else
             {
                 var serializedValue = WindowsSerializer.Serialize( value );
-                
+
                 // According to https://msdn.microsoft.com/library/windows/apps/br241622,
                 // values can contain up to 8K bytes.
                 // There may be more bytes than there are characters, so the UWP call may still fail,

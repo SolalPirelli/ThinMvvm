@@ -1,5 +1,6 @@
 ﻿using System;
 using ThinMvvm.Data;
+using ThinMvvm.Data.Infrastructure;
 
 namespace ThinMvvm.Logging
 {

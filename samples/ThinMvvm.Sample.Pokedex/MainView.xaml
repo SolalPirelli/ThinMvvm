@@ -28,7 +28,7 @@
         </DataTemplate>
     </Page.Resources>
 
-    <tc:DataContainer ContentSource="{Binding Pokemons}"
-                      ContentTemplate="{StaticResource PokemonTemplate}"
+    <tc:DataContainer Source="{Binding Pokemons}"
+                      ValueTemplate="{StaticResource PokemonTemplate}"
                       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
 </Page>

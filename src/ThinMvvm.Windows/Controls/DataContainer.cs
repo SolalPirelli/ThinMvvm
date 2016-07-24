@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using ThinMvvm.Data;
+using ThinMvvm.Data.Infrastructure;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -13,6 +14,9 @@ using Windows.UI.Xaml.Data;
 
 namespace ThinMvvm.Windows.Controls
 {
+    /// <summary>
+    /// Holds data from a source, and displays it along with loading and error information.
+    /// </summary>
     [TemplateVisualState( Name = "None" )]
     [TemplateVisualState( Name = "Loading" )]
     [TemplateVisualState( Name = "LoadingMore" )]
@@ -22,24 +26,38 @@ namespace ThinMvvm.Windows.Controls
     [TemplatePart( Name = "ContentContainer", Type = typeof( ContentPresenter ) )]
     public sealed class DataContainer : Control
     {
-        public DataTemplate ContentTemplate
+        /// <summary>
+        /// Gets or sets the template used for values.
+        /// 
+        /// If the source has list of items as data, this will be used for individual items.
+        /// </summary>
+        public DataTemplate ValueTemplate
         {
-            get { return (DataTemplate) GetValue( ContentTemplateProperty ); }
-            set { SetValue( ContentTemplateProperty, value ); }
+            get { return (DataTemplate) GetValue( ValueTemplateProperty ); }
+            set { SetValue( ValueTemplateProperty, value ); }
         }
 
-        public static readonly DependencyProperty ContentTemplateProperty =
-            DependencyProperty.Register( "ContentTemplate", typeof( DataTemplate ), typeof( DataContainer ), new PropertyMetadata( null ) );
+        /// <summary>
+        /// Describes the <see cref="ValueTemplate" /> property.
+        /// </summary>
+        public static readonly DependencyProperty ValueTemplateProperty =
+            DependencyProperty.Register( nameof( ValueTemplate ), typeof( DataTemplate ), typeof( DataContainer ), new PropertyMetadata( null ) );
 
 
-        public IDataSource ContentSource
+        /// <summary>
+        /// Gets or sets the data source.
+        /// </summary>
+        public IDataSource Source
         {
-            get { return (IDataSource) GetValue( ContentSourceProperty ); }
-            set { SetValue( ContentSourceProperty, value ); }
+            get { return (IDataSource) GetValue( SourceProperty ); }
+            set { SetValue( SourceProperty, value ); }
         }
 
-        public static readonly DependencyProperty ContentSourceProperty =
-            DependencyProperty.Register( "ContentSource", typeof( IDataSource ), typeof( DataContainer ), new PropertyMetadata( null, ContentSourceChanged ) );
+        /// <summary>
+        /// Describes the <see cref="Source" /> property.
+        /// </summary>
+        public static readonly DependencyProperty SourceProperty =
+            DependencyProperty.Register( nameof( Source ), typeof( IDataSource ), typeof( DataContainer ), new PropertyMetadata( null, ContentSourceChanged ) );
 
         private static void ContentSourceChanged( DependencyObject d, DependencyPropertyChangedEventArgs e )
         {
@@ -48,84 +66,125 @@ namespace ThinMvvm.Windows.Controls
             var oldSource = (IDataSource) e.OldValue;
             if( oldSource != null )
             {
-                oldSource.PropertyChanged -= container.DataSourcePropertyChanged;
+                oldSource.PropertyChanged -= container.ContentSourcePropertyChanged;
             }
 
             var source = (IDataSource) e.NewValue;
             if( source != null )
             {
-                source.PropertyChanged += container.DataSourcePropertyChanged;
+                source.PropertyChanged += container.ContentSourcePropertyChanged;
             }
 
             container.Update();
         }
 
 
-
+        /// <summary>
+        /// Gets or sets a value indicating whether the raw source value should be displayed.
+        /// 
+        /// If this is true, the <see cref="ValueTemplate" /> property will be applied to the entire value,
+        /// even if the value is a list of items.
+        /// </summary>
         public bool DisplayRawValue
         {
             get { return (bool) GetValue( DisplayRawValueProperty ); }
             set { SetValue( DisplayRawValueProperty, value ); }
         }
 
+        /// <summary>
+        /// Describes the <see cref="DisplayRawValue" /> property.
+        /// </summary>
         public static readonly DependencyProperty DisplayRawValueProperty =
-            DependencyProperty.Register( "DisplayRawValue", typeof( bool ), typeof( DataContainer ), new PropertyMetadata( false ) );
+            DependencyProperty.Register( nameof( DisplayRawValue ), typeof( bool ), typeof( DataContainer ), new PropertyMetadata( false ) );
 
 
+        /// <summary>
+        /// Gets or sets the style for the items container if the value is a list of items.
+        /// </summary>
         public Style ItemsContainerStyle
         {
             get { return (Style) GetValue( ItemsContainerStyleProperty ); }
             set { SetValue( ItemsContainerStyleProperty, value ); }
         }
 
+        /// <summary>
+        /// Describes the <see cref="ItemsContainerStyle" /> property.
+        /// </summary>
         public static readonly DependencyProperty ItemsContainerStyleProperty =
-            DependencyProperty.Register( "ItemsContainerStyle", typeof( Style ), typeof( DataContainer ), new PropertyMetadata( null ) );
+            DependencyProperty.Register( nameof( ItemsContainerStyle ), typeof( Style ), typeof( DataContainer ), new PropertyMetadata( null ) );
 
 
-
+        /// <summary>
+        /// Gets or sets the text displayed along with the "refresh" button.
+        /// </summary>
         public string RefreshText
         {
             get { return (string) GetValue( RefreshTextProperty ); }
             set { SetValue( RefreshTextProperty, value ); }
         }
 
+        /// <summary>
+        /// Describes the <see cref="RefreshText" /> property.
+        /// </summary>
         public static readonly DependencyProperty RefreshTextProperty =
-            DependencyProperty.Register( "RefreshText", typeof( string ), typeof( DataContainer ), new PropertyMetadata( "Refresh" ) );
+            DependencyProperty.Register( nameof( RefreshText ), typeof( string ), typeof( DataContainer ), new PropertyMetadata( "Refresh" ) );
 
 
+        /// <summary>
+        /// Gets or sets the text displayed whenever there is an error.
+        /// </summary>
         public string ErrorText
         {
             get { return (string) GetValue( ErrorTextProperty ); }
             set { SetValue( ErrorTextProperty, value ); }
         }
 
+        /// <summary>
+        /// Describes the <see cref="ErrorText" /> property.
+        /// </summary>
         public static readonly DependencyProperty ErrorTextProperty =
-            DependencyProperty.Register( "ErrorText", typeof( string ), typeof( DataContainer ), new PropertyMetadata( "Error while fetching data." ) );
+            DependencyProperty.Register( nameof( ErrorText ), typeof( string ), typeof( DataContainer ), new PropertyMetadata( "Error while fetching data." ) );
 
 
+        /// <summary>
+        /// Gets or sets the text displayed along with <see cref="ErrorText" /> when the data is cached.
+        /// </summary>
         public string CacheText
         {
             get { return (string) GetValue( CacheTextProperty ); }
             set { SetValue( CacheTextProperty, value ); }
         }
 
+        /// <summary>
+        /// Describes the <see cref="CacheText" /> property.
+        /// </summary>
         public static readonly DependencyProperty CacheTextProperty =
-            DependencyProperty.Register( "CacheText", typeof( string ), typeof( DataContainer ), new PropertyMetadata( "Displaying cached data." ) );
+            DependencyProperty.Register( nameof( CacheText ), typeof( string ), typeof( DataContainer ), new PropertyMetadata( "Displaying cached data." ) );
 
 
 
         private ContentPresenter _contentContainer;
 
+
+        /// <summary>
+        /// Gets a command that will refresh the data source.
+        /// </summary>
         public AsyncCommand RefreshCommand { get; }
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataContainer" /> class.
+        /// </summary>
         public DataContainer()
         {
             DefaultStyleKey = typeof( DataContainer );
-            RefreshCommand = new AsyncCommand( () => ContentSource.RefreshAsync() );
+            RefreshCommand = new AsyncCommand( () => Source.RefreshAsync() );
         }
 
 
+        /// <summary>
+        /// Initializes the control after a template has been applied.
+        /// </summary>
         protected override void OnApplyTemplate()
         {
             _contentContainer = (ContentPresenter) GetTemplateChild( "ContentContainer" );
@@ -134,15 +193,18 @@ namespace ThinMvvm.Windows.Controls
         }
 
 
+        /// <summary>
+        /// Updates the control according to the content source.
+        /// </summary>
         private void Update()
         {
-            if( ContentSource == null || ContentSource.Status == DataSourceStatus.None )
+            if( Source == null || Source.Status == DataSourceStatus.None )
             {
                 VisualStateManager.GoToState( this, "None", true );
                 return;
             }
 
-            switch( ContentSource.Status )
+            switch( Source.Status )
             {
                 case DataSourceStatus.Loading:
                     VisualStateManager.GoToState( this, "Loading", true );
@@ -153,13 +215,13 @@ namespace ThinMvvm.Windows.Controls
                     break;
 
                 case DataSourceStatus.Loaded:
-                    if( ContentSource.Data.Count > 1 )
+                    if( Source.Data.Count > 1 )
                     {
-                        if( ContentSource.Data.All( d => d.Status == DataStatus.Normal ) )
+                        if( Source.Data.All( d => d.Status == DataStatus.Normal ) )
                         {
                             VisualStateManager.GoToState( this, "Loaded", true );
                         }
-                        else if( ContentSource.Data[ContentSource.Data.Count - 1].Status == DataStatus.Error )
+                        else if( Source.Data[Source.Data.Count - 1].Status == DataStatus.Error )
                         {
                             // Other chunks can't have errors otherwise a new chunk couldn't have been loaded
                             VisualStateManager.GoToState( this, "Error", true );
@@ -172,7 +234,7 @@ namespace ThinMvvm.Windows.Controls
                     else
                     {
                         // Initial data, reset stuff
-                        var data = ContentSource.Data[0];
+                        var data = Source.Data[0];
 
                         switch( data.Status )
                         {
@@ -191,13 +253,13 @@ namespace ThinMvvm.Windows.Controls
 
                         // Show a normal content presenter for non-paginated data that is not a list,
                         // and an listview for everything else. (unless overridden)
-                        if( DisplayRawValue || ( !ContentSource.CanFetchMore && !( data.Value is IList ) ) )
+                        if( DisplayRawValue || ( !Source.CanFetchMore && !( data.Value is IList ) ) )
                         {
                             _contentContainer.Content = data.Value;
                             _contentContainer.SetBinding( ContentPresenter.ContentTemplateProperty, new Binding
                             {
                                 Source = this,
-                                Path = new PropertyPath( nameof( ContentTemplate ) )
+                                Path = new PropertyPath( nameof( ValueTemplate ) )
                             } );
                         }
                         else
@@ -211,12 +273,12 @@ namespace ThinMvvm.Windows.Controls
                             container.SetBinding( ListView.ItemTemplateProperty, new Binding
                             {
                                 Source = this,
-                                Path = new PropertyPath( nameof( ContentTemplate ) )
+                                Path = new PropertyPath( nameof( ValueTemplate ) )
                             } );
 
-                            if( ContentSource.CanFetchMore )
+                            if( Source.CanFetchMore )
                             {
-                                container.ItemsSource = new PaginatedCollectionFromSource( ContentSource );
+                                container.ItemsSource = new PaginatedCollectionFromSource( Source );
                             }
                             else
                             {
@@ -231,7 +293,10 @@ namespace ThinMvvm.Windows.Controls
         }
 
 
-        private void DataSourcePropertyChanged( object sender, PropertyChangedEventArgs e )
+        /// <summary>
+        /// Called whenever <see cref="Source" /> has a property change.
+        /// </summary>
+        private void ContentSourcePropertyChanged( object sender, PropertyChangedEventArgs e )
         {
             if( e.PropertyName == nameof( IDataSource.Status ) )
             {
@@ -240,6 +305,9 @@ namespace ThinMvvm.Windows.Controls
         }
 
 
+        /// <summary>
+        /// Wrapper for a data source that implements <see cref="ISupportIncrementalLoading" />.
+        /// </summary>
         private sealed class PaginatedCollectionFromSource : ObservableObject, IList, INotifyCollectionChanged, ISupportIncrementalLoading
         {
             private readonly IDataSource _source;

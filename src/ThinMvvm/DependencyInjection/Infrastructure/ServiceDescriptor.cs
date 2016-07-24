@@ -1,11 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace ThinMvvm.DependencyInjection.Infrastructure
 {
     /// <summary>
     /// Describes a service used in dependency injection.
-    /// Either the <see cref="Instance" /> property is set, or the two others are, but not both.
     /// </summary>
+    [EditorBrowsable( EditorBrowsableState.Advanced )]
     public sealed class ServiceDescriptor
     {
         /// <summary>

@@ -30,6 +30,7 @@ namespace ThinMvvm.Infrastructure
             CanExecuteChanged?.Invoke( this, EventArgs.Empty );
         }
 
+
         /// <summary>
         /// Triggers the <see cref="Executed" /> event with the specified argument.
         /// </summary>
@@ -39,8 +40,9 @@ namespace ThinMvvm.Infrastructure
             Executed?.Invoke( this, new CommandExecutedEventArgs( argument ) );
         }
 
+
         /// <summary>
-        /// Checks whether the command can execute.
+        /// Indicates whether the command can execute.
         /// </summary>
         /// <param name="argument">The command argument.</param>
         /// <returns>A value indicating whether the command can execute.</returns>

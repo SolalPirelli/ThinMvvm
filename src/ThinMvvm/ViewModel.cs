@@ -7,7 +7,7 @@ namespace ThinMvvm
     /// <summary>
     /// Base class for ViewModels.
     /// </summary>
-    /// <typeparam name="TParameter">Type of the navigation parameter, or <see cref="NoParameter" /> if the ViewModel is parameterless.</typeparam>
+    /// <typeparam name="TParameter">The navigation parameter type, or <see cref="NoParameter" /> if the ViewModel is parameterless.</typeparam>
     public abstract class ViewModel<TParameter> : IViewModel
     {
         // COMPAT: Task.CompletedTask does not exist in Profile111
@@ -78,7 +78,7 @@ namespace ThinMvvm
             // Nothing.
         }
 
-        
+
         // This is both a protected virtual property and explicitly implemented,
         // so that only subclasses can see it normally, e.g. not a designer when suggesting properties to bind.
         bool IViewModel.IsTransient => IsTransient;

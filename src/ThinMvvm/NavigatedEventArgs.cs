@@ -32,7 +32,7 @@ namespace ThinMvvm
             }
             if( kind != NavigationKind.Forwards && kind != NavigationKind.Backwards )
             {
-                throw new ArgumentException( "Invalid enum value.", nameof( kind ) );
+                throw new ArgumentException( "Invalid kind.", nameof( kind ) );
             }
 
             Kind = kind;

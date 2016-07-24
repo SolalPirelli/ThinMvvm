@@ -1,15 +1,29 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace ThinMvvm.Data.Infrastructure
 {
-    public static class DataLoader
+    /// <summary>
+    /// Contains methods that operate on <see cref="DataChunk{T}" />.
+    /// </summary>
+    [EditorBrowsable( EditorBrowsableState.Advanced )]
+    public static class DataOperations
     {
-        public static async Task<DataChunk<T>> LoadAsync<T>( Func<Task<T>> loader )
+        /// <summary>
+        /// Asynchronously fetches a chunk of data using the specified function.
+        /// 
+        /// If the fetching function throws, the exception will be set as the <see cref="DataErrors.Fetch" /> 
+        /// of the chunk's <see cref="DataChunk{T}.Errors" />.
+        /// </summary>
+        /// <typeparam name="T">The data type.</typeparam>
+        /// <param name="fetcher">The asynchronous function to fetch the data.</param>
+        /// <returns>A task that represents the fetch operation.</returns>
+        public static async Task<DataChunk<T>> FetchAsync<T>( Func<Task<T>> fetcher )
         {
             try
             {
-                var result = await loader();
+                var result = await fetcher();
                 return new DataChunk<T>( result, DataStatus.Normal, default( DataErrors ) );
             }
             catch( Exception fetchException )
@@ -18,6 +32,19 @@ namespace ThinMvvm.Data.Infrastructure
             }
         }
 
+        /// <summary>
+        /// Asynchronously caches the specified chunk of data, using the specified cache and metadata creator.
+        /// 
+        /// If the chunk has a value, it will be stored in the cache; otherwise, the cache will be used to get a value.
+        /// 
+        /// If the cache or the metadata creator throw, the exception will be set as the <see cref="DataErrors.Cache" /> 
+        /// of the chunk's <see cref="DataChunk{T}.Errors" />.
+        /// </summary>
+        /// <typeparam name="T">The data type.</typeparam>
+        /// <param name="chunk">The data chunk.</param>
+        /// <param name="cache">The cache.</param>
+        /// <param name="metadataCreator">The metadata creator.</param>
+        /// <returns>A task that represents the cache operation.</returns>
         public static async Task<DataChunk<T>> CacheAsync<T>( DataChunk<T> chunk, Cache cache, Func<CacheMetadata> metadataCreator )
         {
             CacheMetadata metadata;
@@ -64,6 +91,18 @@ namespace ThinMvvm.Data.Infrastructure
             }
         }
 
+        /// <summary>
+        /// Transforms the specified chunk of data using the specified function.
+        /// 
+        /// If the chunk has no value, it will be returned as is.
+        /// 
+        /// If the transformation function throws, the exception will be set as the <see cref="DataErrors.Process" />
+        /// of the chunk's <see cref="DataChunk{T}.Errors" />.
+        /// </summary>
+        /// <typeparam name="T">The data type.</typeparam>
+        /// <param name="chunk">The data chunk.</param>
+        /// <param name="transformer">The transformation function.</param>
+        /// <returns>The transformed chunk.</returns>
         public static DataChunk<T> Transform<T>( DataChunk<T> chunk, Func<T, T> transformer )
         {
             if( chunk.Status == DataStatus.Error )

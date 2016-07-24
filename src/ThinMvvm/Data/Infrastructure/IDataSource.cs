@@ -3,9 +3,10 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace ThinMvvm.Data
+namespace ThinMvvm.Data.Infrastructure
 {
     /// <summary>
+    /// Infrastructure.
     /// Represents a source of data.
     /// </summary>
     /// <remarks>
@@ -13,6 +14,7 @@ namespace ThinMvvm.Data
     /// and MUST fire the change event for <see cref="Status" /> after any group of properties change,
     /// to make it easy for clients to listen to any change in the source.
     /// </remarks>
+    [EditorBrowsable( EditorBrowsableState.Advanced )]
     public interface IDataSource : INotifyPropertyChanged
     {
         /// <summary>
