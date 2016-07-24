@@ -48,6 +48,8 @@
     <Compile Include="CommandsTests_ParameterizedAsync.cs" />
     <Compile Include="CommandsTests_ParameterizedSync.cs" />
     <Compile Include="CommandsTests_Sync.cs" />
+    <Compile Include="Data\BasicDataSourceTests.cs" />
+    <Compile Include="Data\BasicPaginatedDataSourceTests.cs" />
     <Compile Include="Data\CacheMetatadaTests.cs" />
     <Compile Include="Data\DataChunkTests.cs" />
     <Compile Include="Data\DataErrorsTests.cs" />
@@ -65,6 +67,7 @@
     <Compile Include="TestInfrastructure\Compatibility.cs" />
     <Compile Include="TestInfrastructure\EqualityTests.cs" />
     <Compile Include="TestInfrastructure\InMemoryDataStore.cs" />
+    <Compile Include="TestInfrastructure\InMemoryKeyValueStore.cs" />
     <Compile Include="TestInfrastructure\MyException.cs" />
     <Compile Include="ViewServices\ViewBinderTests.cs" />
     <Compile Include="ViewModelTests.cs" />

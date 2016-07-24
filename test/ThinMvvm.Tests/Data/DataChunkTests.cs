@@ -1,3 +1,4 @@
+using System;
 using ThinMvvm.Data;
 using ThinMvvm.Data.Infrastructure;
 using ThinMvvm.Tests.TestInfrastructure;
@@ -7,6 +8,12 @@ namespace ThinMvvm.Tests.Data
 {
     public sealed class DataChunkTests
     {
+        [Fact]
+        public void CannotCreateWithInvalidStatus()
+        {
+            Assert.Throws<ArgumentException>( () => new DataChunk<int>( 0, (DataStatus) 42, default( DataErrors ) ) );
+        }
+
         [Fact]
         public void ConstructorSetsValue()
         {
@@ -45,6 +52,9 @@ namespace ThinMvvm.Tests.Data
 
             EqualityTests.For<IDataChunk>( new DataChunk<string>( null, DataStatus.Error, default( DataErrors ) ) )
                 .WithEqual( new DataChunk<string>( null, DataStatus.Error, default( DataErrors ) ) )
+                .Test( includeOperators: false );
+
+            EqualityTests.For<IDataChunk>( new DataChunk<string>( null, DataStatus.Normal, default( DataErrors ) ) )
                 .Test( includeOperators: false );
         }
     }

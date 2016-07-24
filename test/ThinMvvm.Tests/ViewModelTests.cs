@@ -1,5 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using ThinMvvm.Infrastructure;
+using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
 namespace ThinMvvm.Tests
@@ -17,12 +19,22 @@ namespace ThinMvvm.Tests
         }
 
         [Fact]
+        public void LoadAndSaveDoNothing()
+        {
+            var vm = new MyViewModel();
+            var store = new InMemoryKeyValueStore();
+
+            vm.SaveState( store );
+            vm.LoadState( store );
+        }
+
+        [Fact]
         public async Task OnNavigatedToAsyncFiresNavigatedToEvent()
         {
             var vm = (IViewModel) new MyViewModel();
 
             int count = 0;
-            vm.NavigatedTo += ( _, e ) => count++;
+            vm.NavigatedTo += ( _, __ ) => count++;
 
             await vm.OnNavigatedToAsync( NavigationKind.Forwards );
 
@@ -35,11 +47,84 @@ namespace ThinMvvm.Tests
             var vm = (IViewModel) new MyViewModel();
 
             int count = 0;
-            vm.NavigatedFrom += ( _, e ) => count++;
+            vm.NavigatedFrom += ( _, __ ) => count++;
 
             await vm.OnNavigatedFromAsync( NavigationKind.Forwards );
 
             Assert.Equal( 1, count );
+        }
+
+        [Fact]
+        public async Task CanUnregisterFromNavigatedToEvent()
+        {
+            var vm = (IViewModel) new MyViewModel();
+
+            int count = 0;
+            var handler = new EventHandler<EventArgs>( ( _, __ ) => count++ );
+            vm.NavigatedTo += handler;
+            vm.NavigatedTo -= handler;
+
+            await vm.OnNavigatedToAsync( NavigationKind.Forwards );
+
+            Assert.Equal( 0, count );
+        }
+
+        [Fact]
+        public async Task CanUnregisterFromNavigatedFromEvent()
+        {
+            var vm = (IViewModel) new MyViewModel();
+
+            int count = 0;
+            var handler = new EventHandler<EventArgs>( ( _, __ ) => count++ );
+            vm.NavigatedFrom += handler;
+            vm.NavigatedFrom -= handler;
+
+            await vm.OnNavigatedFromAsync( NavigationKind.Forwards );
+
+            Assert.Equal( 0, count );
+        }
+
+
+        private sealed class CountingViewModel : ViewModel<NoParameter>
+        {
+            public int ToCount { get; private set; }
+
+            public int FromCount { get; private set; }
+
+
+            protected override Task OnNavigatedToAsync( NavigationKind navigationKind )
+            {
+                ToCount++;
+
+                return TaskEx.CompletedTask;
+            }
+
+            protected override Task OnNavigatedFromAsync( NavigationKind navigationKind )
+            {
+                FromCount++;
+
+                return TaskEx.CompletedTask;
+            }
+        }
+
+        [Fact]
+        public async Task OnNavigatedToAsyncCallsProtectedVersion()
+        {
+            var vm = new CountingViewModel();
+
+            await ( ( (IViewModel) vm ).OnNavigatedToAsync( NavigationKind.Forwards ) );
+
+            Assert.Equal( 1, vm.ToCount );
+        }
+
+        [Fact]
+        public async Task OnNavigatedFromAsyncCallsProtectedVersion()
+        {
+            var vm = new CountingViewModel();
+
+            await ( ( (IViewModel) vm ).OnNavigatedFromAsync( NavigationKind.Forwards ) );
+
+            Assert.Equal( 1, vm.FromCount );
         }
     }
 }
