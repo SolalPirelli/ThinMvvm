@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using ThinMvvm.DependencyInjection;
 using ThinMvvm.DependencyInjection.Infrastructure;
@@ -25,10 +26,6 @@ namespace ThinMvvm.Windows
     public sealed class WindowsNavigationService : INavigationService
     {
         private const int MaxSuspendedHours = 12;
-
-        // HACK, see NavigateTo(arg)
-        private const string SerializedParameterToken = "TM_Serialized";
-        private static readonly string[] SerializedParameterTokenArray = new[] { SerializedParameterToken };
 
         // HACK, see RestorePreviousState
         private static readonly object NavigationParameterSentinel = new object();
@@ -111,14 +108,7 @@ namespace ThinMvvm.Windows
             }
             else
             {
-                // HACK
-                // Supporting types not natively supported by Windows is a good idea,
-                // since this is a common use case; however, in order to know what to
-                // deserialize the string to, we also need to store the type!
-                // Thus we use a special token that will hopefully never appear anywhere else.
-                var serialized = WindowsSerializer.Serialize( arg );
-                var typeName = typeof( TArg ).AssemblyQualifiedName;
-                NavigateTo( typeof( TViewModel ), typeName + SerializedParameterToken + serialized );
+                NavigateTo( typeof( TViewModel ), WindowsSerializer.Serialize( arg ) );
             }
         }
 
@@ -309,16 +299,14 @@ namespace ThinMvvm.Windows
             var view = (Page) _frame.Content;
             if( view.DataContext == null )
             {
-                // HACK, see NavigateTo(arg)
-                var stringArg = arg as string;
-                if( stringArg != null && stringArg.Contains( SerializedParameterToken ) )
+                var viewModelType = _views.GetViewModelType( view.GetType() );
+                var parameterType = GetParameterType( viewModelType );
+
+                if( parameterType != typeof( NoParameter ) && !WindowsSerializer.IsTypeNativelySupported( parameterType ) )
                 {
-                    var parts = stringArg.Split( SerializedParameterTokenArray, 2, StringSplitOptions.None );
-                    var type = Type.GetType( parts[0], throwOnError: true );
-                    arg = WindowsSerializer.Deserialize( type, parts[1] );
+                    arg = WindowsSerializer.Deserialize( parameterType, (string) arg );
                 }
 
-                var viewModelType = _views.GetViewModelType( view.GetType() );
                 view.DataContext = _viewModelCreator.Create( viewModelType, arg );
             }
 
@@ -343,6 +331,20 @@ namespace ThinMvvm.Windows
         private WindowsKeyValueStore GetCurrentStateStore()
         {
             return new WindowsKeyValueStore( "ThinMvvm.Navigation." + _frame.BackStackDepth );
+        }
+
+
+        /// <summary>
+        /// Gets the type of the parameter for the specified ViewModel.
+        /// </summary>
+        private static Type GetParameterType( Type viewModelType )
+        {
+            while( !viewModelType.IsConstructedGenericType || viewModelType.GetGenericTypeDefinition() != typeof( ViewModel<> ) )
+            {
+                viewModelType = viewModelType.GetTypeInfo().BaseType;
+            }
+
+            return viewModelType.GetGenericArguments()[0];
         }
 
 
