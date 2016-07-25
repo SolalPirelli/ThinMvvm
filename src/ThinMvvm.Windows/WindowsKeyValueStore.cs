@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using ThinMvvm.Windows.Infrastructure;
 using Windows.Storage;
 
@@ -6,7 +7,6 @@ namespace ThinMvvm.Windows
 {
     /// <summary>
     /// <see cref="IKeyValueStore" /> implementation for Windows.
-    /// Supports settings whose serialized representation uses 8 KB or less.
     /// </summary>
     /// <remarks>
     /// This class assumes that it is the only settings manager in the app;
@@ -46,24 +46,14 @@ namespace ThinMvvm.Windows
                 return default( Optional<T> );
             }
 
-            var value = _container.Values[key];
+            var value = FromStorageValue<T>( _container.Values[key] );
 
-            if( WindowsSerializer.IsTypeNativelySupported( typeof( T ) ) )
+            if( !( value is T ) )
             {
-                if( !( value is T ) )
-                {
-                    throw new ArgumentException( $"The value associated with key '{key}' is of type '{value.GetType()}', not '{typeof( T )}'." );
-                }
-
-                return new Optional<T>( (T) value );
+                throw new ArgumentException( $"The value associated with key '{key}' is of type '{value.GetType()}', not '{typeof( T )}'." );
             }
 
-            if( !( value is string ) )
-            {
-                throw new ArgumentException( $"The value associated with key '{key}' is of type '{value.GetType()}', not a serialized object of type '{typeof( T )}'." );
-            }
-
-            return new Optional<T>( WindowsSerializer.Deserialize<T>( (string) value ) );
+            return new Optional<T>( value );
         }
 
         /// <summary>
@@ -77,25 +67,7 @@ namespace ThinMvvm.Windows
             EnsureAlive();
             ValidateKey( key );
 
-            if( WindowsSerializer.IsTypeNativelySupported( typeof( T ) ) )
-            {
-                _container.Values[key] = value;
-            }
-            else
-            {
-                var serializedValue = WindowsSerializer.Serialize( value );
-
-                // According to https://msdn.microsoft.com/library/windows/apps/br241622,
-                // values can contain up to 8K bytes.
-                // There may be more bytes than there are characters, so the UWP call may still fail,
-                // but at least let's provide a sensible error message if we know it will fail.
-                if( serializedValue.Length > 8 * 1024 )
-                {
-                    throw new InvalidOperationException( "Cannot store objects whose serialized size is over 8K bytes in Windows storage." );
-                }
-
-                _container.Values[key] = serializedValue;
-            }
+            _container.Values[key] = ToStorageValue( value );
         }
 
         /// <summary>
@@ -121,14 +93,22 @@ namespace ThinMvvm.Windows
         }
 
         /// <summary>
-        /// Deletes the container, and all of its key-value pairs.
+        /// Clears all data in the container.
         /// </summary>
-        public void Delete()
+        public void Clear()
         {
             EnsureAlive();
 
             ApplicationData.Current.LocalSettings.DeleteContainer( _container.Name );
             _container = null;
+        }
+
+        /// <summary>
+        /// Deletes the container, and all of its data.
+        /// </summary>
+        public void Delete()
+        {
+            Clear();
             _alive = false;
         }
 
@@ -176,6 +156,81 @@ namespace ThinMvvm.Windows
             {
                 throw new ArgumentException( $"Key name '{key}' is too long for Windows setting storage. Max length is 255 chars." );
             }
+        }
+
+
+        /// <summary>
+        /// Converts the specified value to an object that can safely be stored.
+        /// </summary>
+        private static object ToStorageValue<T>( T value )
+        {
+            // According to https://msdn.microsoft.com/library/windows/apps/br241622
+            // serialized values can be 8KB at most, i.e. 2KB max for a string assuming the worst in UTF-16.
+            // Storing a string with 4096 ASCII chars fails as well, so there's probably a header,
+            // which means we use 2000 characters as the cutoff point.
+            const int MaxSize = 2000;
+
+            var isString = typeof( T ) == typeof( string );
+
+            if( !isString && WindowsSerializer.IsTypeNativelySupported( typeof( T ) ) )
+            {
+                // Non-string native types will never be too large.
+                return value;
+            }
+
+            var stringValue = isString ? (string) (object) value : WindowsSerializer.Serialize( value );
+            if( stringValue.Length <= MaxSize )
+            {
+                return stringValue;
+            }
+
+            var composite = new ApplicationDataCompositeValue();
+
+            var fullCount = stringValue.Length / MaxSize;
+            for( var n = 0; n < fullCount; n++ )
+            {
+                composite[n.ToString()] = stringValue.Substring( n * MaxSize, MaxSize );
+            }
+            if( stringValue.Length % MaxSize != 0 )
+            {
+                composite[fullCount.ToString()] = stringValue.Substring( fullCount * MaxSize );
+            }
+
+            return composite;
+        }
+
+        /// <summary>
+        /// Converts the specified stored object to its original representation.
+        /// </summary>
+        private static T FromStorageValue<T>( object value )
+        {
+            var composite = value as ApplicationDataCompositeValue;
+            if( composite == null )
+            {
+                if( WindowsSerializer.IsTypeNativelySupported( typeof( T ) ) )
+                {
+                    return (T) value;
+                }
+
+                return WindowsSerializer.Deserialize<T>( (string) value );
+            }
+
+            var builder = new StringBuilder();
+            var n = 0;
+            while( composite.ContainsKey( n.ToString() ) )
+            {
+                builder.Append( composite[n.ToString()] );
+                n++;
+            }
+
+            var stringValue = builder.ToString();
+
+            if( typeof( T ) == typeof( string ) )
+            {
+                return (T) (object) stringValue;
+            }
+
+            return WindowsSerializer.Deserialize<T>( stringValue );
         }
     }
 }

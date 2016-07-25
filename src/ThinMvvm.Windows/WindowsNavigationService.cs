@@ -26,7 +26,7 @@ namespace ThinMvvm.Windows
         private const int MaxSuspendedHours = 12;
 
         // HACK, see NavigateTo(arg)
-        private const string SerializedParameterToken = "\0TM_Serialized\0";
+        private const string SerializedParameterToken = "TM_Serialized";
         private static readonly string[] SerializedParameterTokenArray = new[] { SerializedParameterToken };
 
         // HACK, see RestorePreviousState
@@ -217,6 +217,7 @@ namespace ThinMvvm.Windows
             if( e.NavigationMode == NavigationMode.New )
             {
                 var store = GetCurrentStateStore();
+                store.Clear();
                 viewModel.SaveState( store );
 
                 viewModel.OnNavigatedFromAsync( NavigationKind.Forwards );
@@ -266,6 +267,7 @@ namespace ThinMvvm.Windows
             var viewModel = (IViewModel) view.DataContext;
 
             var store = GetCurrentStateStore();
+            store.Clear();
             viewModel.SaveState( store );
         }
 
