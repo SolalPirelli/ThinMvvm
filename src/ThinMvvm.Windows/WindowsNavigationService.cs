@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using ThinMvvm.DependencyInjection;
 using ThinMvvm.DependencyInjection.Infrastructure;
 using ThinMvvm.Infrastructure;
@@ -31,6 +32,7 @@ namespace ThinMvvm.Windows
 
         // HACK, see RestorePreviousState
         private static readonly object FakeNavigationParameter = new object();
+        private object _restoredParameter = FakeNavigationParameter;
 
         private readonly ObjectCreator _viewModelCreator;
         private readonly ViewRegistry _views;
@@ -198,7 +200,7 @@ namespace ThinMvvm.Windows
         private void FrameNavigating( object sender, NavigatingCancelEventArgs e )
         {
             // HACK, see RestorePreviousState
-            if( e.Parameter == FakeNavigationParameter )
+            if( e.Parameter == FakeNavigationParameter || _restoredParameter != FakeNavigationParameter )
             {
                 return;
             }
@@ -235,14 +237,22 @@ namespace ThinMvvm.Windows
         /// <summary>
         /// Called when the frame has finished navigating.
         /// </summary>
-        private void FrameNavigated( object sender, NavigationEventArgs e )
+        private async void FrameNavigated( object sender, NavigationEventArgs e )
         {
             // HACK, see RestorePreviousState
             if( e.Parameter == FakeNavigationParameter )
             {
-                var parameter = _frame.BackStack[_frame.BackStackDepth - 1].Parameter;
-                _frame.GoBack();
-                EndNavigation( NavigationMode.New, parameter );
+                _restoredParameter = _frame.BackStack[_frame.BackStackDepth - 1].Parameter;
+                // Frame ignores navigations that occur during the Navigated event.
+                // This is not pretty!
+                await Task.Yield();
+                NavigateBack();
+                return;
+            }
+            if( _restoredParameter != FakeNavigationParameter )
+            {
+                EndNavigation( NavigationMode.New, _restoredParameter );
+                _restoredParameter = FakeNavigationParameter;
                 return;
             }
 

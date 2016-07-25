@@ -8,11 +8,14 @@ namespace ThinMvvm.Sample.NewsApp.Views
         {
             InitializeComponent();
 
-            // WebView's content can't be bound
-            Loaded += ( _, __ ) =>
+            DataContextChanged += ( _, __ ) =>
             {
-                var vm = (ItemViewModel) DataContext;
-                ContentView.NavigateToString( vm.Item.Description );
+                if( DataContext != null )
+                {
+                    // WebView's content can't be bound
+                    var vm = (ItemViewModel) DataContext;
+                    ContentView.NavigateToString( vm.Item.Description );
+                }
             };
         }
     }
