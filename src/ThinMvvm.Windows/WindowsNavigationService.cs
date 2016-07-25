@@ -31,8 +31,8 @@ namespace ThinMvvm.Windows
         private static readonly string[] SerializedParameterTokenArray = new[] { SerializedParameterToken };
 
         // HACK, see RestorePreviousState
-        private static readonly object FakeNavigationParameter = new object();
-        private object _restoredParameter = FakeNavigationParameter;
+        private static readonly object NavigationParameterSentinel = new object();
+        private object _restoredParameter = NavigationParameterSentinel;
 
         private readonly ObjectCreator _viewModelCreator;
         private readonly ViewRegistry _views;
@@ -179,7 +179,8 @@ namespace ThinMvvm.Windows
                 // as it is neither in the backward nor in the forward stack.
                 // Thus, we perform a fake navigation, identified by a special parameter,
                 // so that the current page goes in the back stack, which means we can fetch its parameter.
-                _frame.Navigate( _frame.SourcePageType, FakeNavigationParameter );
+                // Then, we remember said parameter and navigate back, and finally finish navigation as usual.
+                _frame.Navigate( _frame.SourcePageType, NavigationParameterSentinel );
                 return true;
             }
             catch
@@ -200,7 +201,7 @@ namespace ThinMvvm.Windows
         private void FrameNavigating( object sender, NavigatingCancelEventArgs e )
         {
             // HACK, see RestorePreviousState
-            if( e.Parameter == FakeNavigationParameter || _restoredParameter != FakeNavigationParameter )
+            if( e.Parameter == NavigationParameterSentinel || _restoredParameter != NavigationParameterSentinel )
             {
                 return;
             }
@@ -240,7 +241,7 @@ namespace ThinMvvm.Windows
         private async void FrameNavigated( object sender, NavigationEventArgs e )
         {
             // HACK, see RestorePreviousState
-            if( e.Parameter == FakeNavigationParameter )
+            if( e.Parameter == NavigationParameterSentinel )
             {
                 _restoredParameter = _frame.BackStack[_frame.BackStackDepth - 1].Parameter;
                 // Frame ignores navigations that occur during the Navigated event.
@@ -249,10 +250,10 @@ namespace ThinMvvm.Windows
                 NavigateBack();
                 return;
             }
-            if( _restoredParameter != FakeNavigationParameter )
+            if( _restoredParameter != NavigationParameterSentinel )
             {
                 EndNavigation( NavigationMode.New, _restoredParameter );
-                _restoredParameter = FakeNavigationParameter;
+                _restoredParameter = NavigationParameterSentinel;
                 return;
             }
 
