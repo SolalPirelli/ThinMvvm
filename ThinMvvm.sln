@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Windows", "src\ThinMvvm.Windows\ThinMvvm.Windows.csproj", "{557B3B46-C35A-4466-B2CD-6481C4478CD0}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm", "src\ThinMvvm\ThinMvvm.csproj", "{67EA665C-9213-4211-BDFA-6D75B92CEA20}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Tests", "test\ThinMvvm.Tests\ThinMvvm.Tests.csproj", "{F9F7C9C8-0E0F-4D34-A848-27800BAC86AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Sample.NewsApp", "samples\ThinMvvm.Sample.NewsApp\ThinMvvm.Sample.NewsApp.csproj", "{E00BD56A-4319-45F5-85D3-908B1F74DAF0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Windows", "src\ThinMvvm.Windows\ThinMvvm.Windows.csproj", "{557B3B46-C35A-4466-B2CD-6481C4478CD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Sample.NewsReader", "samples\ThinMvvm.Sample.NewsReader\ThinMvvm.Sample.NewsReader.csproj", "{E00BD56A-4319-45F5-85D3-908B1F74DAF0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinMvvm.Sample.Pokedex", "samples\ThinMvvm.Sample.Pokedex\ThinMvvm.Sample.Pokedex.csproj", "{DA04AA35-3150-401B-8CCD-4FAB28FA7144}"
 EndProject

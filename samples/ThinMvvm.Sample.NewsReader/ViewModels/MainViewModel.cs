@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
 using ThinMvvm.Data;
 using ThinMvvm.Logging;
-using ThinMvvm.Sample.NewsApp.Models;
-using ThinMvvm.Sample.NewsApp.Services;
+using ThinMvvm.Sample.NewsReader.Models;
+using ThinMvvm.Sample.NewsReader.Services;
 
-namespace ThinMvvm.Sample.NewsApp.ViewModels
+namespace ThinMvvm.Sample.NewsReader.ViewModels
 {
     public sealed class MainViewModel : ViewModel<NoParameter>
     {

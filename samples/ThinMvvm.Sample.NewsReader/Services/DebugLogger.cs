@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using ThinMvvm.Logging;
 
-namespace ThinMvvm.Sample.NewsApp.Services
+namespace ThinMvvm.Sample.NewsReader.Services
 {
     public sealed class DebugLogger : ILogger
     {

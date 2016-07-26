@@ -1,4 +1,4 @@
-namespace ThinMvvm.Sample.NewsApp.Views
+namespace ThinMvvm.Sample.NewsReader.Views
 {
     public sealed partial class MainView
     {

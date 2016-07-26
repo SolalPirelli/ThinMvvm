@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using ThinMvvm.Sample.NewsApp.Models;
+using ThinMvvm.Sample.NewsReader.Models;
 
-namespace ThinMvvm.Sample.NewsApp.Services
+namespace ThinMvvm.Sample.NewsReader.Services
 {
     public interface INewsService
     {

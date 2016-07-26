@@ -1,14 +1,14 @@
 using ThinMvvm.DependencyInjection;
 using ThinMvvm.Logging;
-using ThinMvvm.Sample.NewsApp.Services;
-using ThinMvvm.Sample.NewsApp.ViewModels;
-using ThinMvvm.Sample.NewsApp.Views;
+using ThinMvvm.Sample.NewsReader.Services;
+using ThinMvvm.Sample.NewsReader.ViewModels;
+using ThinMvvm.Sample.NewsReader.Views;
 using ThinMvvm.ViewServices;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-namespace ThinMvvm.Sample.NewsApp
+namespace ThinMvvm.Sample.NewsReader
 {
     public sealed partial class App
     {

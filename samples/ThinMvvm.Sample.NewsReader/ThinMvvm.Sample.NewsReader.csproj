@@ -7,8 +7,8 @@
     <ProjectGuid>{E00BD56A-4319-45F5-85D3-908B1F74DAF0}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ThinMvvm.Sample.NewsApp</RootNamespace>
-    <AssemblyName>ThinMvvm.Sample.NewsApp</AssemblyName>
+    <RootNamespace>ThinMvvm.Sample.NewsReader</RootNamespace>
+    <AssemblyName>ThinMvvm.Sample.NewsReader</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.10586.0</TargetPlatformVersion>
@@ -16,8 +16,8 @@
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>ThinMvvm.Sample.NewsApp_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>F1B1CF8DC6100B608F10A9B49421F6EF0E4381AC</PackageCertificateThumbprint>
+    <PackageCertificateKeyFile>ThinMvvm.Sample.NewsReader_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>8AB44D4F75110CAA836C7FCA2F051EA97921AD3E</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -90,6 +90,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="project.json" />
+    <None Include="ThinMvvm.Sample.NewsReader_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
@@ -115,10 +116,8 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="ThinMvvm.Sample.NewsApp_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />

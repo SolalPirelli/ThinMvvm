@@ -1,8 +1,8 @@
-<Page x:Class="ThinMvvm.Sample.NewsApp.Views.MainView"
+<Page x:Class="ThinMvvm.Sample.NewsReader.Views.MainView"
       x:Name="Root"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:m="using:ThinMvvm.Sample.NewsApp.Models"
+      xmlns:my="using:ThinMvvm.Sample.NewsReader.Models"
       xmlns:tc="using:ThinMvvm.Windows.Controls"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,7 +10,7 @@
       d:DataContext="{Binding Main, Source={StaticResource DesignViewModels}}">
     <Page.Resources>
         <DataTemplate x:Key="ItemTemplate"
-                      x:DataType="m:NewsItem">
+                      x:DataType="my:NewsItem">
             <Button Command="{Binding DataContext.ViewItemCommand, ElementName=Root}"
                     CommandParameter="{x:Bind}"
                     Background="Transparent"
@@ -28,7 +28,7 @@
         </DataTemplate>
         
         <DataTemplate x:Key="FeedTemplate"
-                      x:DataType="m:NewsFeed">
+                      x:DataType="my:NewsFeed">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />

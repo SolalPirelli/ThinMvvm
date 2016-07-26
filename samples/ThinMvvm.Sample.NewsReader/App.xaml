@@ -1,9 +1,7 @@
-<t:WindowsApplication x:Class="ThinMvvm.Sample.NewsApp.App" 
-                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<t:WindowsApplication x:Class="ThinMvvm.Sample.NewsReader.App" 
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:t="using:ThinMvvm.Windows"
-                      xmlns:d="using:ThinMvvm.Sample.NewsApp.ViewModels.Design"
-                      RequestedTheme="Light">
+                      xmlns:d="using:ThinMvvm.Sample.NewsReader.ViewModels.Design">
     <t:WindowsApplication.Resources>
         <d:DesignViewModels x:Key="DesignViewModels" />
     </t:WindowsApplication.Resources>

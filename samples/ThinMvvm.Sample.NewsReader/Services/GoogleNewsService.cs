@@ -2,10 +2,10 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using ThinMvvm.Sample.NewsApp.Models;
+using ThinMvvm.Sample.NewsReader.Models;
 using Windows.Web.Http;
 
-namespace ThinMvvm.Sample.NewsApp.Services
+namespace ThinMvvm.Sample.NewsReader.Services
 {
     public sealed class GoogleNewsService : INewsService
     {
@@ -23,21 +23,19 @@ namespace ThinMvvm.Sample.NewsApp.Services
         {
             var root = XDocument.Parse( xml ).Root.Element( "channel" );
 
-            return new NewsFeed
-            {
-                Name = root.Element( "title" ).Value,
-                Items = root.Elements( "item" ).Select( ParseItem ).ToArray()
-            };
+            return new NewsFeed(
+                name: root.Element( "title" ).Value,
+                items: root.Elements( "item" ).Select( ParseItem ).ToArray()
+            );
         }
 
         private static NewsItem ParseItem( XElement elem )
         {
-            return new NewsItem
-            {
-                Title = elem.Element( "title" ).Value,
-                Date = DateTimeOffset.Parse( elem.Element( "pubDate" ).Value ),
-                Description = elem.Element( "description" ).Value
-            };
+            return new NewsItem(
+                title: elem.Element( "title" ).Value,
+                date: DateTimeOffset.Parse( elem.Element( "pubDate" ).Value ),
+                description: elem.Element( "description" ).Value
+            );
         }
     }
 }

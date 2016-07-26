@@ -1,6 +1,6 @@
-using ThinMvvm.Sample.NewsApp.ViewModels;
+using ThinMvvm.Sample.NewsReader.ViewModels;
 
-namespace ThinMvvm.Sample.NewsApp.Views
+namespace ThinMvvm.Sample.NewsReader.Views
 {
     public sealed partial class ItemView
     {

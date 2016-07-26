@@ -1,8 +1,8 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle( "ThinMvvm.Sample.NewsApp" )]
-[assembly: AssemblyDescription( "Sample news app using ThinMvvm." )]
+[assembly: AssemblyTitle( "ThinMvvm.Sample.NewsReader" )]
+[assembly: AssemblyDescription( "Sample news reader using ThinMvvm." )]
 [assembly: AssemblyCopyright( "Copyright © Solal Pirelli 2016" )]
 [assembly: AssemblyCulture( "" )]
 
