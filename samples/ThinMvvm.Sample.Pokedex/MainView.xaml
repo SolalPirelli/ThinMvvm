@@ -4,23 +4,24 @@
       xmlns:tc="using:ThinMvvm.Windows.Controls"
       xmlns:my="using:ThinMvvm.Sample.Pokedex">
     <Page.Resources>
-        <DataTemplate x:Key="PokemonTemplate">
+        <DataTemplate x:Key="PokemonTemplate"
+                      x:DataType="my:PokemonInfo">
             <RelativePanel Margin="0,8">
                 <Image x:Name="Image"
                        Stretch="None">
                     <Image.Source>
-                        <BitmapImage UriSource="{Binding PictureUrl}"
+                        <BitmapImage UriSource="{x:Bind PictureUrl}"
                                      DecodePixelWidth="96"
                                      DecodePixelHeight="96" />
                     </Image.Source>
                 </Image>
 
                 <TextBlock x:Name="Title"
-                           Text="{Binding Name}"
+                           Text="{x:Bind Name}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            RelativePanel.RightOf="Image" />
 
-                <TextBlock Text="{Binding Description}"
+                <TextBlock Text="{x:Bind Description}"
                            Style="{StaticResource BodyTextBlockStyle}"
                            RelativePanel.RightOf="Image"
                            RelativePanel.Below="Title" />

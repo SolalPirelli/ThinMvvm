@@ -17,22 +17,19 @@ namespace ThinMvvm.Sample.Pokedex
 
         public async Task<PokemonInfo> GetPokemonAsync( int index )
         {
-            var url = $"http://pokeapi.co/api/v2/pokemon-species/{index}/";
-            var json = await _client.GetStringAsync( url );
+            var json = await _client.GetStringAsync( $"http://pokeapi.co/api/v2/pokemon-species/{index}/" );
             var root = JObject.Parse( json );
 
-            var name = root.Value<JArray>( "names" )
-                           .First( IsInEnglish )
-                           .Value<string>( "name" );
-
-            var pictureUrl = $"http://pokeapi.co/media/sprites/pokemon/{index}.png";
-
-            var description = root.Value<JArray>( "flavor_text_entries" )
-                                  .First( IsInEnglish )
-                                  .Value<string>( "flavor_text" )
-                                  .Replace( '\n', ' ' );
-
-            return new PokemonInfo( name, pictureUrl, description );
+            return new PokemonInfo(
+                name: root.Value<JArray>( "names" )
+                          .First( IsInEnglish )
+                          .Value<string>( "name" ),
+                pictureUrl: $"http://pokeapi.co/media/sprites/pokemon/{index}.png",
+                description: root.Value<JArray>( "flavor_text_entries" )
+                                 .First( IsInEnglish )
+                                 .Value<string>( "flavor_text" )
+                                 .Replace( '\n', ' ' )
+            );
         }
 
 

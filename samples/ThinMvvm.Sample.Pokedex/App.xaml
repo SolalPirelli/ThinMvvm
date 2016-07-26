@@ -1,5 +1,3 @@
-<t:WindowsApplication x:Class="ThinMvvm.Sample.Pokedex.App" 
-                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<t:WindowsApplication x:Class="ThinMvvm.Sample.Pokedex.App"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                      xmlns:t="using:ThinMvvm.Windows"
-                      RequestedTheme="Light" />
+                      xmlns:t="using:ThinMvvm.Windows" />
