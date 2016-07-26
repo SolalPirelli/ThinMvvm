@@ -308,47 +308,38 @@ namespace ThinMvvm.Data.Tests
                 // The update result should be ignored, since its data is no longer up to date.
 
                 var taskSource = new TaskCompletionSource<int>();
-                var transformEvent = new ManualResetEvent( false );
-                var restEvent = new ManualResetEvent( false );
-                var source = new IntDataSource( _ => taskSource.Task, n =>
+                var transformSource = new TaskCompletionSource<int>();
+                var source = new IntDataSource( _ => taskSource.Task, async n =>
                 {
                     if( n == 1 )
                     {
-                        restEvent.Set();
-                        transformEvent.WaitOne();
+                        await transformSource.Task;
                     }
 
-                    return Task.FromResult( 10 * n );
+                    return 10 * n;
                 } );
 
                 // Initial fetch
                 taskSource.SetResult( 1 );
-                transformEvent.Set();
+                transformSource.SetResult( 0 );
                 await source.RefreshAsync();
 
-                // Refresh starts...
                 taskSource = new TaskCompletionSource<int>();
-                transformEvent.Reset();
+                transformSource = new TaskCompletionSource<int>();
+
+                // Refresh starts...
                 var refreshTask = source.RefreshAsync();
 
-                restEvent.Reset();
-                var restTask = Task.Run( async () =>
-                {
-                    // Refresh in progress
-                    restEvent.WaitOne();
-
-                    // Refresh finishes
-                    taskSource.SetResult( 2 );
-                    await refreshTask;
-
-                    // Update finishes
-                    transformEvent.Set();
-                } );
-
                 // Update starts...
-                await source.UpdateValueAsync();
+                var transformTask = source.UpdateValueAsync();
 
-                await restTask;
+                // Refresh finishes
+                taskSource.SetResult( 2 );
+                await refreshTask;
+
+                // Update finishes
+                transformSource.SetResult( 0 );
+                await transformTask;
 
                 Assert.Equal( 20, source.Data.Value );
             }

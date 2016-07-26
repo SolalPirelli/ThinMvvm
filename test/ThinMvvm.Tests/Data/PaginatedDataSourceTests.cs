@@ -645,47 +645,38 @@ namespace ThinMvvm.Data.Tests
                 // The update result should be ignored, since its data is no longer up to date.
 
                 var taskSource = new TaskCompletionSource<PaginatedData<int, int>>();
-                var transformEvent = new ManualResetEvent( false );
-                var restEvent = new ManualResetEvent( false );
-                var source = new IntDataSource( ( _, __ ) => taskSource.Task, ( n, _ ) =>
+                var transformSource = new TaskCompletionSource<int>();
+                var source = new IntDataSource( ( _, __ ) => taskSource.Task, async ( n, _ ) =>
                 {
                     if( n == 1 )
                     {
-                        restEvent.Set();
-                        transformEvent.WaitOne();
+                        await transformSource.Task;
                     }
 
-                    return Task.FromResult( 10 * n );
+                    return 10 * n;
                 } );
 
                 // Initial fetch
                 taskSource.SetResult( Paginated( 1 ) );
-                transformEvent.Set();
+                transformSource.SetResult( 0 );
                 await source.RefreshAsync();
 
-                // Refresh starts...
                 taskSource = new TaskCompletionSource<PaginatedData<int, int>>();
-                transformEvent.Reset();
+                transformSource = new TaskCompletionSource<int>();
+
+                // Refresh starts...
                 var refreshTask = source.RefreshAsync();
 
-                restEvent.Reset();
-                var restTask = Task.Run( async () =>
-                {
-                    // Refresh in progress
-                    restEvent.WaitOne();
-
-                    // Refresh finishes
-                    taskSource.SetResult( Paginated( 2 ) );
-                    await refreshTask;
-
-                    // Update finishes
-                    transformEvent.Set();
-                } );
-
                 // Update starts...
-                await source.UpdateValuesAsync();
+                var updateTask = source.UpdateValuesAsync();
 
-                await restTask;
+                // Refresh finishes
+                taskSource.SetResult( Paginated( 2 ) );
+                await refreshTask;
+
+                // Update finishes
+                transformSource.SetResult( 0 );
+                await updateTask;
 
                 Assert.Equal( 20, source.Data[0].Value );
             }
@@ -700,47 +691,38 @@ namespace ThinMvvm.Data.Tests
                 // The update result should be ignored, since its data is no longer up to date.
 
                 var taskSource = new TaskCompletionSource<PaginatedData<int, int>>();
-                var transformEvent = new ManualResetEvent( false );
-                var restEvent = new ManualResetEvent( false );
-                var source = new IntDataSource( ( _, __ ) => taskSource.Task, ( n, _ ) =>
+                var transformSource = new TaskCompletionSource<int>();
+                var source = new IntDataSource( ( _, __ ) => taskSource.Task, async ( n, _ ) =>
                 {
                     if( n == 1 )
                     {
-                        restEvent.Set();
-                        transformEvent.WaitOne();
+                        await transformSource.Task;
                     }
 
-                    return Task.FromResult( 10 * n );
+                    return 10 * n;
                 } );
 
                 // Initial fetch
                 taskSource.SetResult( Paginated( 1, new Optional<int>( 42 ) ) );
-                transformEvent.Set();
+                transformSource.SetResult( 0 );
                 await source.RefreshAsync();
 
-                // Fetch more starts...
                 taskSource = new TaskCompletionSource<PaginatedData<int, int>>();
-                transformEvent.Reset();
+                transformSource = new TaskCompletionSource<int>();
+
+                // Fetch more starts...
                 var refreshTask = source.FetchMoreAsync();
 
-                restEvent.Reset();
-                var restTask = Task.Run( async () =>
-                {
-                    // Fetch more in progress
-                    restEvent.WaitOne();
-
-                    // Fetch more finishes
-                    taskSource.SetResult( Paginated( 2 ) );
-                    await refreshTask;
-
-                    // Update finishes
-                    transformEvent.Set();
-                } );
-
                 // Update starts...
-                await source.UpdateValuesAsync();
+                var updateTask = source.UpdateValuesAsync();
 
-                await restTask;
+                // Fetch more finishes
+                taskSource.SetResult( Paginated( 2 ) );
+                await refreshTask;
+
+                // Update finishes
+                transformSource.SetResult( 0 );
+                await updateTask;
 
                 Assert.Equal( 2, source.Data.Count );
                 Assert.Equal( 20, source.Data[1].Value );
