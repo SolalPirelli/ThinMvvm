@@ -485,6 +485,14 @@ namespace ThinMvvm.Data.Tests
 
 
             [Fact]
+            public void CannotUpdateValueBeforeRefreshing()
+            {
+                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 0 ) ), ( n, _ ) => n );
+
+                Assert.Throws<InvalidOperationException>( () => source.UpdateValues() );
+            }
+
+            [Fact]
             public async Task SuccessfulTransform()
             {
                 var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 21 ) ), ( n, _ ) => n * 2 );
@@ -622,11 +630,114 @@ namespace ThinMvvm.Data.Tests
             }
 
             [Fact]
-            public void CannotUpdateValueBeforeRefreshing()
+            public async Task UpdateValuesDuringRefreshDoesNotUpdate()
             {
-                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 0 ) ), ( n, _ ) => n );
+                // Scenario:
+                // After the initial load, one thread starts refreshing data.
+                // While data is refreshing, another thread wants to update the value.
+                // The data refresh ends, then the value update ends.
+                // The update result should be ignored, since its data is no longer up to date.
 
-                Assert.Throws<InvalidOperationException>( () => source.UpdateValues() );
+                var taskSource = new TaskCompletionSource<PaginatedData<int, int>>();
+                var transformEvent = new ManualResetEvent( false );
+                var restEvent = new ManualResetEvent( false );
+                var source = new IntDataSource( ( _, __ ) => taskSource.Task, ( n, _ ) =>
+                {
+                    if( n == 1 )
+                    {
+                        restEvent.Set();
+                        transformEvent.WaitOne();
+                    }
+
+                    return 10 * n;
+                } );
+
+                // Initial fetch
+                taskSource.SetResult( Paginated( 1 ) );
+                transformEvent.Set();
+                await source.RefreshAsync();
+
+                // Refresh starts...
+                taskSource = new TaskCompletionSource<PaginatedData<int, int>>();
+                transformEvent.Reset();
+                var refreshTask = source.RefreshAsync();
+
+                restEvent.Reset();
+                var restTask = Task.Run( async () =>
+                {
+                    // Refresh in progress
+                    restEvent.WaitOne();
+
+                    // Refresh finishes
+                    taskSource.SetResult( Paginated( 2 ) );
+                    await refreshTask;
+
+                    // Update finishes
+                    transformEvent.Set();
+                } );
+
+                // Update starts...
+                source.UpdateValues();
+
+                await restTask;
+
+                Assert.Equal( 20, source.Data[0].Value );
+            }
+
+            [Fact]
+            public async Task UpdateValuesDuringFetchMoreDoesNotUpdate()
+            {
+                // Scenario:
+                // After the initial load, one thread starts fetching more data.
+                // While more data is fetching, another thread wants to update the value.
+                // The fetch ends, then the value update ends.
+                // The update result should be ignored, since its data is no longer up to date.
+
+                var taskSource = new TaskCompletionSource<PaginatedData<int, int>>();
+                var transformEvent = new ManualResetEvent( false );
+                var restEvent = new ManualResetEvent( false );
+                var source = new IntDataSource( ( _, __ ) => taskSource.Task, ( n, _ ) =>
+                {
+                    if( n == 1 )
+                    {
+                        restEvent.Set();
+                        transformEvent.WaitOne();
+                    }
+
+                    return 10 * n;
+                } );
+
+                // Initial fetch
+                taskSource.SetResult( Paginated( 1, new Optional<int>( 42 ) ) );
+                transformEvent.Set();
+                await source.RefreshAsync();
+
+                // Fetch more starts...
+                taskSource = new TaskCompletionSource<PaginatedData<int, int>>();
+                transformEvent.Reset();
+                var refreshTask = source.FetchMoreAsync();
+
+                restEvent.Reset();
+                var restTask = Task.Run( async () =>
+                {
+                    // Fetch more in progress
+                    restEvent.WaitOne();
+
+                    // Fetch more finishes
+                    taskSource.SetResult( Paginated( 2 ) );
+                    await refreshTask;
+
+                    // Update finishes
+                    transformEvent.Set();
+                } );
+
+                // Update starts...
+                source.UpdateValues();
+
+                await restTask;
+
+                Assert.Equal( 2, source.Data.Count );
+                Assert.Equal( 20, source.Data[1].Value );
             }
         }
 

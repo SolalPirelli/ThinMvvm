@@ -17,6 +17,8 @@ namespace ThinMvvm.Data
         private readonly object _lock;
         // Creates tokens for refresh operations.
         private readonly CancellationTokenHolder _cancellationTokens;
+        // Data version, used to avoid overwriting newer data in UpdateValues
+        private uint _version;
 
         // Cache and its associated metadata creator. May be null, but will be changed only once.
         private Cache _cache;
@@ -64,6 +66,7 @@ namespace ThinMvvm.Data
         {
             _lock = new object();
             _cancellationTokens = new CancellationTokenHolder();
+            _version = 0;
         }
 
 
@@ -93,6 +96,7 @@ namespace ThinMvvm.Data
                     _originalData = value;
                     Data = transformedValue;
                     Status = DataSourceStatus.Loaded;
+                    _version++;
                 }
             }
         }
@@ -126,11 +130,17 @@ namespace ThinMvvm.Data
                 throw new InvalidOperationException( $"{nameof( UpdateValue )} can only be called after data has been successfully loaded." );
             }
 
+            var version = _version;
+
+            var transformedData = DataOperations.Transform( _originalData, Transform );
+
             lock( _lock )
             {
-                // TODO: Use e.g. versioning to avoid having the transform in the lock.
-                Data = DataOperations.Transform( _originalData, Transform );
-                OnPropertyChanged( nameof( Status ) );
+                if( version == _version )
+                {
+                    Data = transformedData;
+                    OnPropertyChanged( nameof( Status ) );
+                }
             }
         }
 
@@ -161,7 +171,7 @@ namespace ThinMvvm.Data
             _cache = new Cache( id, dataStore );
         }
 
-        
+
         // Explicitly implemented to provide a typed value instead.
         IReadOnlyList<IDataChunk> IDataSource.Data => _rawData;
 

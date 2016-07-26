@@ -18,6 +18,8 @@ namespace ThinMvvm.Data
         private readonly object _lock;
         // Creates tokens for fetch operations.
         private readonly CancellationTokenHolder _cancellationTokens;
+        // Data version, used to avoid overwriting newer data in UpdateValues
+        private uint _version;
 
         // Cache and its associated metadata creator. May be null, but will be changed only once.
         private Cache _cache;
@@ -72,6 +74,7 @@ namespace ThinMvvm.Data
         {
             _lock = new object();
             _cancellationTokens = new CancellationTokenHolder();
+            _version = 0;
         }
 
 
@@ -133,19 +136,24 @@ namespace ThinMvvm.Data
                 throw new InvalidOperationException( $"{nameof( UpdateValues )} can only be called after data has been successfully loaded." );
             }
 
+            var version = _version;
+
+            var transformed = new List<DataChunk<TValue>>();
+            for( int n = 0; n < _originalValues.Count; n++ )
+            {
+                transformed.Add( DataOperations.Transform( _originalValues[n], items => Transform( items, n == 0 ) ) );
+            }
+
+
             lock( _lock )
             {
-                // TODO: Use e.g. versioning to avoid having the transform in the lock.
-                var transformed = new List<DataChunk<TValue>>();
-                for( int n = 0; n < _originalValues.Count; n++ )
+                if( version == _version )
                 {
-                    transformed.Add( DataOperations.Transform( _originalValues[n], items => Transform( items, n == 0 ) ) );
+                    _writeableValues = new ObservableCollection<DataChunk<TValue>>( transformed );
+                    Data = new ReadOnlyObservableCollection<DataChunk<TValue>>( _writeableValues );
+
+                    OnPropertyChanged( string.Empty );
                 }
-
-                _writeableValues = new ObservableCollection<DataChunk<TValue>>( transformed );
-                Data = new ReadOnlyObservableCollection<DataChunk<TValue>>( _writeableValues );
-
-                OnPropertyChanged( string.Empty );
             }
         }
 
@@ -217,6 +225,7 @@ namespace ThinMvvm.Data
                     }
 
                     Status = DataSourceStatus.Loaded;
+                    _version++;
                 }
             }
         }

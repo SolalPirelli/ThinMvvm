@@ -224,6 +224,14 @@ namespace ThinMvvm.Data.Tests
             }
 
             [Fact]
+            public void CannotUpdateValueBeforeRefreshing()
+            {
+                var source = new IntDataSource( _ => Task.FromResult( 0 ), n => n + 1 );
+
+                Assert.Throws<InvalidOperationException>( () => source.UpdateValue() );
+            }
+
+            [Fact]
             public async Task SuccessfulTransform()
             {
                 var source = new IntDataSource( _ => Task.FromResult( 21 ), n => n * 2 );
@@ -291,11 +299,58 @@ namespace ThinMvvm.Data.Tests
             }
 
             [Fact]
-            public void CannotUpdateValueBeforeRefreshing()
+            public async Task UpdateValuesDuringRefreshDoesNotUpdate()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 0 ), n => n + 1 );
+                // Scenario:
+                // After the initial load, one thread starts refreshing data.
+                // While data is refreshing, another thread wants to update the value.
+                // The data refresh ends, then the value update ends.
+                // The update result should be ignored, since its data is no longer up to date.
 
-                Assert.Throws<InvalidOperationException>( () => source.UpdateValue() );
+                var taskSource = new TaskCompletionSource<int>();
+                var transformEvent = new ManualResetEvent( false );
+                var restEvent = new ManualResetEvent( false );
+                var source = new IntDataSource( _ => taskSource.Task, n =>
+                {
+                    if( n == 1 )
+                    {
+                        restEvent.Set();
+                        transformEvent.WaitOne();
+                    }
+
+                    return 10 * n;
+                } );
+
+                // Initial fetch
+                taskSource.SetResult( 1 );
+                transformEvent.Set();
+                await source.RefreshAsync();
+
+                // Refresh starts...
+                taskSource = new TaskCompletionSource<int>();
+                transformEvent.Reset();
+                var refreshTask = source.RefreshAsync();
+
+                restEvent.Reset();
+                var restTask = Task.Run( async () =>
+                {
+                    // Refresh in progress
+                    restEvent.WaitOne();
+
+                    // Refresh finishes
+                    taskSource.SetResult( 2 );
+                    await refreshTask;
+
+                    // Update finishes
+                    transformEvent.Set();
+                } );
+
+                // Update starts...
+                source.UpdateValue();
+
+                await restTask;
+
+                Assert.Equal( 20, source.Data.Value );
             }
         }
 
