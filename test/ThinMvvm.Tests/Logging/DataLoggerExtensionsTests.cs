@@ -44,14 +44,14 @@ namespace ThinMvvm.Tests.Logging
                 return Task.FromResult( 0 );
             }
 
-            protected override int Transform( int value )
+            protected override Task<int> TransformAsync( int value )
             {
                 if( TransformException != null )
                 {
                     throw TransformException;
                 }
 
-                return base.Transform( value );
+                return Task.FromResult( value );
             }
         }
 

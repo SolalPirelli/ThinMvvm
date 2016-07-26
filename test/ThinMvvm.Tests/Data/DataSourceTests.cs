@@ -203,38 +203,38 @@ namespace ThinMvvm.Data.Tests
             private sealed class IntDataSource : DataSource<int>
             {
                 public Func<CancellationToken, Task<int>> Fetch;
-                public Func<int, int> Transformer;
+                public Func<int, Task<int>> Transformer;
 
 
-                public IntDataSource( Func<CancellationToken, Task<int>> fetch, Func<int, int> transformer )
+                public IntDataSource( Func<CancellationToken, Task<int>> fetch, Func<int, Task<int>> transformer )
                 {
                     Fetch = fetch;
                     Transformer = transformer;
                 }
 
 
-                public new void UpdateValue()
-                    => base.UpdateValue();
+                public new Task UpdateValueAsync()
+                    => base.UpdateValueAsync();
 
                 protected override Task<int> FetchAsync( CancellationToken cancellationToken )
                     => Fetch( cancellationToken );
 
-                protected override int Transform( int value )
+                protected override Task<int> TransformAsync( int value )
                     => Transformer( value );
             }
 
             [Fact]
-            public void CannotUpdateValueBeforeRefreshing()
+            public async Task CannotUpdateValueBeforeRefreshing()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 0 ), n => n + 1 );
+                var source = new IntDataSource( _ => Task.FromResult( 0 ), n => Task.FromResult( n + 1 ) );
 
-                Assert.Throws<InvalidOperationException>( () => source.UpdateValue() );
+                await Assert.ThrowsAsync<InvalidOperationException>( () => source.UpdateValueAsync() );
             }
 
             [Fact]
             public async Task SuccessfulTransform()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 21 ), n => n * 2 );
+                var source = new IntDataSource( _ => Task.FromResult( 21 ), n => Task.FromResult( n * 2 ) );
 
                 await source.RefreshAsync();
 
@@ -257,13 +257,13 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task SuccessfulUpdatedTransform()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 84 ), n => n );
+                var source = new IntDataSource( _ => Task.FromResult( 84 ), n => Task.FromResult( n ) );
 
                 await source.RefreshAsync();
 
-                source.Transformer = n => n / 2;
+                source.Transformer = n => Task.FromResult( n / 2 );
 
-                source.UpdateValue();
+                await source.UpdateValueAsync();
 
                 Assert.Equal( new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ), source.Data );
                 Assert.Equal( DataSourceStatus.Loaded, source.Status );
@@ -272,14 +272,14 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task FailedUpdatedTransform()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 42 ), n => n );
+                var source = new IntDataSource( _ => Task.FromResult( 42 ), n => Task.FromResult( n ) );
 
                 await source.RefreshAsync();
 
                 var ex = new MyException();
                 source.Transformer = _ => { throw ex; };
 
-                source.UpdateValue();
+                await source.UpdateValueAsync();
 
                 Assert.Equal( new DataChunk<int>( 0, DataStatus.Error, new DataErrors( null, null, ex ) ), source.Data );
                 Assert.Equal( DataSourceStatus.Loaded, source.Status );
@@ -289,11 +289,11 @@ namespace ThinMvvm.Data.Tests
             public async Task UpdateDoesNotFetchAgain()
             {
                 var count = 0;
-                var source = new IntDataSource( _ => { count++; return Task.FromResult( 42 ); }, n => n );
+                var source = new IntDataSource( _ => { count++; return Task.FromResult( 42 ); }, n => Task.FromResult( n ) );
 
                 await source.RefreshAsync();
 
-                source.UpdateValue();
+                await source.UpdateValueAsync();
 
                 Assert.Equal( 1, count );
             }
@@ -318,7 +318,7 @@ namespace ThinMvvm.Data.Tests
                         transformEvent.WaitOne();
                     }
 
-                    return 10 * n;
+                    return Task.FromResult( 10 * n );
                 } );
 
                 // Initial fetch
@@ -346,7 +346,7 @@ namespace ThinMvvm.Data.Tests
                 } );
 
                 // Update starts...
-                source.UpdateValue();
+                await source.UpdateValueAsync();
 
                 await restTask;
 
@@ -642,10 +642,10 @@ namespace ThinMvvm.Data.Tests
             private sealed class IntDataSource : DataSource<int>
             {
                 public Func<CancellationToken, Task<int>> Fetch;
-                public Func<int, int> Transformer;
+                public Func<int, Task<int>> Transformer;
 
 
-                public IntDataSource( Func<CancellationToken, Task<int>> fetch, Func<int, int> transformer, Func<CacheMetadata> metadataCreator )
+                public IntDataSource( Func<CancellationToken, Task<int>> fetch, Func<int, Task<int>> transformer, Func<CacheMetadata> metadataCreator )
                 {
                     Fetch = fetch;
                     Transformer = transformer;
@@ -653,13 +653,13 @@ namespace ThinMvvm.Data.Tests
                 }
 
 
-                public new void UpdateValue()
-                    => base.UpdateValue();
+                public new Task UpdateValueAsync()
+                    => base.UpdateValueAsync();
 
                 protected override Task<int> FetchAsync( CancellationToken cancellationToken )
                     => Fetch( cancellationToken );
 
-                protected override int Transform( int value )
+                protected override Task<int> TransformAsync( int value )
                     => Transformer( value );
             }
 
@@ -667,7 +667,7 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task FailedRefreshAfterSuccessfulOne()
             {
-                var source = new IntDataSource( _ => Task.FromResult( 21 ), n => n * 2, null );
+                var source = new IntDataSource( _ => Task.FromResult( 21 ), n => Task.FromResult( n * 2 ), null );
 
                 await source.RefreshAsync();
 

@@ -92,7 +92,7 @@ namespace ThinMvvm.Data.Infrastructure
         }
 
         /// <summary>
-        /// Transforms the specified chunk of data using the specified function.
+        /// Asynchronously transforms the specified chunk of data using the specified function.
         /// 
         /// If the chunk has no value, it will be returned as is.
         /// 
@@ -102,8 +102,8 @@ namespace ThinMvvm.Data.Infrastructure
         /// <typeparam name="T">The data type.</typeparam>
         /// <param name="chunk">The data chunk.</param>
         /// <param name="transformer">The transformation function.</param>
-        /// <returns>The transformed chunk.</returns>
-        public static DataChunk<T> Transform<T>( DataChunk<T> chunk, Func<T, T> transformer )
+        /// <returns>A task that represents the transform operation.</returns>
+        public static async Task<DataChunk<T>> TransformAsync<T>( DataChunk<T> chunk, Func<T, Task<T>> transformer )
         {
             if( chunk.Status == DataStatus.Error )
             {
@@ -112,7 +112,7 @@ namespace ThinMvvm.Data.Infrastructure
 
             try
             {
-                var transformed = transformer( chunk.Value );
+                var transformed = await transformer( chunk.Value );
                 return new DataChunk<T>( transformed, chunk.Status, chunk.Errors );
             }
             catch( Exception transformException )

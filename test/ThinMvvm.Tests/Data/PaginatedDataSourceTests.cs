@@ -462,40 +462,40 @@ namespace ThinMvvm.Data.Tests
             private sealed class IntDataSource : PaginatedDataSource<int, int>
             {
                 public Func<Optional<int>, CancellationToken, Task<PaginatedData<int, int>>> Fetch;
-                public Func<int, bool, int> Transformer;
+                public Func<int, bool, Task<int>> Transformer;
 
 
                 public IntDataSource( Func<Optional<int>, CancellationToken, Task<PaginatedData<int, int>>> fetch,
-                                      Func<int, bool, int> transformer )
+                                      Func<int, bool, Task<int>> transformer )
                 {
                     Fetch = fetch;
                     Transformer = transformer;
                 }
 
 
-                public new void UpdateValues()
-                    => base.UpdateValues();
+                public new Task UpdateValuesAsync()
+                    => base.UpdateValuesAsync();
 
                 protected override Task<PaginatedData<int, int>> FetchAsync( Optional<int> paginationToken, CancellationToken cancellationToken )
                     => Fetch( paginationToken, cancellationToken );
 
-                protected override int Transform( int data, bool isIncremental )
+                protected override Task<int> TransformAsync( int data, bool isIncremental )
                     => Transformer( data, isIncremental );
             }
 
 
             [Fact]
-            public void CannotUpdateValueBeforeRefreshing()
+            public async Task CannotUpdateValueBeforeRefreshing()
             {
-                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 0 ) ), ( n, _ ) => n );
+                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 0 ) ), ( n, _ ) => Task.FromResult( n ) );
 
-                Assert.Throws<InvalidOperationException>( () => source.UpdateValues() );
+                await Assert.ThrowsAsync<InvalidOperationException>( () => source.UpdateValuesAsync() );
             }
 
             [Fact]
             public async Task SuccessfulTransform()
             {
-                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 21 ) ), ( n, _ ) => n * 2 );
+                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 21 ) ), ( n, _ ) => Task.FromResult( n * 2 ) );
 
                 await source.RefreshAsync();
 
@@ -518,13 +518,13 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task SuccessfulUpdatedTransform()
             {
-                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 84 ) ), ( n, _ ) => n * 2 );
+                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 84 ) ), ( n, _ ) => Task.FromResult( n * 2 ) );
 
                 await source.RefreshAsync();
 
-                source.Transformer = ( n, _ ) => n / 2;
+                source.Transformer = ( n, _ ) => Task.FromResult( n / 2 );
 
-                source.UpdateValues();
+                await source.UpdateValuesAsync();
 
                 Assert.Equal( new[] { new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ) }, source.Data );
                 Assert.Equal( DataSourceStatus.Loaded, source.Status );
@@ -533,14 +533,14 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task FailedUpdatedTransform()
             {
-                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 21 ) ), ( n, _ ) => n * 2 );
+                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 21 ) ), ( n, _ ) => Task.FromResult( n * 2 ) );
 
                 await source.RefreshAsync();
 
                 var ex = new MyException();
                 source.Transformer = ( _, __ ) => { throw ex; };
 
-                source.UpdateValues();
+                await source.UpdateValuesAsync();
 
                 Assert.Equal( new[] { new DataChunk<int>( 0, DataStatus.Error, new DataErrors( null, null, ex ) ) }, source.Data );
                 Assert.Equal( DataSourceStatus.Loaded, source.Status );
@@ -550,11 +550,11 @@ namespace ThinMvvm.Data.Tests
             public async Task UpdateDoesNotFetchAgain()
             {
                 int count = 0;
-                var source = new IntDataSource( ( _, __ ) => { count++; return Task.FromResult( Paginated( 21 ) ); }, ( n, _ ) => n * 2 );
+                var source = new IntDataSource( ( _, __ ) => { count++; return Task.FromResult( Paginated( 21 ) ); }, ( n, _ ) => Task.FromResult( n * 2 ) );
 
                 await source.RefreshAsync();
 
-                source.UpdateValues();
+                await source.UpdateValuesAsync();
 
                 Assert.Equal( 1, count );
             }
@@ -562,7 +562,10 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task SuccessfulTransformOnFetchMore()
             {
-                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 1, new Optional<int>( 1 ) ) ), ( n, _ ) => n * 2 );
+                var source = new IntDataSource(
+                    ( _, __ ) => Task.FromResult( Paginated( 1, new Optional<int>( 1 ) ) ),
+                    ( n, _ ) => Task.FromResult( n * 2 )
+                );
 
                 await source.RefreshAsync();
 
@@ -579,7 +582,10 @@ namespace ThinMvvm.Data.Tests
             [Fact]
             public async Task SuccessfulUpdatedTransformOnFetchMore()
             {
-                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 1, new Optional<int>( 0 ) ) ), ( n, _ ) => n * 2 );
+                var source = new IntDataSource(
+                    ( _, __ ) => Task.FromResult( Paginated( 1, new Optional<int>( 0 ) ) ),
+                    ( n, _ ) => Task.FromResult( n * 2 )
+                );
 
                 await source.RefreshAsync();
 
@@ -587,9 +593,9 @@ namespace ThinMvvm.Data.Tests
 
                 await source.FetchMoreAsync();
 
-                source.Transformer = ( n, _ ) => n * 10;
+                source.Transformer = ( n, _ ) => Task.FromResult( n * 10 );
 
-                source.UpdateValues();
+                await source.UpdateValuesAsync();
 
                 Assert.Equal( new[] { new DataChunk<int>( 10, DataStatus.Normal, default( DataErrors ) ),
                                       new DataChunk<int>( 20, DataStatus.Normal, default( DataErrors ) ) },
@@ -603,7 +609,7 @@ namespace ThinMvvm.Data.Tests
                 bool? isIncremental = null;
                 var source = new IntDataSource(
                     ( _, __ ) => Task.FromResult( Paginated( 1 ) ),
-                    ( _, ii ) => { isIncremental = ii; return 2; }
+                    ( _, ii ) => { isIncremental = ii; return Task.FromResult( 2 ); }
                 );
 
                 await source.RefreshAsync();
@@ -616,13 +622,13 @@ namespace ThinMvvm.Data.Tests
             {
                 var source = new IntDataSource(
                     ( _, __ ) => Task.FromResult( Paginated( 1, new Optional<int>( 1 ) ) ),
-                    ( n, _ ) => n * 2
+                    ( n, _ ) => Task.FromResult( n * 2 )
                 );
 
                 await source.RefreshAsync();
 
                 bool? isIncremental = null;
-                source.Transformer = ( _, ii ) => { isIncremental = ii; return 2; };
+                source.Transformer = ( _, ii ) => { isIncremental = ii; return Task.FromResult( 2 ); };
 
                 await source.FetchMoreAsync();
 
@@ -649,7 +655,7 @@ namespace ThinMvvm.Data.Tests
                         transformEvent.WaitOne();
                     }
 
-                    return 10 * n;
+                    return Task.FromResult( 10 * n );
                 } );
 
                 // Initial fetch
@@ -677,7 +683,7 @@ namespace ThinMvvm.Data.Tests
                 } );
 
                 // Update starts...
-                source.UpdateValues();
+                await source.UpdateValuesAsync();
 
                 await restTask;
 
@@ -704,7 +710,7 @@ namespace ThinMvvm.Data.Tests
                         transformEvent.WaitOne();
                     }
 
-                    return 10 * n;
+                    return Task.FromResult( 10 * n );
                 } );
 
                 // Initial fetch
@@ -732,7 +738,7 @@ namespace ThinMvvm.Data.Tests
                 } );
 
                 // Update starts...
-                source.UpdateValues();
+                await source.UpdateValuesAsync();
 
                 await restTask;
 
@@ -756,9 +762,6 @@ namespace ThinMvvm.Data.Tests
                     EnableCache( "X", dataStore ?? new InMemoryDataStore(), metadataCreator );
                 }
 
-
-                public new void UpdateValues()
-                    => base.UpdateValues();
 
                 protected override Task<PaginatedData<int, int>> FetchAsync( Optional<int> paginationToken, CancellationToken cancellationToken )
                     => Fetch( paginationToken, cancellationToken );
@@ -1058,11 +1061,11 @@ namespace ThinMvvm.Data.Tests
             private sealed class IntDataSource : PaginatedDataSource<int, int>
             {
                 public Func<Optional<int>, CancellationToken, Task<PaginatedData<int, int>>> Fetch;
-                public Func<int, bool, int> Transformer;
+                public Func<int, bool, Task<int>> Transformer;
 
 
                 public IntDataSource( Func<Optional<int>, CancellationToken, Task<PaginatedData<int, int>>> fetch,
-                                      Func<int, bool, int> transformer,
+                                      Func<int, bool, Task<int>> transformer,
                                       Func<Optional<int>, CacheMetadata> metadataCreator )
                 {
                     Fetch = fetch;
@@ -1071,20 +1074,20 @@ namespace ThinMvvm.Data.Tests
                 }
 
 
+                public new Task UpdateValuesAsync()
+                    => base.UpdateValuesAsync();
+
                 protected override Task<PaginatedData<int, int>> FetchAsync( Optional<int> paginationToken, CancellationToken cancellationToken )
                     => Fetch( paginationToken, cancellationToken );
 
-                protected override int Transform( int data, bool isIncremental )
+                protected override Task<int> TransformAsync( int data, bool isIncremental )
                     => Transformer( data, isIncremental );
-
-                public new void UpdateValues()
-                    => base.UpdateValues();
             }
 
             [Fact]
             public async Task FailedRefreshAfterSuccessfulOne()
             {
-                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 21 ) ), ( n, _ ) => n * 2, null );
+                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 21 ) ), ( n, _ ) => Task.FromResult( n * 2 ), null );
 
                 await source.RefreshAsync();
 
@@ -1104,7 +1107,7 @@ namespace ThinMvvm.Data.Tests
                 int counter = 1;
                 var source = new IntDataSource(
                     ( _, __ ) => Task.FromResult( Paginated( counter, new Optional<int>( counter ) ) ),
-                    ( n, _ ) => n * 2,
+                    ( n, _ ) => Task.FromResult( n * 2 ),
                     pt => new CacheMetadata( pt.HasValue ? pt.Value.ToString() : "-", null )
                 );
 

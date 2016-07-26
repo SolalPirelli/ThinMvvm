@@ -111,7 +111,7 @@ namespace ThinMvvm.Data
         protected abstract Task<PaginatedData<TValue, TToken>> FetchAsync( Optional<TToken> paginationToken, CancellationToken cancellationToken );
 
         /// <summary>
-        /// Transforms the specified value, if necessary.
+        /// Asynchronously transforms the specified value, if necessary.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="isIncremental">
@@ -119,21 +119,22 @@ namespace ThinMvvm.Data
         /// If <c>true</c>, the return value of this method will be added to the source's current value.
         /// Otherwise, the return value of this method will replace the source's current value.
         /// </param>
-        /// <returns>The transformed value, which can be the existing value if no transformation was necessary.</returns>
-        protected virtual TValue Transform( TValue value, bool isIncremental )
+        /// <returns>A task that represents the transform operation..</returns>
+        protected virtual Task<TValue> TransformAsync( TValue value, bool isIncremental )
         {
-            return value;
+            return Task.FromResult( value );
         }
 
         /// <summary>
-        /// Updates the values by re-applying <see cref="Transform" />.
+        /// Asynchronously updates the values by re-applying <see cref="Transform" />.
         /// This method will not fetch any new data.
         /// </summary>
-        protected void UpdateValues()
+        /// <returns>A task that represents the update operation.</returns>
+        protected async Task UpdateValuesAsync()
         {
             if( _originalValues == null )
             {
-                throw new InvalidOperationException( $"{nameof( UpdateValues )} can only be called after data has been successfully loaded." );
+                throw new InvalidOperationException( $"{nameof( UpdateValuesAsync )} can only be called after data has been successfully loaded." );
             }
 
             var version = _version;
@@ -141,7 +142,7 @@ namespace ThinMvvm.Data
             var transformed = new List<DataChunk<TValue>>();
             for( int n = 0; n < _originalValues.Count; n++ )
             {
-                transformed.Add( DataOperations.Transform( _originalValues[n], items => Transform( items, n == 0 ) ) );
+                transformed.Add( await DataOperations.TransformAsync( _originalValues[n], items => TransformAsync( items, n == 0 ) ) );
             }
 
 
@@ -203,7 +204,7 @@ namespace ThinMvvm.Data
             }
 
             var itemsChunk = new DataChunk<TValue>( chunk.Value == null ? default( TValue ) : chunk.Value.Value, chunk.Status, chunk.Errors );
-            var transformedChunk = DataOperations.Transform( itemsChunk, items => Transform( items, isIncremental ) );
+            var transformedChunk = await DataOperations.TransformAsync( itemsChunk, items => TransformAsync( items, isIncremental ) );
 
             lock( _lock )
             {

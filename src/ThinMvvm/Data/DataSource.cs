@@ -87,7 +87,7 @@ namespace ThinMvvm.Data
                 value = await DataOperations.CacheAsync( value, _cache, _cacheMetadataCreator );
             }
 
-            var transformedValue = DataOperations.Transform( value, Transform );
+            var transformedValue = await DataOperations.TransformAsync( value, TransformAsync );
 
             lock( _lock )
             {
@@ -109,30 +109,34 @@ namespace ThinMvvm.Data
         /// <returns>A task that represents the fetch operation.</returns>
         protected abstract Task<T> FetchAsync( CancellationToken cancellationToken );
 
+        // TODO: 2 possible optimizations for transformation:
+        // 1) ValueTask since most transforms are synchronous
+        // 2) ReferenceEquals to avoid allocating another chunk in DataOperations
         /// <summary>
-        /// Transforms the specified value, if necessary.
+        /// Asynchronously transforms the specified value, if necessary.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <returns>The transformed value, which can be the existing value if no transformation was necessary.</returns>
-        protected virtual T Transform( T value )
+        /// <returns>A task that represents the transform operation.</returns>
+        protected virtual Task<T> TransformAsync( T value )
         {
-            return value;
+            return Task.FromResult( value );
         }
 
         /// <summary>
-        /// Updates the value by re-applying <see cref="Transform" />.
+        /// Asynchronously updates the value by re-applying <see cref="TransformAsync" />.
         /// This method will not fetch any new data.
         /// </summary>
-        protected void UpdateValue()
+        /// <returns>A task that represents the update operation.</returns>
+        protected async Task UpdateValueAsync()
         {
             if( _originalData == null )
             {
-                throw new InvalidOperationException( $"{nameof( UpdateValue )} can only be called after data has been successfully loaded." );
+                throw new InvalidOperationException( $"{nameof( UpdateValueAsync )} can only be called after data has been successfully loaded." );
             }
 
             var version = _version;
 
-            var transformedData = DataOperations.Transform( _originalData, Transform );
+            var transformedData = await DataOperations.TransformAsync( _originalData, TransformAsync );
 
             lock( _lock )
             {
