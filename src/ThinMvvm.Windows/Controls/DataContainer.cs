@@ -20,6 +20,7 @@ namespace ThinMvvm.Windows.Controls
     [TemplateVisualState( Name = "None" )]
     [TemplateVisualState( Name = "Loading" )]
     [TemplateVisualState( Name = "LoadingMore" )]
+    [TemplateVisualState( Name = "Transforming" )]
     [TemplateVisualState( Name = "Loaded" )]
     [TemplateVisualState( Name = "Cached" )]
     [TemplateVisualState( Name = "Error" )]
@@ -212,6 +213,10 @@ namespace ThinMvvm.Windows.Controls
 
                 case DataSourceStatus.LoadingMore:
                     VisualStateManager.GoToState( this, "LoadingMore", true );
+                    break;
+
+                case DataSourceStatus.Transforming:
+                    VisualStateManager.GoToState( this, "Transforming", true );
                     break;
 
                 case DataSourceStatus.Loaded:

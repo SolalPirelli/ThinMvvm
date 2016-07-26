@@ -55,8 +55,6 @@ namespace ThinMvvm.Data.Tests
                 var hits = new List<string>();
                 source.PropertyChanged += ( _, e ) =>
                 {
-                    hits.Add( e.PropertyName );
-
                     if( e.PropertyName == nameof( IDataSource.Status ) && hits.Count == 0 )
                     {
                         Assert.Null( source.Data );
@@ -65,6 +63,8 @@ namespace ThinMvvm.Data.Tests
 
                         Assert.Null( ( (IDataSource) source ).Data );
                     }
+
+                    hits.Add( e.PropertyName );
                 };
 
                 var task = source.RefreshAsync();
@@ -246,8 +246,6 @@ namespace ThinMvvm.Data.Tests
                 var hits = new List<string>();
                 source.PropertyChanged += ( _, e ) =>
                 {
-                    hits.Add( e.PropertyName );
-
                     if( e.PropertyName == nameof( IntDataSource.Status ) && hits.Count == 0 )
                     {
                         Assert.Equal( new[] { new DataChunk<int>( 42, DataStatus.Normal, default( DataErrors ) ) },
@@ -257,6 +255,8 @@ namespace ThinMvvm.Data.Tests
 
                         Assert.Equal( source.Data, ( (IDataSource) source ).Data );
                     }
+
+                    hits.Add( e.PropertyName );
                 };
 
                 var task = source.FetchMoreAsync();
@@ -493,6 +493,38 @@ namespace ThinMvvm.Data.Tests
             }
 
             [Fact]
+            public async Task TransformInProgress()
+            {
+                var transformSource = new TaskCompletionSource<int>();
+                var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 1 ) ), ( _, __ ) => transformSource.Task );
+
+                transformSource.SetResult( 10 );
+                await source.RefreshAsync();
+
+                transformSource = new TaskCompletionSource<int>();
+
+                var hits = new List<string>();
+                source.PropertyChanged += ( _, e ) =>
+                {
+                    if( e.PropertyName == nameof( IDataSource.Status ) && hits.Count == 0 )
+                    {
+                        Assert.Equal( DataSourceStatus.Transforming, source.Status );
+                    }
+
+                    hits.Add( e.PropertyName );
+                };
+
+                var updateTask = source.UpdateValuesAsync();
+
+                Assert.Equal( new[] { nameof( IDataSource.Status ) }, hits );
+
+                transformSource.SetResult( 0 );
+                await updateTask;
+
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
+            }
+
+            [Fact]
             public async Task SuccessfulTransform()
             {
                 var source = new IntDataSource( ( _, __ ) => Task.FromResult( Paginated( 21 ) ), ( n, _ ) => Task.FromResult( n * 2 ) );
@@ -679,6 +711,7 @@ namespace ThinMvvm.Data.Tests
                 await updateTask;
 
                 Assert.Equal( 20, source.Data[0].Value );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
 
             [Fact]
@@ -726,6 +759,7 @@ namespace ThinMvvm.Data.Tests
 
                 Assert.Equal( 2, source.Data.Count );
                 Assert.Equal( 20, source.Data[1].Value );
+                Assert.Equal( DataSourceStatus.Loaded, source.Status );
             }
         }
 

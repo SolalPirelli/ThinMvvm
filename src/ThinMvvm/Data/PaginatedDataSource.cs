@@ -137,6 +137,8 @@ namespace ThinMvvm.Data
                 throw new InvalidOperationException( $"{nameof( UpdateValuesAsync )} can only be called after data has been successfully loaded." );
             }
 
+            Status = DataSourceStatus.Transforming;
+
             var version = _version;
 
             var transformed = new List<DataChunk<TValue>>();
@@ -152,8 +154,7 @@ namespace ThinMvvm.Data
                 {
                     _writeableValues = new ObservableCollection<DataChunk<TValue>>( transformed );
                     Data = new ReadOnlyObservableCollection<DataChunk<TValue>>( _writeableValues );
-
-                    OnPropertyChanged( string.Empty );
+                    Status = DataSourceStatus.Loaded;
                 }
             }
         }

@@ -134,6 +134,8 @@ namespace ThinMvvm.Data
                 throw new InvalidOperationException( $"{nameof( UpdateValueAsync )} can only be called after data has been successfully loaded." );
             }
 
+            Status = DataSourceStatus.Transforming;
+
             var version = _version;
 
             var transformedData = await DataOperations.TransformAsync( _originalData, TransformAsync );
@@ -144,6 +146,7 @@ namespace ThinMvvm.Data
                 {
                     Data = transformedData;
                     OnPropertyChanged( nameof( Status ) );
+                    Status = DataSourceStatus.Loaded;
                 }
             }
         }

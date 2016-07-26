@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:c="using:ThinMvvm.Windows.Controls">
     <Style TargetType="c:DataContainer">
@@ -40,7 +40,7 @@
                                           Icon="Refresh"
                                           Label="{TemplateBinding RefreshText}" />
                         </Grid>
-                        
+
                         <ProgressBar x:Name="LoadingMoreIndicator"
                                      Grid.Row="1"
                                      Visibility="Collapsed"
@@ -60,17 +60,24 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup>
                                 <VisualState x:Name="None" />
-                                
+
                                 <VisualState x:Name="Loading">
                                     <VisualState.Setters>
                                         <Setter Target="LoadingIndicator.Visibility"
                                                 Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                
+
                                 <VisualState x:Name="LoadingMore">
                                     <VisualState.Setters>
                                         <Setter Target="LoadingMoreIndicator.Visibility"
+                                                Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="Transforming">
+                                    <VisualState.Setters>
+                                        <Setter Target="LoadingIndicator.Visibility"
                                                 Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
