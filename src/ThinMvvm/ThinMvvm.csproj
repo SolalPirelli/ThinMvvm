@@ -37,7 +37,48 @@
     <DocumentationFile>bin\Release\ThinMvvm.xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DocumentationFile>bin\Release\ThinMvvm.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\ARM\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
+    <OutputPath>bin\ARM\Release\</OutputPath>
+    <DocumentationFile>bin\Release\ThinMvvm.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Applications\IApplicationOperation.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Data\BasicPaginatedDataSource.cs" />
     <Compile Include="Data\CacheMetadata.cs" />
@@ -45,6 +86,7 @@
     <Compile Include="Data\DataErrors.cs" />
     <Compile Include="Data\DataSource.cs" />
     <Compile Include="Data\DataSourceStatus.cs" />
+    <Compile Include="Data\FormStatus.cs" />
     <Compile Include="Data\Infrastructure\IDataChunk.cs" />
     <Compile Include="Data\Infrastructure\IDataSource.cs" />
     <Compile Include="Data\Infrastructure\Cache.cs" />
@@ -56,6 +98,8 @@
     <Compile Include="Data\BasicDataSource.cs" />
     <Compile Include="DependencyInjection\Infrastructure\ObjectCreator.cs" />
     <Compile Include="DependencyInjection\Infrastructure\ServiceDescriptor.cs" />
+    <Compile Include="Data\Form.cs" />
+    <Compile Include="Design\DesignViewModelCreator.cs" />
     <Compile Include="IDataStore.cs" />
     <Compile Include="IKeyValueStore.cs" />
     <Compile Include="INavigationService.cs" />
@@ -73,8 +117,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DependencyInjection\ServiceCollection.cs" />
     <Compile Include="SettingsBase.cs" />
-    <Compile Include="ViewServices\Infrastructure\ViewRegistry.cs" />
-    <Compile Include="ViewServices\ViewBinder.cs" />
+    <Compile Include="Applications\Infrastructure\ViewRegistry.cs" />
+    <Compile Include="Applications\ViewBinder.cs" />
     <Compile Include="ViewModel.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

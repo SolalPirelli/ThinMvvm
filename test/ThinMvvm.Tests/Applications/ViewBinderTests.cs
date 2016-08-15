@@ -1,8 +1,8 @@
 using System;
-using ThinMvvm.ViewServices;
+using ThinMvvm.Applications;
 using Xunit;
 
-namespace ThinMvvm.Tests
+namespace ThinMvvm.Tests.Applications
 {
     public sealed class ViewBinderTests
     {

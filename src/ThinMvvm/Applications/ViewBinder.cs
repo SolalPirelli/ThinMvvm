@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ThinMvvm.Infrastructure;
-using ThinMvvm.ViewServices.Infrastructure;
+using ThinMvvm.Applications.Infrastructure;
 
-namespace ThinMvvm.ViewServices
+namespace ThinMvvm.Applications
 {
     /// <summary>
     /// Binds Views to ViewModels.

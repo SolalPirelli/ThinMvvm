@@ -45,8 +45,8 @@
         </DataTemplate>
     </Page.Resources>
 
-    <tc:DataContainer Source="{Binding News}"
-                      ValueTemplate="{StaticResource FeedTemplate}"
+    <tc:DataContainer ContentSource="{Binding News}"
+                      ContentTemplate="{StaticResource FeedTemplate}"
                       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                       Padding="8" />
 </Page>

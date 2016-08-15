@@ -3,7 +3,7 @@ using ThinMvvm.Logging;
 using ThinMvvm.Sample.NewsReader.Services;
 using ThinMvvm.Sample.NewsReader.ViewModels;
 using ThinMvvm.Sample.NewsReader.Views;
-using ThinMvvm.ViewServices;
+using ThinMvvm.Applications;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,6 +15,8 @@ namespace ThinMvvm.Sample.NewsReader
         public App()
         {
             InitializeComponent();
+
+            BackButtonEnabled = true;
         }
 
 
@@ -35,18 +37,7 @@ namespace ThinMvvm.Sample.NewsReader
 
         protected override void OnLaunched( LaunchActivatedEventArgs e )
         {
-            Initialize();
-            BackButtonEnabled = true;
-
-            if( e.PreviousExecutionState != ApplicationExecutionState.Terminated || !NavigationService.RestorePreviousState() )
-            {
-                NavigationService.NavigateTo<MainViewModel>();
-            }
-
-            if( !e.PrelaunchActivated )
-            {
-                Window.Current.Activate();
-            }
+            StartNavigation( e, ns => ns.NavigateTo<MainViewModel>() );
         }
     }
 }

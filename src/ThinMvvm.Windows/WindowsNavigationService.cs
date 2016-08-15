@@ -1,10 +1,9 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using ThinMvvm.DependencyInjection;
+using ThinMvvm.Applications.Infrastructure;
 using ThinMvvm.DependencyInjection.Infrastructure;
 using ThinMvvm.Infrastructure;
-using ThinMvvm.ViewServices.Infrastructure;
 using ThinMvvm.Windows.Infrastructure;
 using Windows.ApplicationModel;
 using Windows.UI.Core;
@@ -16,8 +15,6 @@ namespace ThinMvvm.Windows
 {
     /// <summary>
     /// <see cref="INavigationService" /> implementation for Windows.
-    /// 
-    /// Does not support asynchronous navigation.
     /// </summary>
     /// <remarks>
     /// This class assumes it has complete ownership of the provided frame,
@@ -36,7 +33,8 @@ namespace ThinMvvm.Windows
         private readonly WindowsKeyValueStore _dataStore;
         private readonly Frame _frame;
 
-        private bool _removeCurrentFromBackStack;
+        private bool _mustRemoveLastFromBackStack;
+        private bool _mustReset;
 
 
         /// <summary>
@@ -44,29 +42,23 @@ namespace ThinMvvm.Windows
         /// </summary>
         public bool CanNavigateBack
         {
-            get { return _frame.BackStackDepth > ( _removeCurrentFromBackStack ? 1 : 0 ); }
+            get { return _frame.BackStackDepth > ( _mustRemoveLastFromBackStack ? 1 : 0 ); }
         }
 
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsNavigationService" /> class
-        /// with the specified services, views, and navigation frame.
-        /// 
-        /// The navigation service will add itself to the services.
+        /// with the specified ViewModel creator, views, and navigation frame.
         /// </summary>
-        /// <param name="services">The services.</param>
+        /// <param name="viewModelCreator">The ViewModel creator.</param>
         /// <param name="views">The views.</param>
         /// <param name="frame">The navigation frame.</param>
-        public WindowsNavigationService( ServiceCollection services, ViewRegistry views, Frame frame )
+        public WindowsNavigationService( ObjectCreator viewModelCreator, ViewRegistry views, Frame frame )
         {
-            services.AddInstance<INavigationService>( this );
-
             _views = views;
-            _viewModelCreator = services.BuildCreator();
+            _viewModelCreator = viewModelCreator;
             _dataStore = new WindowsKeyValueStore( "ThinMvvm.Navigation" );
             _frame = frame;
-
-            _removeCurrentFromBackStack = false;
 
             _frame.Navigating += FrameNavigating;
             _frame.Navigated += FrameNavigated;
@@ -135,11 +127,8 @@ namespace ThinMvvm.Windows
         public void Reset()
         {
             _frame.BackStack.Clear();
-
-            if( _frame.Content != null )
-            {
-                _removeCurrentFromBackStack = true;
-            }
+            _frame.Content = null;
+            _mustReset = true;
         }
 
         /// <summary>
@@ -196,6 +185,16 @@ namespace ThinMvvm.Windows
                 return;
             }
 
+            if( _mustReset )
+            {
+                var cacheSize = _frame.CacheSize;
+                _frame.CacheSize = 0;
+                _frame.CacheSize = cacheSize;
+
+                _mustRemoveLastFromBackStack = true;
+                _mustReset = false;
+            }
+
             if( _frame.Content == null )
             {
                 // First navigation
@@ -205,7 +204,10 @@ namespace ThinMvvm.Windows
             var view = (Page) _frame.Content;
             var viewModel = (IViewModel) view.DataContext;
 
-            _removeCurrentFromBackStack = viewModel.IsTransient;
+            if( viewModel.IsTransient )
+            {
+                _mustRemoveLastFromBackStack = true;
+            }
 
             if( e.NavigationMode == NavigationMode.New )
             {
@@ -247,10 +249,15 @@ namespace ThinMvvm.Windows
                 return;
             }
 
-            if( _removeCurrentFromBackStack )
+            if( _mustRemoveLastFromBackStack )
             {
-                _frame.BackStack.RemoveAt( _frame.BackStackDepth - 1 ); // not really a "stack"...
-                _removeCurrentFromBackStack = false;
+                // In some cases (e.g. calling Reset without any previous navigation) this can be false
+                if( _frame.BackStackDepth > 0 )
+                {
+                    _frame.BackStack.RemoveAt( _frame.BackStackDepth - 1 );
+                }
+
+                _mustRemoveLastFromBackStack = false;
             }
 
             EndNavigation( e.NavigationMode, e.Parameter );
@@ -265,7 +272,17 @@ namespace ThinMvvm.Windows
             _dataStore.Set( DataKeys.NavigationState, _frame.GetNavigationState() );
 
             var view = (Page) _frame.Content;
+            if( view == null )
+            {
+                // In the odd case where for some reason the original navigation failed
+                return;
+            }
+
             var viewModel = (IViewModel) view.DataContext;
+            if( viewModel == null )
+            {
+                return;
+            }
 
             var store = GetCurrentStateStore();
             store.Clear();
@@ -297,7 +314,7 @@ namespace ThinMvvm.Windows
         private void EndNavigation( NavigationMode navigationMode, object arg )
         {
             var view = (Page) _frame.Content;
-            if( view.DataContext == null )
+            if( navigationMode == NavigationMode.New || view.DataContext == null )
             {
                 var viewModelType = _views.GetViewModelType( view.GetType() );
                 var parameterType = GetParameterType( viewModelType );

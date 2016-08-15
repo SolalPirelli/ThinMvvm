@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization.Json;
+using ThinMvvm.Data;
 using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
-namespace ThinMvvm.Data.Tests
+namespace ThinMvvm.Tests.Data
 {
     public sealed class CacheMetatadaTests
     {

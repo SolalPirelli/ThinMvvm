@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace ThinMvvm.ViewServices.Infrastructure
+namespace ThinMvvm.Applications.Infrastructure
 {
     /// <summary>
     /// Infrastructure.

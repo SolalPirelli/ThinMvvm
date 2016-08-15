@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
 using ThinMvvm.Data;
 using ThinMvvm.Data.Infrastructure;
@@ -17,48 +19,48 @@ namespace ThinMvvm.Windows.Controls
     /// <summary>
     /// Holds data from a source, and displays it along with loading and error information.
     /// </summary>
-    [TemplateVisualState( Name = "None" )]
-    [TemplateVisualState( Name = "Loading" )]
-    [TemplateVisualState( Name = "LoadingMore" )]
-    [TemplateVisualState( Name = "Transforming" )]
-    [TemplateVisualState( Name = "Loaded" )]
-    [TemplateVisualState( Name = "Cached" )]
-    [TemplateVisualState( Name = "Error" )]
+    [TemplateVisualState( GroupName = "Data", Name = "None" )]
+    [TemplateVisualState( GroupName = "Data", Name = "Loading" )]
+    [TemplateVisualState( GroupName = "Data", Name = "LoadingMore" )]
+    [TemplateVisualState( GroupName = "Data", Name = "Transforming" )]
+    [TemplateVisualState( GroupName = "Data", Name = "Loaded" )]
+    [TemplateVisualState( GroupName = "Data", Name = "Error" )]
+    [TemplateVisualState( GroupName = "Data", Name = "NetworkError" )]
+    [TemplateVisualState( GroupName = "Cache", Name = "NotCached" )]
+    [TemplateVisualState( GroupName = "Cache", Name = "Cached" )]
     [TemplatePart( Name = "ContentContainer", Type = typeof( ContentPresenter ) )]
-    public sealed class DataContainer : Control
+    public class DataContainer : Control
     {
         /// <summary>
-        /// Gets or sets the template used for values.
-        /// 
-        /// If the source has list of items as data, this will be used for individual items.
+        /// Gets or sets the template used for the content.
         /// </summary>
-        public DataTemplate ValueTemplate
+        public DataTemplate ContentTemplate
         {
-            get { return (DataTemplate) GetValue( ValueTemplateProperty ); }
-            set { SetValue( ValueTemplateProperty, value ); }
+            get { return (DataTemplate) GetValue( ContentTemplateProperty ); }
+            set { SetValue( ContentTemplateProperty, value ); }
         }
 
         /// <summary>
-        /// Describes the <see cref="ValueTemplate" /> property.
+        /// Describes the <see cref="ContentTemplate" /> property.
         /// </summary>
-        public static readonly DependencyProperty ValueTemplateProperty =
-            DependencyProperty.Register( nameof( ValueTemplate ), typeof( DataTemplate ), typeof( DataContainer ), new PropertyMetadata( null ) );
+        public static readonly DependencyProperty ContentTemplateProperty =
+            DependencyProperty.Register( nameof( ContentTemplate ), typeof( DataTemplate ), typeof( DataContainer ), new PropertyMetadata( null ) );
 
 
         /// <summary>
-        /// Gets or sets the data source.
+        /// Gets or sets the source of the content.
         /// </summary>
-        public IDataSource Source
+        public IDataSource ContentSource
         {
-            get { return (IDataSource) GetValue( SourceProperty ); }
-            set { SetValue( SourceProperty, value ); }
+            get { return (IDataSource) GetValue( ContentSourceProperty ); }
+            set { SetValue( ContentSourceProperty, value ); }
         }
 
         /// <summary>
-        /// Describes the <see cref="Source" /> property.
+        /// Describes the <see cref="ContentSource" /> property.
         /// </summary>
-        public static readonly DependencyProperty SourceProperty =
-            DependencyProperty.Register( nameof( Source ), typeof( IDataSource ), typeof( DataContainer ), new PropertyMetadata( null, ContentSourceChanged ) );
+        public static readonly DependencyProperty ContentSourceProperty =
+            DependencyProperty.Register( nameof( ContentSource ), typeof( IDataSource ), typeof( DataContainer ), new PropertyMetadata( null, ContentSourceChanged ) );
 
         private static void ContentSourceChanged( DependencyObject d, DependencyPropertyChangedEventArgs e )
         {
@@ -81,38 +83,18 @@ namespace ThinMvvm.Windows.Controls
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether the raw source value should be displayed.
+        /// Gets or sets a value indicating whether pagination should be enabled for the source.
         /// 
-        /// If this is true, the <see cref="ValueTemplate" /> property will be applied to the entire value,
-        /// even if the value is a list of items.
+        /// If this is set to true, the value will be a collection that implements <see cref="ISupportIncrementalLoading" />.
         /// </summary>
-        public bool DisplayRawValue
+        public bool EnablePagination
         {
-            get { return (bool) GetValue( DisplayRawValueProperty ); }
-            set { SetValue( DisplayRawValueProperty, value ); }
+            get { return (bool) GetValue( EnablePaginationProperty ); }
+            set { SetValue( EnablePaginationProperty, value ); }
         }
 
-        /// <summary>
-        /// Describes the <see cref="DisplayRawValue" /> property.
-        /// </summary>
-        public static readonly DependencyProperty DisplayRawValueProperty =
-            DependencyProperty.Register( nameof( DisplayRawValue ), typeof( bool ), typeof( DataContainer ), new PropertyMetadata( false ) );
-
-
-        /// <summary>
-        /// Gets or sets the style for the items container if the value is a list of items.
-        /// </summary>
-        public Style ItemsContainerStyle
-        {
-            get { return (Style) GetValue( ItemsContainerStyleProperty ); }
-            set { SetValue( ItemsContainerStyleProperty, value ); }
-        }
-
-        /// <summary>
-        /// Describes the <see cref="ItemsContainerStyle" /> property.
-        /// </summary>
-        public static readonly DependencyProperty ItemsContainerStyleProperty =
-            DependencyProperty.Register( nameof( ItemsContainerStyle ), typeof( Style ), typeof( DataContainer ), new PropertyMetadata( null ) );
+        public static readonly DependencyProperty EnablePaginationProperty =
+            DependencyProperty.Register( nameof( EnablePagination ), typeof( bool ), typeof( DataContainer ), new PropertyMetadata( false ) );
 
 
         /// <summary>
@@ -147,6 +129,16 @@ namespace ThinMvvm.Windows.Controls
             DependencyProperty.Register( nameof( ErrorText ), typeof( string ), typeof( DataContainer ), new PropertyMetadata( "Error while fetching data." ) );
 
 
+        public string NetworkErrorText
+        {
+            get { return (string) GetValue( NetworkErrorTextProperty ); }
+            set { SetValue( NetworkErrorTextProperty, value ); }
+        }
+
+        public static readonly DependencyProperty NetworkErrorTextProperty =
+            DependencyProperty.Register( nameof( NetworkErrorText ), typeof( string ), typeof( DataContainer ), new PropertyMetadata( "Network error. Check your Internet connection." ) );
+
+
         /// <summary>
         /// Gets or sets the text displayed along with <see cref="ErrorText" /> when the data is cached.
         /// </summary>
@@ -179,7 +171,7 @@ namespace ThinMvvm.Windows.Controls
         public DataContainer()
         {
             DefaultStyleKey = typeof( DataContainer );
-            RefreshCommand = new AsyncCommand( () => Source.RefreshAsync() );
+            RefreshCommand = new AsyncCommand( () => ContentSource.RefreshAsync() );
         }
 
 
@@ -195,17 +187,33 @@ namespace ThinMvvm.Windows.Controls
 
 
         /// <summary>
+        /// Indicates whether the specified error is a network error.
+        /// </summary>
+        /// <param name="error">The error.</param>
+        protected virtual bool IsNetworkError( Exception error )
+        {
+            return error is WebException
+                || error is HttpRequestException;
+        }
+
+
+        /// <summary>
         /// Updates the control according to the content source.
         /// </summary>
         private void Update()
         {
-            if( Source == null || Source.Status == DataSourceStatus.None )
+            if( _contentContainer == null )
+            {
+                return;
+            }
+
+            if( ContentSource == null || ContentSource.Status == DataSourceStatus.None )
             {
                 VisualStateManager.GoToState( this, "None", true );
                 return;
             }
 
-            switch( Source.Status )
+            switch( ContentSource.Status )
             {
                 case DataSourceStatus.Loading:
                     VisualStateManager.GoToState( this, "Loading", true );
@@ -220,86 +228,84 @@ namespace ThinMvvm.Windows.Controls
                     break;
 
                 case DataSourceStatus.Loaded:
-                    if( Source.Data.Count > 1 )
+                    if( ContentSource.Data.Count > 1 )
                     {
-                        if( Source.Data.All( d => d.Status == DataStatus.Normal ) )
+                        // Just an update, use existing data containwr
+
+                        if( ContentSource.Data.All( d => d.Status == DataStatus.Normal ) )
                         {
                             VisualStateManager.GoToState( this, "Loaded", true );
                         }
-                        else if( Source.Data[Source.Data.Count - 1].Status == DataStatus.Error )
-                        {
-                            // Other chunks can't have errors otherwise a new chunk couldn't have been loaded
-                            VisualStateManager.GoToState( this, "Error", true );
-                        }
                         else
                         {
-                            VisualStateManager.GoToState( this, "Cached", true );
+                            // Other chunks can't have errors otherwise a new chunk couldn't have been loaded
+                            GoToChunkStates( ContentSource.Data[ContentSource.Data.Count - 1] );
                         }
                     }
                     else
                     {
                         // Initial data, reset stuff
-                        var data = Source.Data[0];
 
-                        switch( data.Status )
+                        var data = ContentSource.Data[0];
+
+                        GoToChunkStates( data );
+
+                        if( data.Status == DataStatus.Error )
                         {
-                            case DataStatus.Normal:
-                                VisualStateManager.GoToState( this, "Loaded", true );
-                                break;
-
-                            case DataStatus.Cached:
-                                VisualStateManager.GoToState( this, "Cached", true );
-                                break;
-
-                            case DataStatus.Error:
-                                VisualStateManager.GoToState( this, "Error", true );
-                                return; // Nothing to display.
+                            _contentContainer.Content = null;
+                            return;
                         }
 
-                        // Show a normal content presenter for non-paginated data that is not a list,
-                        // and an listview for everything else. (unless overridden)
-                        if( DisplayRawValue || ( !Source.CanFetchMore && !( data.Value is IList ) ) )
+                        if( EnablePagination )
                         {
-                            _contentContainer.Content = data.Value;
-                            _contentContainer.SetBinding( ContentPresenter.ContentTemplateProperty, new Binding
-                            {
-                                Source = this,
-                                Path = new PropertyPath( nameof( ValueTemplate ) )
-                            } );
+                            _contentContainer.Content = new PaginatedCollectionFromSource( ContentSource );
                         }
                         else
                         {
-                            var container = new ListView();
-                            container.SetBinding( ListView.StyleProperty, new Binding
-                            {
-                                Source = this,
-                                Path = new PropertyPath( nameof( ItemsContainerStyle ) )
-                            } );
-                            container.SetBinding( ListView.ItemTemplateProperty, new Binding
-                            {
-                                Source = this,
-                                Path = new PropertyPath( nameof( ValueTemplate ) )
-                            } );
-
-                            if( Source.CanFetchMore )
-                            {
-                                container.ItemsSource = new PaginatedCollectionFromSource( Source );
-                            }
-                            else
-                            {
-                                container.ItemsSource = data.Value;
-                            }
-
-                            _contentContainer.Content = container;
+                            _contentContainer.Content = data.Value;
                         }
                     }
+
                     break;
             }
         }
 
+        /// <summary>
+        /// Go to the appropriate visual states for the specified data chunk.
+        /// </summary>
+        private void GoToChunkStates( IDataChunk chunk )
+        {
+            if( chunk.Status == DataStatus.Normal )
+            {
+                VisualStateManager.GoToState( this, "Loaded", true );
+                VisualStateManager.GoToState( this, "NotCached", true );
+                return;
+            }
+
+            if( chunk.Errors.Fetch != null
+             && chunk.Errors.Cache == null
+             && chunk.Errors.Process == null
+             && IsNetworkError( chunk.Errors.Fetch ) )
+            {
+                VisualStateManager.GoToState( this, "NetworkError", true );
+            }
+            else
+            {
+                VisualStateManager.GoToState( this, "Error", true );
+            }
+
+            if( chunk.Status == DataStatus.Cached )
+            {
+                VisualStateManager.GoToState( this, "Cached", true );
+            }
+            else
+            {
+                VisualStateManager.GoToState( this, "NotCached", true );
+            }
+        }
 
         /// <summary>
-        /// Called whenever <see cref="Source" /> has a property change.
+        /// Called whenever <see cref="ContentSource" /> has a property change.
         /// </summary>
         private void ContentSourcePropertyChanged( object sender, PropertyChangedEventArgs e )
         {

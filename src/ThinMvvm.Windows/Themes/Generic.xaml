@@ -23,10 +23,17 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{TemplateBinding ErrorText}"
+                                <TextBlock x:Name="ErrorText"
+                                           Visibility="Collapsed"
+                                           Text="{TemplateBinding ErrorText}"
                                            Style="{StaticResource TitleTextBlockStyle}" />
 
-                                <TextBlock x:Name="CacheIndicator"
+                                <TextBlock x:Name="NetworkErrorText"
+                                           Visibility="Collapsed"
+                                           Text="{TemplateBinding NetworkErrorText}"
+                                           Style="{StaticResource TitleTextBlockStyle}" />
+
+                                <TextBlock x:Name="CacheText"
                                            Visibility="Collapsed"
                                            Text="{TemplateBinding CacheText}"
                                            Style="{StaticResource TitleTextBlockStyle}" />
@@ -48,6 +55,7 @@
 
                         <ContentPresenter x:Name="ContentContainer"
                                           Grid.Row="2"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
                                           Margin="{TemplateBinding Padding}" />
 
                         <Border x:Name="LoadingIndicator"
@@ -58,7 +66,7 @@
                         </Border>
 
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup>
+                            <VisualStateGroup x:Name="Data">
                                 <VisualState x:Name="None" />
 
                                 <VisualState x:Name="Loading">
@@ -84,18 +92,30 @@
 
                                 <VisualState x:Name="Loaded" />
 
-                                <VisualState x:Name="LoadedUsingCache">
+                                <VisualState x:Name="Error">
                                     <VisualState.Setters>
                                         <Setter Target="ErrorIndicator.Visibility"
                                                 Value="Visible" />
-                                        <Setter Target="CacheIndicator.Visibility"
+                                        <Setter Target="ErrorText.Visibility"
                                                 Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
 
-                                <VisualState x:Name="Error">
+                                <VisualState x:Name="NetworkError">
                                     <VisualState.Setters>
                                         <Setter Target="ErrorIndicator.Visibility"
+                                                Value="Visible" />
+                                        <Setter Target="NetworkErrorText.Visibility"
+                                                Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="Cache">
+                                <VisualState x:Name="NotCached" />
+
+                                <VisualState x:Name="Cached">
+                                    <VisualState.Setters>
+                                        <Setter Target="CacheText.Visibility"
                                                 Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>

@@ -6,7 +6,7 @@ using ThinMvvm.DependencyInjection.Infrastructure;
 using ThinMvvm.Infrastructure;
 using ThinMvvm.Logging;
 
-namespace ThinMvvm.Windows
+namespace ThinMvvm.Design
 {
     /// <summary>
     /// Base class for design view model collections.
@@ -103,6 +103,12 @@ namespace ThinMvvm.Windows
 
             // The .NET Native compiler throws an internal error if this method is implemented explicitly.
             // TODO: Once that bug is fixed, implement this method explicitly.
+            /// <summary>
+            /// Do not call this method.
+            /// </summary>
+            /// <typeparam name="TViewModel">Ignored.</typeparam>
+            /// <typeparam name="TArg">Ignored.</typeparam>
+            /// <param name="arg">Ignored.</param>
             public void NavigateTo<TViewModel, TArg>( TArg arg )
                 where TViewModel : ViewModel<TArg>
             {
@@ -165,13 +171,13 @@ namespace ThinMvvm.Windows
             Task IDataStore.StoreAsync<T>( string id, T data )
             {
                 _store.Set( id, data );
-                return Task.CompletedTask;
+                return Task.FromResult( 0 );
             }
 
             Task IDataStore.DeleteAsync( string id )
             {
                 _store.Delete( id );
-                return Task.CompletedTask;
+                return Task.FromResult( 0 );
             }
         }
 

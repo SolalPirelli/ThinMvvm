@@ -54,6 +54,7 @@
     <Compile Include="Data\DataChunkTests.cs" />
     <Compile Include="Data\DataErrorsTests.cs" />
     <Compile Include="Data\DataSourceTests.cs" />
+    <Compile Include="Data\FormTests.cs" />
     <Compile Include="Data\Infrastructure\CacheTests.cs" />
     <Compile Include="Data\PaginatedDataSourceTests.cs" />
     <Compile Include="Data\PaginatedDataTests.cs" />
@@ -69,7 +70,7 @@
     <Compile Include="TestInfrastructure\InMemoryDataStore.cs" />
     <Compile Include="TestInfrastructure\InMemoryKeyValueStore.cs" />
     <Compile Include="TestInfrastructure\MyException.cs" />
-    <Compile Include="ViewServices\ViewBinderTests.cs" />
+    <Compile Include="Applications\ViewBinderTests.cs" />
     <Compile Include="ViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -11,6 +11,24 @@ namespace ThinMvvm.Data.Infrastructure
     public static class DataOperations
     {
         /// <summary>
+        /// Asynchronously executes the specified asynchronous action.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns>A task that represents the execute operation.</returns>
+        public static async Task<Exception> DoAsync( Func<Task> action )
+        {
+            try
+            {
+                await action();
+                return null;
+            }
+            catch( Exception ex )
+            {
+                return ex;
+            }
+        }
+
+        /// <summary>
         /// Asynchronously fetches a chunk of data using the specified function.
         /// 
         /// If the fetching function throws, the exception will be set as the <see cref="DataErrors.Fetch" /> 

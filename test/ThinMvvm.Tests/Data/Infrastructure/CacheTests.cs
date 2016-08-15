@@ -1,9 +1,10 @@
 using System;
 using System.Threading.Tasks;
+using ThinMvvm.Data.Infrastructure;
 using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
-namespace ThinMvvm.Data.Infrastructure.Tests
+namespace ThinMvvm.Tests.Data.Infrastructure
 {
     public sealed class CacheTests
     {

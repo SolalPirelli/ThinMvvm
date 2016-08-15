@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ThinMvvm.Data;
 using ThinMvvm.Data.Infrastructure;
 using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
-namespace ThinMvvm.Data.Tests
+namespace ThinMvvm.Tests.Data
 {
     public sealed class PaginatedDataSourceTests
     {

@@ -73,11 +73,12 @@ namespace ThinMvvm.Data.Infrastructure
         /// <summary>
         /// Asynchronously stores the specified value with the specified ID and optional expiration date.
         /// </summary>
+        /// <typeparam name="T">The value type.</typeparam>
         /// <param name="id">The ID.</param>
         /// <param name="value">The value.</param>
         /// <param name="expirationDate">The value's expiration date, if any.</param>
         /// <returns>A task that represents the store operation.</returns>
-        public async Task StoreAsync( string id, object value, DateTimeOffset? expirationDate )
+        public async Task StoreAsync<T>( string id, T value, DateTimeOffset? expirationDate )
         {
             if( id == null )
             {

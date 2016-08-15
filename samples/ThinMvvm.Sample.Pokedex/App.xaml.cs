@@ -1,5 +1,5 @@
 using ThinMvvm.DependencyInjection;
-using ThinMvvm.ViewServices;
+using ThinMvvm.Applications;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -29,14 +29,7 @@ namespace ThinMvvm.Sample.Pokedex
 
         protected override void OnLaunched( LaunchActivatedEventArgs e )
         {
-            Initialize();
-
-            NavigationService.NavigateTo<MainViewModel>();
-
-            if( !e.PrelaunchActivated )
-            {
-                Window.Current.Activate();
-            }
+            Run( e, ns => ns.NavigateTo<MainViewModel>() );
         }
     }
 }

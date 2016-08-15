@@ -179,7 +179,7 @@ namespace ThinMvvm.Windows
             }
 
             var stringValue = isString ? (string) (object) value : WindowsSerializer.Serialize( value );
-            if( stringValue.Length <= MaxSize )
+            if( stringValue == null || stringValue.Length <= MaxSize )
             {
                 return stringValue;
             }

@@ -109,9 +109,6 @@ namespace ThinMvvm.Data
         /// <returns>A task that represents the fetch operation.</returns>
         protected abstract Task<T> FetchAsync( CancellationToken cancellationToken );
 
-        // TODO: 2 possible optimizations for transformation:
-        // 1) ValueTask since most transforms are synchronous
-        // 2) ReferenceEquals to avoid allocating another chunk in DataOperations
         /// <summary>
         /// Asynchronously transforms the specified value, if necessary.
         /// </summary>

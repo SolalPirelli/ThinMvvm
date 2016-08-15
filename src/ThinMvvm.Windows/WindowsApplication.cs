@@ -1,9 +1,12 @@
 using System;
 using ThinMvvm.DependencyInjection;
-using ThinMvvm.ViewServices;
+using ThinMvvm.DependencyInjection.Infrastructure;
+using ThinMvvm.Applications;
+using Windows.ApplicationModel.Activation;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using ThinMvvm.Windows.Infrastructure;
 
 namespace ThinMvvm.Windows
 {
@@ -12,30 +15,14 @@ namespace ThinMvvm.Windows
     /// </summary>
     public abstract class WindowsApplication : Application
     {
+        private Type _skeletonType;
+        private Type _skeletonModelType;
+        private ObjectCreator _objectCreator;
         private WindowsNavigationService _navigationService;
         private bool _backButtonEnabled;
 
 
-        /// <summary>
-        /// Gets the navigation service.
-        /// This property is only available after calling <see cref="Initialize" />.
-        /// </summary>
-        protected WindowsNavigationService NavigationService
-        {
-            get
-            {
-                if( _navigationService == null )
-                {
-                    throw new InvalidOperationException(
-                        $"The {nameof( NavigationService )} was not initialized."
-                      + Environment.NewLine
-                      + $"Call {nameof( Initialize )} first."
-                    );
-                }
-
-                return _navigationService;
-            }
-        }
+        protected WindowsSplashScreenOptions SplashScreenOptions { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the software back button is enabled.
@@ -46,8 +33,17 @@ namespace ThinMvvm.Windows
             set
             {
                 _backButtonEnabled = value;
-                UpdateBackButtonVisibility();
+                if( _navigationService != null )
+                {
+                    UpdateBackButtonVisibility();
+                }
             }
+        }
+
+
+        protected WindowsApplication()
+        {
+            SplashScreenOptions = new WindowsSplashScreenOptions();
         }
 
 
@@ -70,49 +66,109 @@ namespace ThinMvvm.Windows
         /// <param name="binder">The view binder.</param>
         protected abstract void ConfigureViews( ViewBinder<Page> binder );
 
+
         /// <summary>
-        /// Configures the application skeleton.
+        /// Advanced.
+        /// Configures the type of the application skeleton.
         /// 
         /// The default implementation uses a full-size frame with a cache size of 5.
         /// </summary>
-        /// <returns>The application skeleton.</returns>
-        protected virtual WindowsApplicationSkeleton ConfigureSkeleton()
+        /// <typeparam name="T">The type of the application skeleton.</typeparam>
+        protected void ConfigureSkeleton<TViewModel, TView>()
+            where TViewModel : ViewModel<NoParameter>
+            where TView : FrameworkElement, IWindowsApplicationSkeleton
         {
-            var frame = new Frame
+            if( _navigationService != null )
             {
-                CacheSize = 5
-            };
+                throw new InvalidOperationException( $"The skeleton must be configured before running the app." );
+            }
 
-            return new WindowsApplicationSkeleton( frame, frame );
+            if( _skeletonType != null )
+            {
+                throw new InvalidOperationException( "The skeleton has already been configured." );
+            }
+
+            _skeletonModelType = typeof( TViewModel );
+            _skeletonType = typeof( TView );
+        }
+
+        /// <summary>
+        /// Runs the application.
+        /// </summary>
+        protected void StartNavigation( IActivatedEventArgs args, Action<INavigationService> navigation )
+        {
+            Window.Current.Content = Initialize();
+
+            if(args.PreviousExecutionState != ApplicationExecutionState.Terminated||_navigationService.RestorePreviousState())
+            {
+                navigation( _navigationService );
+            }
+
+            if( ShouldActivate( args ) )
+            {
+                Window.Current.Activate();
+            }
+        }
+
+        protected void StartOperation<TOperation>( IActivatedEventArgs activationArgs )
+            where TOperation : IApplicationOperation
+        {
+            var root = Initialize();
+            var operation = (IApplicationOperation) _objectCreator.Create( typeof( TOperation ), null );
+            var shouldActivate = ShouldActivate( activationArgs );
+
+            var splashScreen = new WindowsSplashScreen( _navigationService, operation, activationArgs.SplashScreen, root, shouldActivate, SplashScreenOptions );
+
+            splashScreen.Show();
         }
 
 
-        /// <summary>
-        /// Initializes the application.
-        /// 
-        /// This method may be called multiple times, but will ignore any call after the first.
-        /// </summary>
-        protected void Initialize()
+        private UIElement Initialize()
         {
-            if( Window.Current.Content != null )
-            {
-                return;
-            }
-
+            // The navigation service obviously needs to be available to ViewModels,
+            // but it also needs the object creator, which causes a kind of circular dependency;
+            // this cycle is broken by using lazy initialization
             var services = new ServiceCollection();
+            services.AddSingleton<INavigationService>( () => _navigationService );
             ConfigureServices( services );
+            _objectCreator = services.BuildCreator();
 
             var viewBinder = new ViewBinder<Page>();
             ConfigureViews( viewBinder );
+            var viewRegistry = viewBinder.BuildRegistry();
 
-            var skeleton = ConfigureSkeleton();
+            FrameworkElement skeleton = null;
+            Frame navigationFrame;
+            if( _skeletonType == null )
+            {
+                navigationFrame = new Frame
+                {
+                    CacheSize = 5
+                };
+            }
+            else
+            {
+                skeleton = (FrameworkElement) Activator.CreateInstance( _skeletonType );
+                navigationFrame = ( (IWindowsApplicationSkeleton) skeleton ).NavigationFrame;
+            }
 
-            _navigationService = new WindowsNavigationService( services, viewBinder.BuildRegistry(), skeleton.NavigationFrame );
+            _navigationService = new WindowsNavigationService( _objectCreator, viewRegistry, navigationFrame );
             _navigationService.Navigated += NavigationServiceNavigated;
 
-            Window.Current.Content = skeleton.Root;
+            if( skeleton == null )
+            {
+                return navigationFrame;
+            }
+
+            skeleton.DataContext = _objectCreator.Create( _skeletonModelType, null );
+            return skeleton;
         }
 
+        private bool ShouldActivate( IActivatedEventArgs activationArgs )
+        {
+            var prelaunchArgs = activationArgs as IPrelaunchActivatedEventArgs;
+            return prelaunchArgs != null && !prelaunchArgs.PrelaunchActivated;
+        }
 
         /// <summary>
         /// Called when the navigation services has navigated to a ViewModel.
@@ -127,7 +183,7 @@ namespace ThinMvvm.Windows
         /// </summary>
         private void UpdateBackButtonVisibility()
         {
-            if( BackButtonEnabled && NavigationService.CanNavigateBack )
+            if( BackButtonEnabled && _navigationService.CanNavigateBack )
             {
                 SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = AppViewBackButtonVisibility.Visible;
             }

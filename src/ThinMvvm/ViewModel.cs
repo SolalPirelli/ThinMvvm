@@ -8,7 +8,7 @@ namespace ThinMvvm
     /// Base class for ViewModels.
     /// </summary>
     /// <typeparam name="TParameter">The navigation parameter type, or <see cref="NoParameter" /> if the ViewModel is parameterless.</typeparam>
-    public abstract class ViewModel<TParameter> : IViewModel
+    public abstract class ViewModel<TParameter> : ObservableObject, IViewModel
     {
         // COMPAT: Task.CompletedTask does not exist in Profile111
         private static readonly Task CompletedTask = Task.FromResult( 0 );
@@ -99,16 +99,16 @@ namespace ThinMvvm
             remove { _navigatedFrom -= value; }
         }
 
-        Task IViewModel.OnNavigatedToAsync( NavigationKind navigationKind )
+        async Task IViewModel.OnNavigatedToAsync( NavigationKind navigationKind )
         {
+            await OnNavigatedToAsync( navigationKind );
             _navigatedTo?.Invoke( this, EventArgs.Empty );
-            return OnNavigatedToAsync( navigationKind );
         }
 
-        Task IViewModel.OnNavigatedFromAsync( NavigationKind navigationKind )
+        async Task IViewModel.OnNavigatedFromAsync( NavigationKind navigationKind )
         {
+            await OnNavigatedFromAsync( navigationKind );
             _navigatedFrom?.Invoke( this, EventArgs.Empty );
-            return OnNavigatedFromAsync( navigationKind );
         }
     }
 }

@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using ThinMvvm.DependencyInjection;
+using ThinMvvm.Design;
 using ThinMvvm.Sample.NewsReader.Models;
 using ThinMvvm.Sample.NewsReader.Services;
-using ThinMvvm.Windows;
 
 namespace ThinMvvm.Sample.NewsReader.ViewModels.Design
 {

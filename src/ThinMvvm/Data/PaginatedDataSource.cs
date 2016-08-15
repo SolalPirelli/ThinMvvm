@@ -126,7 +126,7 @@ namespace ThinMvvm.Data
         }
 
         /// <summary>
-        /// Asynchronously updates the values by re-applying <see cref="Transform" />.
+        /// Asynchronously updates the values by re-applying <see cref="TransformAsync" />.
         /// This method will not fetch any new data.
         /// </summary>
         /// <returns>A task that represents the update operation.</returns>

@@ -2,7 +2,7 @@ using System;
 using ThinMvvm.DependencyInjection;
 using Xunit;
 
-namespace ThinMvvm.Tests
+namespace ThinMvvm.Tests.DependencyInjection
 {
     public sealed class ServiceTests
     {
@@ -516,7 +516,7 @@ namespace ThinMvvm.Tests
 
                 Assert.NotSame( created, created2 );
             }
-            
+
 
             private interface IDependency2 { }
 

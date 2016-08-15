@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ThinMvvm.Data;
 using ThinMvvm.Data.Infrastructure;
 using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
-namespace ThinMvvm.Data.Tests
+namespace ThinMvvm.Tests.Data
 {
     public sealed class DataSourceTests
     {
@@ -58,7 +59,6 @@ namespace ThinMvvm.Data.Tests
                     }
 
                     hits.Add( e.PropertyName );
-
                 };
 
                 var task = source.RefreshAsync();
