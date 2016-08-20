@@ -34,7 +34,6 @@ namespace ThinMvvm.Windows
         private readonly Frame _frame;
 
         private bool _mustRemoveLastFromBackStack;
-        private bool _mustReset;
 
 
         /// <summary>
@@ -128,11 +127,11 @@ namespace ThinMvvm.Windows
         {
             _frame.BackStack.Clear();
             _frame.Content = null;
-            _mustReset = true;
+            _mustRemoveLastFromBackStack = true;
         }
 
         /// <summary>
-        /// Restores navigation state from a previous app execution.
+        /// Restores navigation state from a previous execution.
         /// </summary>
         /// <returns>True if state had to be restored and the restore was successful; false otherwise.</returns>
         public bool RestorePreviousState()
@@ -185,16 +184,6 @@ namespace ThinMvvm.Windows
                 return;
             }
 
-            if( _mustReset )
-            {
-                var cacheSize = _frame.CacheSize;
-                _frame.CacheSize = 0;
-                _frame.CacheSize = cacheSize;
-
-                _mustRemoveLastFromBackStack = true;
-                _mustReset = false;
-            }
-
             if( _frame.Content == null )
             {
                 // First navigation
@@ -219,8 +208,6 @@ namespace ThinMvvm.Windows
             }
             else
             {
-                // No need to save anything.
-                // However, to make sure old data doesn't take up disk space forever, delete the current saved data.
                 GetCurrentStateStore().Delete();
 
                 viewModel.OnNavigatedFromAsync( NavigationKind.Backwards );
@@ -237,7 +224,7 @@ namespace ThinMvvm.Windows
             {
                 _restoredParameter = _frame.BackStack[_frame.BackStackDepth - 1].Parameter;
                 // Frame ignores navigations that occur during the Navigated event.
-                // This is not pretty!
+                // HACK: This is not pretty!
                 await Task.Yield();
                 NavigateBack();
                 return;
@@ -274,7 +261,6 @@ namespace ThinMvvm.Windows
             var view = (Page) _frame.Content;
             if( view == null )
             {
-                // In the odd case where for some reason the original navigation failed
                 return;
             }
 
@@ -314,6 +300,7 @@ namespace ThinMvvm.Windows
         private void EndNavigation( NavigationMode navigationMode, object arg )
         {
             var view = (Page) _frame.Content;
+            IViewModel viewModel;
             if( navigationMode == NavigationMode.New || view.DataContext == null )
             {
                 var viewModelType = _views.GetViewModelType( view.GetType() );
@@ -324,10 +311,15 @@ namespace ThinMvvm.Windows
                     arg = WindowsSerializer.Deserialize( parameterType, (string) arg );
                 }
 
-                view.DataContext = _viewModelCreator.Create( viewModelType, arg );
+                viewModel = (IViewModel) _viewModelCreator.Create( viewModelType );
+                viewModel.Initialize( arg );
+                view.DataContext = viewModel;
+            }
+            else
+            {
+                viewModel = (IViewModel) view.DataContext;
             }
 
-            var viewModel = (IViewModel) view.DataContext;
             var store = GetCurrentStateStore();
             if( store.Exists() )
             {

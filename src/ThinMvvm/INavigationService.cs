@@ -46,5 +46,11 @@ namespace ThinMvvm
         /// Resets the service, as if no navigation had occurred.
         /// </summary>
         void Reset();
+
+        /// <summary>
+        /// Restores navigation state from a previous execution.
+        /// </summary>
+        /// <returns>True if state had to be restored and the restore was successful; false otherwise.</returns>
+        bool RestorePreviousState();
     }
 }

@@ -19,7 +19,7 @@ namespace ThinMvvm.Tests
         }
 
         [Fact]
-        public void LoadAndSaveDoNothing()
+        public void LoadAndSaveStateDoNothing()
         {
             var vm = new MyViewModel();
             var store = new InMemoryKeyValueStore();
@@ -28,6 +28,22 @@ namespace ThinMvvm.Tests
             vm.LoadState( store );
         }
 
+        [Fact]
+        public void InitializeDoesNothing()
+        {
+            var vm = new MyViewModel();
+
+            vm.Initialize( null );
+        }
+
+        [Fact]
+        public void ExplicitlyImplementedInitializeDoesNothing()
+        {
+            var vm = new MyViewModel();
+
+            ( (IViewModel) vm ).Initialize( null );
+        }
+        
         [Fact]
         public async Task OnNavigatedToAsyncFiresNavigatedToEvent()
         {
@@ -82,6 +98,28 @@ namespace ThinMvvm.Tests
             await vm.OnNavigatedFromAsync( NavigationKind.Forwards );
 
             Assert.Equal( 0, count );
+        }
+
+
+        private sealed class IntViewModel : ViewModel<int>
+        {
+            public int Argument { get; private set; }
+
+
+            public override void Initialize( int arg )
+            {
+                Argument = arg;
+            }
+        }
+
+        [Fact]
+        public void ExplicitlyImplementedInitializeCallsInitialize()
+        {
+            var vm = new IntViewModel();
+
+            ( (IViewModel) vm ).Initialize( 42 );
+
+            Assert.Equal( 42, vm.Argument );
         }
 
 

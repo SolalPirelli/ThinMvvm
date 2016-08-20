@@ -1,8 +1,8 @@
-<t:WindowsApplication x:Class="ThinMvvm.Sample.NewsReader.App" 
-                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                      xmlns:t="using:ThinMvvm.Windows"
-                      xmlns:d="using:ThinMvvm.Sample.NewsReader.ViewModels.Design">
-    <t:WindowsApplication.Resources>
+<t:WindowsApp x:Class="ThinMvvm.Sample.NewsReader.App" 
+                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                       xmlns:t="using:ThinMvvm.Windows"
+                       xmlns:d="using:ThinMvvm.Sample.NewsReader.ViewModels.Design">
+    <t:WindowsApp.Resources>
         <d:DesignViewModels x:Key="DesignViewModels" />
-    </t:WindowsApplication.Resources>
-</t:WindowsApplication>
+    </t:WindowsApp.Resources>
+</t:WindowsApp>

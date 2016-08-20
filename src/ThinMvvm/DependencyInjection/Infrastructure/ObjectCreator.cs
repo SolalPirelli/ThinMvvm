@@ -29,7 +29,7 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
         /// <summary>
         /// Creates an instance of the specified type, optionally with the specified argument.
         /// </summary>
-        public object Create( Type type, object arg )
+        public object Create( Type type )
         {
             if( type == null )
             {
@@ -47,15 +47,7 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
             var arguments = new object[parameters.Length];
             for( int n = 0; n < parameters.Length; n++ )
             {
-                if( arg != null && parameters[n].ParameterType == arg.GetType() )
-                {
-                    arguments[n] = arg;
-                    arg = null;
-                }
-                else
-                {
-                    arguments[n] = GetService( parameters[n].ParameterType );
-                }
+                arguments[n] = GetService( parameters[n].ParameterType );
             }
 
             return constructor.Invoke( arguments );
@@ -83,7 +75,7 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
 
                 if( service.Factory == null )
                 {
-                    instance = Create( service.ImplementationType, null );
+                    instance = Create( service.ImplementationType );
                 }
                 else
                 {
@@ -103,7 +95,7 @@ namespace ThinMvvm.DependencyInjection.Infrastructure
                 return instance;
             }
 
-            return Create( type, null );
+            return Create( type );
         }
 
 

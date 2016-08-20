@@ -192,7 +192,7 @@ namespace ThinMvvm.Tests.DependencyInjection
             {
                 var creator = new ServiceCollection().BuildCreator();
 
-                Assert.Throws<ArgumentNullException>( () => creator.Create( null, 0 ) );
+                Assert.Throws<ArgumentNullException>( () => creator.Create( null ) );
             }
 
             [Fact]
@@ -202,7 +202,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddSingleton<IDependency>( () => null );
                 var creator = collection.BuildCreator();
 
-                Assert.Throws<InvalidOperationException>( () => creator.Create( typeof( DependentService ), null ) );
+                Assert.Throws<InvalidOperationException>( () => creator.Create( typeof( DependentService ) ) );
             }
 
             [Fact]
@@ -212,7 +212,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddTransient<IDependency>( () => null );
                 var creator = collection.BuildCreator();
 
-                Assert.Throws<InvalidOperationException>( () => creator.Create( typeof( DependentService ), null ) );
+                Assert.Throws<InvalidOperationException>( () => creator.Create( typeof( DependentService ) ) );
             }
 
             [Fact]
@@ -220,7 +220,7 @@ namespace ThinMvvm.Tests.DependencyInjection
             {
                 var creator = new ServiceCollection().BuildCreator();
 
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( DependentService ), null ) );
+                Assert.Throws<ArgumentException>( () => creator.Create( typeof( DependentService ) ) );
             }
 
 
@@ -234,7 +234,7 @@ namespace ThinMvvm.Tests.DependencyInjection
             {
                 var creator = new ServiceCollection().BuildCreator();
 
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( NoPublicConstructorService ), null ) );
+                Assert.Throws<ArgumentException>( () => creator.Create( typeof( NoPublicConstructorService ) ) );
             }
 
 
@@ -258,76 +258,7 @@ namespace ThinMvvm.Tests.DependencyInjection
             {
                 var creator = new ServiceCollection().BuildCreator();
 
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( MultipleConstructorsService ), null ) );
-            }
-
-
-            private sealed class IntService
-            {
-                public readonly int Value;
-
-                public IntService( int value )
-                {
-                    Value = value;
-                }
-            }
-
-            [Fact]
-            public void CannotCreateWhenArgumentIsNotProvided()
-            {
-                var creator = new ServiceCollection().BuildCreator();
-
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( IntService ), null ) );
-            }
-
-            [Fact]
-            public void CannotCreateWhenArgumentIsOfWrongType()
-            {
-                var creator = new ServiceCollection().BuildCreator();
-
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( IntService ), "hello" ) );
-            }
-
-
-            private sealed class TwoArgumentsService
-            {
-                public readonly int Value1;
-                public readonly int Value2;
-
-                public TwoArgumentsService( int value1, int value2 )
-                {
-                    Value1 = value1;
-                    Value2 = value2;
-                }
-            }
-
-            [Fact]
-            public void CannotCreateWhenTooManyArgumentsAreExpected()
-            {
-                var creator = new ServiceCollection().BuildCreator();
-
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( TwoArgumentsService ), 42 ) );
-            }
-
-
-            private sealed class RecursivelyDependentService
-            {
-                public readonly IntService Service;
-                public readonly int Value;
-
-                public RecursivelyDependentService( IntService service, int value )
-                {
-                    Service = service;
-                    Value = value;
-                }
-            }
-
-            [Fact]
-            public void CannotCreateRecursiveDependencyRequiringArgument()
-            {
-                var creator = new ServiceCollection().BuildCreator();
-
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( RecursivelyDependentService ), 42 ) );
+                Assert.Throws<ArgumentException>( () => creator.Create( typeof( MultipleConstructorsService ) ) );
             }
         }
 
@@ -364,7 +295,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 var instance = new Dependency();
                 collection.AddInstance<IDependency>( instance );
 
-                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ) );
 
                 Assert.Same( instance, created.Dependency );
             }
@@ -375,7 +306,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 var collection = new ServiceCollection();
                 collection.AddSingleton<IDependency, Dependency>();
 
-                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ) );
 
                 Assert.IsType( typeof( Dependency ), created.Dependency );
             }
@@ -387,8 +318,8 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddSingleton<IDependency, Dependency>();
                 var creator = collection.BuildCreator();
 
-                var created = (DependentService) creator.Create( typeof( DependentService ), null );
-                var created2 = (DependentService) creator.Create( typeof( DependentService ), null );
+                var created = (DependentService) creator.Create( typeof( DependentService ) );
+                var created2 = (DependentService) creator.Create( typeof( DependentService ) );
 
                 Assert.Same( created.Dependency, created2.Dependency );
             }
@@ -399,7 +330,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 var collection = new ServiceCollection();
                 collection.AddSingleton<Dependency>();
 
-                var created = (ConcreteDependentService) collection.BuildCreator().Create( typeof( ConcreteDependentService ), null );
+                var created = (ConcreteDependentService) collection.BuildCreator().Create( typeof( ConcreteDependentService ) );
 
                 Assert.IsType( typeof( Dependency ), created.Dependency );
             }
@@ -411,8 +342,8 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddSingleton<Dependency>();
                 var creator = collection.BuildCreator();
 
-                var created = (ConcreteDependentService) creator.Create( typeof( ConcreteDependentService ), null );
-                var created2 = (ConcreteDependentService) creator.Create( typeof( ConcreteDependentService ), null );
+                var created = (ConcreteDependentService) creator.Create( typeof( ConcreteDependentService ) );
+                var created2 = (ConcreteDependentService) creator.Create( typeof( ConcreteDependentService ) );
 
                 Assert.Same( created.Dependency, created2.Dependency );
             }
@@ -424,7 +355,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 var instance = new Dependency();
                 collection.AddSingleton<IDependency>( () => instance );
 
-                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ) );
 
                 Assert.Same( instance, created.Dependency );
             }
@@ -437,8 +368,8 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddSingleton<IDependency>( () => { count++; return new Dependency(); } );
                 var creator = collection.BuildCreator();
 
-                creator.Create( typeof( DependentService ), null );
-                creator.Create( typeof( DependentService ), null );
+                creator.Create( typeof( DependentService ) );
+                creator.Create( typeof( DependentService ) );
 
                 Assert.Equal( 1, count );
             }
@@ -449,7 +380,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 var collection = new ServiceCollection();
                 collection.AddTransient<IDependency, Dependency>();
 
-                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ) );
 
                 Assert.IsType( typeof( Dependency ), created.Dependency );
             }
@@ -461,8 +392,8 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddTransient<IDependency, Dependency>();
                 var creator = collection.BuildCreator();
 
-                var created = (DependentService) creator.Create( typeof( DependentService ), null );
-                var created2 = (DependentService) creator.Create( typeof( DependentService ), null );
+                var created = (DependentService) creator.Create( typeof( DependentService ) );
+                var created2 = (DependentService) creator.Create( typeof( DependentService ) );
 
                 Assert.NotSame( created.Dependency, created2.Dependency );
             }
@@ -474,7 +405,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 var instance = new Dependency();
                 collection.AddTransient<IDependency>( () => instance );
 
-                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ), null );
+                var created = (DependentService) collection.BuildCreator().Create( typeof( DependentService ) );
 
                 Assert.Same( instance, created.Dependency );
             }
@@ -487,8 +418,8 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddTransient<IDependency>( () => { count++; return new Dependency(); } );
                 var creator = collection.BuildCreator();
 
-                creator.Create( typeof( DependentService ), null );
-                creator.Create( typeof( DependentService ), null );
+                creator.Create( typeof( DependentService ) );
+                creator.Create( typeof( DependentService ) );
 
                 Assert.Equal( 2, count );
             }
@@ -501,7 +432,7 @@ namespace ThinMvvm.Tests.DependencyInjection
             {
                 var creator = new ServiceCollection().BuildCreator();
 
-                var created = creator.Create( typeof( IndependentService ), null );
+                var created = creator.Create( typeof( IndependentService ) );
 
                 Assert.IsType( typeof( IndependentService ), created );
             }
@@ -511,8 +442,8 @@ namespace ThinMvvm.Tests.DependencyInjection
             {
                 var creator = new ServiceCollection().BuildCreator();
 
-                var created = creator.Create( typeof( IndependentService ), null );
-                var created2 = creator.Create( typeof( IndependentService ), null );
+                var created = creator.Create( typeof( IndependentService ) );
+                var created2 = creator.Create( typeof( IndependentService ) );
 
                 Assert.NotSame( created, created2 );
             }
@@ -541,7 +472,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddTransient<IDependency, Dependency>();
                 collection.AddTransient<IDependency2, Dependency2>();
 
-                var created = (DependentService12) collection.BuildCreator().Create( typeof( DependentService12 ), null );
+                var created = (DependentService12) collection.BuildCreator().Create( typeof( DependentService12 ) );
 
                 Assert.IsType( typeof( Dependency ), created.Dependency1 );
                 Assert.IsType( typeof( Dependency2 ), created.Dependency2 );
@@ -567,57 +498,11 @@ namespace ThinMvvm.Tests.DependencyInjection
                 collection.AddTransient<IDependency, Dependency>();
                 collection.AddTransient<IDependency2, Dependency2>();
 
-                var created = (RecursivelyDependentService) collection.BuildCreator().Create( typeof( RecursivelyDependentService ), null );
+                var created = (RecursivelyDependentService) collection.BuildCreator().Create( typeof( RecursivelyDependentService ) );
 
                 Assert.NotNull( created.Dependency );
                 Assert.NotNull( created.Service );
                 Assert.NotNull( created.Service.Dependency1 );
-            }
-
-
-            private sealed class IntService
-            {
-                public readonly int Value;
-
-                public IntService( int value )
-                {
-                    Value = value;
-                }
-            }
-
-            [Fact]
-            public void CreateInstantiatesIndependentServiceWithArgument()
-            {
-                var creator = new ServiceCollection().BuildCreator();
-
-                var service = (IntService) creator.Create( typeof( IntService ), 42 );
-
-                Assert.Equal( 42, service.Value );
-            }
-
-
-            private sealed class IntDependentService
-            {
-                public readonly IDependency Dependency;
-                public readonly int Value;
-
-                public IntDependentService( IDependency dependency, int value )
-                {
-                    Dependency = dependency;
-                    Value = value;
-                }
-            }
-
-            [Fact]
-            public void CreateInstantiatesDependentServiceWithArgument()
-            {
-                var collection = new ServiceCollection();
-                collection.AddTransient<IDependency, Dependency>();
-
-                var service = (IntDependentService) collection.BuildCreator().Create( typeof( IntDependentService ), 100 );
-
-                Assert.IsType( typeof( Dependency ), service.Dependency );
-                Assert.Equal( 100, service.Value );
             }
 
 
@@ -628,7 +513,7 @@ namespace ThinMvvm.Tests.DependencyInjection
                 var creator = collection.BuildCreator();
                 collection.AddTransient<IDependency, Dependency>();
 
-                Assert.Throws<ArgumentException>( () => creator.Create( typeof( IDependency ), null ) );
+                Assert.Throws<ArgumentException>( () => creator.Create( typeof( IDependency ) ) );
             }
         }
     }

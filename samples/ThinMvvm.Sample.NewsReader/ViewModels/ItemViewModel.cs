@@ -5,14 +5,18 @@ namespace ThinMvvm.Sample.NewsReader.ViewModels
 {
     public sealed class ItemViewModel : ViewModel<NewsItem>
     {
-        public NewsItem Item { get; }
+        public NewsItem Item { get; private set; }
 
 
-        public ItemViewModel( ILogger logger, NewsItem item )
+        public ItemViewModel( ILogger logger )
         {
-            Item = item;
-
             logger.Register( this, "Item" );
+        }
+
+
+        public override void Initialize( NewsItem arg )
+        {
+            Item = arg;
         }
     }
 }

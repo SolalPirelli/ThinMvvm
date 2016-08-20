@@ -1,7 +1,6 @@
-using ThinMvvm.DependencyInjection;
 using ThinMvvm.Applications;
-using Windows.ApplicationModel.Activation;
-using Windows.UI.Xaml;
+using ThinMvvm.DependencyInjection;
+using ThinMvvm.Windows;
 using Windows.UI.Xaml.Controls;
 
 namespace ThinMvvm.Sample.Pokedex
@@ -12,7 +11,6 @@ namespace ThinMvvm.Sample.Pokedex
         {
             InitializeComponent();
         }
-
 
         protected override void ConfigureServices( ServiceCollection services )
         {
@@ -26,10 +24,12 @@ namespace ThinMvvm.Sample.Pokedex
             binder.Bind<MainViewModel, MainView>();
         }
 
-
-        protected override void OnLaunched( LaunchActivatedEventArgs e )
+        protected override WindowsAppConfig ConfigureApp( WindowsAppConfigBuilder builder )
         {
-            Run( e, ns => ns.NavigateTo<MainViewModel>() );
+            return builder
+                .UseSoftwareBackButton()
+                .UseSplashScreen()
+                .WithStartupNavigation<MainViewModel>();
         }
     }
 }

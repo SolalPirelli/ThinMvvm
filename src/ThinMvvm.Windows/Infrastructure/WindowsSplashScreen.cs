@@ -1,11 +1,9 @@
 ﻿using System;
-using ThinMvvm.Applications;
-using ThinMvvm.Infrastructure;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.Graphics.Display;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -14,44 +12,27 @@ using Windows.UI.Xaml.Media.Imaging;
 namespace ThinMvvm.Windows.Infrastructure
 {
     /// <summary>
-    /// Extended splash screen for a Windows application, wrapping an operation.
+    /// Extended splash screen for a Windows application.
     /// </summary>
-    public sealed class WindowsSplashScreen
+    public sealed class WindowsSplashScreen : Grid
     {
-        private readonly INavigationService _navigationService;
-        private readonly IApplicationOperation _operation;
         private readonly SplashScreen _appSplashScreen;
-        private readonly UIElement _appRoot;
-        private readonly bool _shouldActivate;
-
         private readonly Image _image;
         private readonly ProgressRing _progressRing;
-        private readonly Grid _rootGrid;
 
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsSplashScreen" /> class with the specified parameters.
         /// </summary>
-        /// <param name="navigationService">The navigation service.</param>
-        /// <param name="operation">The operation to execute.</param>
         /// <param name="appSplashScreen">The app's splash screen.</param>
-        /// <param name="appRoot">The app's root element.</param>
-        /// <param name="shouldActivate">A value indicating whether the app should be activated.</param>
-        /// <param name="options">The graphical options.</param>
-        public WindowsSplashScreen( INavigationService navigationService, IApplicationOperation operation,
-                                    SplashScreen appSplashScreen, UIElement appRoot, bool shouldActivate,
-                                    WindowsSplashScreenOptions options )
+        /// <param name="graphics">The splash screen graphics.</param>
+        public WindowsSplashScreen( SplashScreen appSplashScreen, WindowsSplashScreenGraphics graphics )
         {
-            _navigationService = navigationService;
-            _operation = operation;
             _appSplashScreen = appSplashScreen;
-            _appRoot = appRoot;
-            _shouldActivate = shouldActivate;
-
 
             _image = new Image
             {
-                Source = new BitmapImage( options.LogoUri ),
+                Source = new BitmapImage( graphics.LogoUri ),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top
             };
@@ -59,59 +40,47 @@ namespace ThinMvvm.Windows.Infrastructure
             _progressRing = new ProgressRing
             {
                 IsActive = true,
-                Foreground = new SolidColorBrush( options.ForegroundColor ),
+                Foreground = new SolidColorBrush( graphics.ForegroundColor ),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Bottom
             };
 
-            _rootGrid = new Grid
-            {
-                Background = new SolidColorBrush( options.BackgroundColor ),
-                Children =
-                {
-                    _image,
-                    _progressRing
-                }
-            };
+            Background = new SolidColorBrush( graphics.BackgroundColor );
+            Children.Add( _image );
+            Children.Add( _progressRing );
         }
 
 
         /// <summary>
-        /// Displays the splash screen and executes the operation.
+        /// Displays the splash screen.
         /// </summary>
-        public void Show()
+        /// <param name="shouldActivate">A value indicating whether the window should be activated once the splash screen is displayed.</param>
+        public void Show( bool shouldActivate )
         {
-            Window.Current.Content = _rootGrid;
-            
-            // Use the same handler for success and failure, all we want is to do stuff once it has loaded
-            // (and the lack of a splash screen should be obvious to any developer who puts the wrong URI)
-            _image.ImageFailed += OnImageLoaded;
-            _image.ImageOpened += OnImageLoaded;
+            RoutedEventHandler imageLoaded = async ( _, __ ) =>
+            {
+                PositionControls();
+
+                if( shouldActivate )
+                {
+                    // HACK: Without this, the normal splash screen will disappear before the controls
+                    //       have been positioned, causing minor flickering.
+                    await Task.Delay( TimeSpan.FromMilliseconds( 5 ) );
+
+                    Window.Current.Activate();
+                }
+            };
+
+            // Ignore failure, the lack of a splash screen should be obvious to any developer who puts the wrong URI
+            _image.ImageFailed += new ExceptionRoutedEventHandler( imageLoaded );
+            _image.ImageOpened += imageLoaded;
 
             // Positions are absolute since we must mimick the provided app SplashScreen, thus they need updating
             Window.Current.SizeChanged += ( _, __ ) => PositionControls();
-        }
-        
-        /// <summary>
-        /// Called when the logo image is loaded.
-        /// </summary>
-        private void OnImageLoaded( object sender, RoutedEventArgs e )
-        {
-            PositionControls();
 
-            // Initialize on a background operation (but in the UI thread for navigations!)
-            // For some reason, this cannot be done in Initialize, otherwise the app splash screen is never dismissed.
-            var ignored = Window.Current.Dispatcher.RunAsync( CoreDispatcherPriority.Normal, async () =>
-            {
-                await _operation.ExecuteAsync( _navigationService );
-                Window.Current.Content = _appRoot;
-            } );
-
-            if( _shouldActivate )
-            {
-                Window.Current.Activate();
-            }
+            Window.Current.Content = this;
         }
+
 
         /// <summary>
         /// Positions the screen's controls.

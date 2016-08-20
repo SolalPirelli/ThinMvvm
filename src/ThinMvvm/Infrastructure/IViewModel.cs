@@ -29,6 +29,16 @@ namespace ThinMvvm.Infrastructure
         event EventHandler<EventArgs> NavigatedFrom;
 
         /// <summary>
+        /// Initializes the ViewModel with the specified navigation argument.
+        /// </summary>
+        /// <param name="arg">The navigation argument.</param>
+        /// <remarks>
+        /// Navigation service implementations must call this method before navigating
+        /// to a ViewModel for the first time.
+        /// </remarks>
+        void Initialize( object arg );
+
+        /// <summary>
         /// Responds to a navigation to the ViewModel.
         /// </summary>
         /// <param name="navigationKind">The navigation kind.</param>

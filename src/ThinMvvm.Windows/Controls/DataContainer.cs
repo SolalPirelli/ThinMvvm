@@ -32,22 +32,6 @@ namespace ThinMvvm.Windows.Controls
     public class DataContainer : Control
     {
         /// <summary>
-        /// Gets or sets the template used for the content.
-        /// </summary>
-        public DataTemplate ContentTemplate
-        {
-            get { return (DataTemplate) GetValue( ContentTemplateProperty ); }
-            set { SetValue( ContentTemplateProperty, value ); }
-        }
-
-        /// <summary>
-        /// Describes the <see cref="ContentTemplate" /> property.
-        /// </summary>
-        public static readonly DependencyProperty ContentTemplateProperty =
-            DependencyProperty.Register( nameof( ContentTemplate ), typeof( DataTemplate ), typeof( DataContainer ), new PropertyMetadata( null ) );
-
-
-        /// <summary>
         /// Gets or sets the source of the content.
         /// </summary>
         public IDataSource ContentSource
@@ -80,6 +64,22 @@ namespace ThinMvvm.Windows.Controls
 
             container.Update();
         }
+
+
+        /// <summary>
+        /// Gets or sets the template used for the content.
+        /// </summary>
+        public DataTemplate ContentTemplate
+        {
+            get { return (DataTemplate) GetValue( ContentTemplateProperty ); }
+            set { SetValue( ContentTemplateProperty, value ); }
+        }
+
+        /// <summary>
+        /// Describes the <see cref="ContentTemplate" /> property.
+        /// </summary>
+        public static readonly DependencyProperty ContentTemplateProperty =
+            DependencyProperty.Register( nameof( ContentTemplate ), typeof( DataTemplate ), typeof( DataContainer ), new PropertyMetadata( null ) );
 
 
         /// <summary>

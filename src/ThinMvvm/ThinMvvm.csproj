@@ -78,7 +78,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Applications\IApplicationOperation.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Data\BasicPaginatedDataSource.cs" />
     <Compile Include="Data\CacheMetadata.cs" />
@@ -106,6 +105,7 @@
     <Compile Include="Infrastructure\CommandBase.cs" />
     <Compile Include="Infrastructure\CommandExecutedEventArgs.cs" />
     <Compile Include="Infrastructure\IViewModel.cs" />
+    <Compile Include="KeyValueStoreExtensions.cs" />
     <Compile Include="Logging\DataLoggerExtensions.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\NavigationLoggerExtensions.cs" />

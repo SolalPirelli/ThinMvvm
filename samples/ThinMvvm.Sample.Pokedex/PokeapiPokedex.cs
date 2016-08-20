@@ -17,25 +17,28 @@ namespace ThinMvvm.Sample.Pokedex
 
         public async Task<PokemonInfo> GetPokemonAsync( int index )
         {
-            var json = await _client.GetStringAsync( $"http://pokeapi.co/api/v2/pokemon-species/{index}/" );
-            var root = JObject.Parse( json );
+            var pokeJson = await _client.GetStringAsync( $"http://pokeapi.co/api/v2/pokemon-species/{index}/" );
+            var pokeRoot = JObject.Parse( pokeJson );
 
-            return new PokemonInfo(
-                name: root.Value<JArray>( "names" )
-                          .First( IsInEnglish )
-                          .Value<string>( "name" ),
-                pictureUrl: $"http://pokeapi.co/media/sprites/pokemon/{index}.png",
-                description: root.Value<JArray>( "flavor_text_entries" )
-                                 .First( IsInEnglish )
-                                 .Value<string>( "flavor_text" )
-                                 .Replace( '\n', ' ' )
-            );
+            var name = pokeRoot["names"].First( IsInEnglish )
+                                        .Value<string>( "name" );
+
+            var description = pokeRoot["flavor_text_entries"].First( IsInEnglish )
+                                                             .Value<string>( "flavor_text" )
+                                                             .Replace( '\n', ' ' );
+
+            var formJson = await _client.GetStringAsync( $"http://pokeapi.co/api/v2/pokemon-form/{index}/" );
+            var formRoot = JObject.Parse( formJson );
+
+            var pictureUrl = formRoot["sprites"].Value<string>( "front_default" );
+
+            return new PokemonInfo( name, pictureUrl, description );
         }
 
 
         private static bool IsInEnglish( JToken token )
         {
-            return token["language"]["name"].Value<string>() == "en";
+            return token["language"].Value<string>( "name" ) == "en";
         }
     }
 }

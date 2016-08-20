@@ -33,6 +33,15 @@ namespace ThinMvvm
         }
 
         /// <summary>
+        /// Initializes the ViewModel with the specified navigation argument.
+        /// </summary>
+        /// <param name="arg">The navigation argument.</param>
+        public virtual void Initialize( TParameter arg )
+        {
+            // Nothing.
+        }
+
+        /// <summary>
         /// Responds to a navigation to the ViewModel.
         /// </summary>
         /// <param name="navigationKind">The navigation kind.</param>
@@ -82,6 +91,12 @@ namespace ThinMvvm
         // This is both a protected virtual property and explicitly implemented,
         // so that only subclasses can see it normally, e.g. not a designer when suggesting properties to bind.
         bool IViewModel.IsTransient => IsTransient;
+
+        // No argument checking, it'd need reflection to tell whether 'null' is a valid value or not (null is SomeRefType == false)
+        void IViewModel.Initialize( object arg )
+        {
+            Initialize( (TParameter) arg );
+        }
 
         // The events and associated machinery are explicitly implemented,
         // both to guarantee that they will always be fired properly,

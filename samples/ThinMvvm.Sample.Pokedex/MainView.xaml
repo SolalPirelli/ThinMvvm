@@ -2,7 +2,8 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:tc="using:ThinMvvm.Windows.Controls"
-      xmlns:my="using:ThinMvvm.Sample.Pokedex">
+      xmlns:my="using:ThinMvvm.Sample.Pokedex"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Page.Resources>
         <DataTemplate x:Key="PokemonTemplate"
                       x:DataType="my:PokemonInfo">
@@ -27,9 +28,14 @@
                            RelativePanel.Below="Title" />
             </RelativePanel>
         </DataTemplate>
+
+        <DataTemplate x:Key="PokemonsTemplate">
+            <ListView ItemsSource="{Binding}"
+                      ItemTemplate="{StaticResource PokemonTemplate}" />
+        </DataTemplate>
     </Page.Resources>
 
     <tc:DataContainer ContentSource="{Binding Pokemons}"
-                      ContentTemplate="{StaticResource PokemonTemplate}"
-                      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+                      ContentTemplate="{StaticResource PokemonsTemplate}"
+                      EnablePagination="True" />
 </Page>

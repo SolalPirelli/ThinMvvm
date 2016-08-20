@@ -71,7 +71,8 @@ namespace ThinMvvm.Design
         private TViewModel Create<TViewModel>( object arg )
             where TViewModel : IViewModel
         {
-            var value = (TViewModel) _creator.Create( typeof( TViewModel ), arg );
+            var value = (TViewModel) _creator.Create( typeof( TViewModel ) );
+            value.Initialize( arg );
             value.OnNavigatedToAsync( NavigationKind.Forwards ).Wait();
             return value;
         }
@@ -123,6 +124,11 @@ namespace ThinMvvm.Design
             void INavigationService.Reset()
             {
                 // Nothing.
+            }
+
+            bool INavigationService.RestorePreviousState()
+            {
+                return false;
             }
         }
 
