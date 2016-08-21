@@ -41,6 +41,11 @@ namespace ThinMvvm.Tests
             {
                 throw new NotSupportedException( "This method should not be called." );
             }
+
+            public void Clear()
+            {
+                throw new NotSupportedException( "This method should not be called." );
+            }
         }
 
         private sealed class ObservableInt : ObservableObject

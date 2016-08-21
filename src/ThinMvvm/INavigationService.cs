@@ -5,6 +5,26 @@ namespace ThinMvvm
     /// <summary>
     /// Provides navigation between ViewModels.
     /// </summary>
+    /// <remarks>
+    /// When navigating to a ViewModel, the following operations must be performed in order:
+    /// 1. Create the ViewModel, if required
+    /// 2. Initialize the ViewModel, if step 1 was performed
+    /// 3. Restore the ViewModel's state, if navigating backwards
+    /// 4. Use the ViewModel in the application, such as by assigning it as a data context
+    /// 5. Trigger the Navigated event on the navigation service
+    /// 6. Call OnNavigatedTo on the ViewModel
+    /// 
+    /// Step 4 of the above process is important since UI frameworks which support binding usually
+    /// require properties to trigger events when they changed; however, many ViewModels have
+    /// properties that are set once during initialization. 
+    /// It would be bad UX to force users to implement change notifications on such properties.
+    /// 
+    /// 
+    /// When navigating away from a ViewModel, the following operations must be performed in order:
+    /// 1. Save the ViewModel's state, if navigating forwards
+    /// 2. Call OnNavigatedFrom on the ViewModel
+    /// 3. Perform navigation to the target ViewModel
+    /// </remarks>
     public interface INavigationService
     {
         /// <summary>
@@ -15,10 +35,6 @@ namespace ThinMvvm
         /// <summary>
         /// Occurs after navigating to a ViewModel.
         /// </summary>
-        /// <remarks>
-        /// This event is guaranteed to be fired after <see cref="ViewModel{TParameter}.OnNavigatedFromAsync" /> in the source ViewModel,
-        /// and before <see cref="ViewModel{TParameter}.OnNavigatedToAsync" /> in the target ViewModel.
-        /// </remarks>
         event EventHandler<NavigatedEventArgs> Navigated;
 
         /// <summary>

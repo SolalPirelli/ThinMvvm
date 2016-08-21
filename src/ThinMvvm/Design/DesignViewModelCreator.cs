@@ -32,7 +32,7 @@ namespace ThinMvvm.Design
         /// 
         /// The default implementation registers a design-time dummy for all ThinMvvm services.
         /// </summary>
-        /// <param name="services"></param>
+        /// <param name="services">The services collection.</param>
         protected virtual void ConfigureServices( ServiceCollection services )
         {
             services.AddSingleton<INavigationService, FakeNavigationService>();
@@ -158,6 +158,11 @@ namespace ThinMvvm.Design
             void IKeyValueStore.Delete( string key )
             {
                 _values.Remove( key );
+            }
+
+            void IKeyValueStore.Clear()
+            {
+                _values.Clear();
             }
         }
 

@@ -41,11 +41,13 @@ namespace ThinMvvm.Windows.Infrastructure
         }
 
 
-        // This method MUST be generic for .NET Native to generate the serialization code automatically.
         /// <summary>
         /// Serializes the specified value into a string.
         /// </summary>
         /// <typeparam name="T">The value type.</typeparam>
+        /// <remarks>
+        /// This method must be generic for .NET Native to generate the serialization code automatically.
+        /// </remarks>
         public static string Serialize<T>( T value )
         {
             using( var stream = new MemoryStream() )

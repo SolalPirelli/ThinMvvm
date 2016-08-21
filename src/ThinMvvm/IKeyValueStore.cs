@@ -26,5 +26,10 @@ namespace ThinMvvm
         /// </summary>
         /// <param name="key">The key.</param>
         void Delete( string key );
+        
+        /// <summary>
+        /// Deletes all keys and values.
+        /// </summary>
+        void Clear();
     }
 }

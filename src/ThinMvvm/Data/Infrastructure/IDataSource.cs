@@ -10,8 +10,8 @@ namespace ThinMvvm.Data.Infrastructure
     /// Represents a source of data.
     /// </summary>
     /// <remarks>
-    /// Implementations MUST fire <see cref="INotifyPropertyChanged.PropertyChanged" /> when any property changes,
-    /// and MUST fire the change event for <see cref="Status" /> after any group of properties change,
+    /// Implementations must fire <see cref="INotifyPropertyChanged.PropertyChanged" /> when any property changes,
+    /// and must fire the change event for <see cref="Status" /> after any group of properties change,
     /// to make it easy for clients to listen to any change in the source.
     /// </remarks>
     [EditorBrowsable( EditorBrowsableState.Advanced )]

@@ -32,10 +32,6 @@ namespace ThinMvvm.Infrastructure
         /// Initializes the ViewModel with the specified navigation argument.
         /// </summary>
         /// <param name="arg">The navigation argument.</param>
-        /// <remarks>
-        /// Navigation service implementations must call this method before navigating
-        /// to a ViewModel for the first time.
-        /// </remarks>
         void Initialize( object arg );
 
         /// <summary>
@@ -43,10 +39,6 @@ namespace ThinMvvm.Infrastructure
         /// </summary>
         /// <param name="navigationKind">The navigation kind.</param>
         /// <returns>A task that represents the navigation response operation.</returns>
-        /// <remarks>
-        /// Navigation service implementations may call this without awaiting its result,
-        /// if the platform does not support asynchronous navigation.
-        /// </remarks>
         Task OnNavigatedToAsync( NavigationKind navigationKind );
 
         /// <summary>
@@ -54,28 +46,18 @@ namespace ThinMvvm.Infrastructure
         /// </summary>
         /// <param name="navigationKind">The navigation kind.</param>
         /// <returns>A task that represents the navigation response operation.</returns>
-        /// <remarks>
-        /// Navigation service implementations may call this without awaiting its result,
-        /// if the platform does not support asynchronous navigation.
-        /// </remarks>
         Task OnNavigatedFromAsync( NavigationKind navigationKind );
 
         /// <summary>
         /// Loads the ViewModel's state from the specified store.
         /// </summary>
         /// <param name="store">The store containing values set by this ViewModel last time <see cref="SaveState" /> was called.</param>
-        /// <remarks>
-        /// This method, if it is called, is guaranteed to be called before <see cref="OnNavigatedToAsync" /> when navigating to the ViewModel.
-        /// </remarks>
         void LoadState( IKeyValueStore store );
 
         /// <summary>
         /// Saves the ViewModel's state to the specified store.
         /// </summary>
         /// <param name="store">The store, specific to this ViewModel.</param>
-        /// <remarks>
-        /// This method, if it is called, is guaranteed to be called before <see cref="OnNavigatedFromAsync" /> when navigating away from the ViewModel.
-        /// </remarks>
         void SaveState( IKeyValueStore store );
     }
 }

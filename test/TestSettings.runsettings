@@ -23,8 +23,9 @@
             </Sources>
             <Functions>
               <Exclude>
-                <!-- Exclude the Delete method on SettingsBase's cache, since it is never used. -->
+                <!-- Exclude the Delete and Clear methods on SettingsBase's cache, since they are never used. -->
                 <Function>ThinMvvm\.SettingsBase\.StoreCache\.Delete\(string\)</Function>
+                <Function>ThinMvvm\.SettingsBase\.StoreCache\.Clear\(\)</Function>
               </Exclude>
             </Functions>
           </CodeCoverage>

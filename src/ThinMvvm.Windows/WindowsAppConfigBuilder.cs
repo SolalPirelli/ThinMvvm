@@ -10,6 +10,7 @@ namespace ThinMvvm.Windows
 {
     public sealed class WindowsAppConfigBuilder
     {
+        private TimeSpan? _expirationTime;
         private bool _backButtonEnabled;
         private WindowsSplashScreenGraphics _splashScreenGraphics;
         private IWindowsApplicationSkeleton _skeleton;
@@ -21,6 +22,15 @@ namespace ThinMvvm.Windows
         {
         }
 
+
+        public WindowsAppConfigBuilder UseSavedStateExpirationTime( TimeSpan expirationTime )
+        {
+            EnsureCanBeCalled( _expirationTime == null );
+
+            _expirationTime = expirationTime;
+
+            return this;
+        }
 
         public WindowsAppConfigBuilder UseSoftwareBackButton()
         {
@@ -81,11 +91,13 @@ namespace ThinMvvm.Windows
         }
 
 
+
         private WindowsAppConfig WithApplication( Func<ObjectCreator, WindowsAppCore> coreFactory )
         {
             _hasCreated = true;
 
             return new WindowsAppConfig(
+                _expirationTime ?? TimeSpan.FromHours( 12 ),
                 _backButtonEnabled,
                 _splashScreenGraphics,
                 _skeleton ?? new DefaultApplicationSkeleton(),
@@ -93,7 +105,6 @@ namespace ThinMvvm.Windows
                 coreFactory
             );
         }
-
 
         private void EnsureCanBeCalled( bool isClear, [CallerMemberName] string methodName = "" )
         {

@@ -92,6 +92,7 @@
     <Compile Include="Data\Infrastructure\CancellationTokenHolder.cs" />
     <Compile Include="Data\Infrastructure\DataOperations.cs" />
     <Compile Include="Data\DataStatus.cs" />
+    <Compile Include="Data\Infrastructure\IForm.cs" />
     <Compile Include="Data\PaginatedData.cs" />
     <Compile Include="Data\PaginatedDataSource.cs" />
     <Compile Include="Data\BasicDataSource.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Infrastructure\CommandBase.cs" />
     <Compile Include="Infrastructure\CommandExecutedEventArgs.cs" />
     <Compile Include="Infrastructure\IViewModel.cs" />
+    <Compile Include="Infrastructure\NavigationServiceBase.cs" />
     <Compile Include="KeyValueStoreExtensions.cs" />
     <Compile Include="Logging\DataLoggerExtensions.cs" />
     <Compile Include="Logging\ILogger.cs" />

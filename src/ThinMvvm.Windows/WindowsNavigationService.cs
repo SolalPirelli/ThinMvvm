@@ -1,15 +1,38 @@
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using ThinMvvm.Applications.Infrastructure;
 using ThinMvvm.DependencyInjection.Infrastructure;
 using ThinMvvm.Infrastructure;
 using ThinMvvm.Windows.Infrastructure;
-using Windows.ApplicationModel;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+
+// Bugs and quirks of Windows.UI.Xaml.Controls.Frame:
+//
+// - There is no way to obtain the current PageStackEntry, only the ones in the back/forward stacks.
+//   Thus it's impossible to directly re-inflate the current ViewModel when restoring the frame's state.
+//   Workaround: Navigate to a fake page, get the "previous" entry after navigation, then navigate back.
+//
+// - There is no way to reset it; even with its contents removed, navigation will add an entry to the back stack.
+//   Workaround: Mark the current view as transient when resetting the service.
+//
+// - Navigations cannot occur during a Navigated event.
+//   Workaround: Call Task.Yield() in an async void method, to ensure navigation is on a different thread. Yikes!
+//
+// - There is no way to disable the forward stack.
+//   Workaround: Manually clear it after every backwards navigation.
+//
+// - Pages in the forward stack remain cached (if caching is enabled), even when the forward stack is cleared.
+//   In other words, going A -> B -> back -> B will use the same instance of B, causing flickering.
+//   Workaround: Manually set the navigation cache mode to Disabled before navigating back.
+//
+// - If a navigation arg contains the null character ('\0'), the navigation state truncates the string.
+//   Not only does this cause data loss, but also weird behavior on the rest of the state.
+//   Workaround: Always serialize/deserialize strings when passing them as parameters.
+//   This has obvious perf implications, but also ensures that any other bug like this is worked around;
+//   attempting to detect null chars and serialize in that case would not provide such a guarantee.
 
 namespace ThinMvvm.Windows
 {
@@ -20,28 +43,31 @@ namespace ThinMvvm.Windows
     /// This class assumes it has complete ownership of the provided frame,
     /// i.e. that nobody else will call any methods on it.
     /// </remarks>
-    public sealed class WindowsNavigationService : INavigationService
+    public sealed class WindowsNavigationService : NavigationServiceBase<Page, string>
     {
-        private const int MaxSuspendedHours = 12;
-
-        // HACK, see RestorePreviousState
+        // Sentinel for the state-restoring fake navigation hacks
         private static readonly object NavigationParameterSentinel = new object();
+
+        // Stores the parameter of the current ViewModel in the state-restoring fake navigation hacks
         private object _restoredParameter = NavigationParameterSentinel;
 
-        private readonly ObjectCreator _viewModelCreator;
-        private readonly ViewRegistry _views;
-        private readonly WindowsKeyValueStore _dataStore;
         private readonly Frame _frame;
-
-        private bool _mustRemoveLastFromBackStack;
 
 
         /// <summary>
-        /// Gets a value indicating whether the navigation service can currently navigate back.
+        /// Gets the current depth of the service's back stack.
         /// </summary>
-        public bool CanNavigateBack
+        protected override int BackStackDepth
         {
-            get { return _frame.BackStackDepth > ( _mustRemoveLastFromBackStack ? 1 : 0 ); }
+            get { return _frame.BackStackDepth; }
+        }
+
+        /// <summary>
+        /// Gets the currently displayed view.
+        /// </summary>
+        protected override Page CurrentView
+        {
+            get { return (Page) _frame.Content; }
         }
 
 
@@ -51,67 +77,45 @@ namespace ThinMvvm.Windows
         /// </summary>
         /// <param name="viewModelCreator">The ViewModel creator.</param>
         /// <param name="views">The views.</param>
+        /// <param name="savedStateExpirationTime">The expiration time of saved states.</param>
         /// <param name="frame">The navigation frame.</param>
-        public WindowsNavigationService( ObjectCreator viewModelCreator, ViewRegistry views, Frame frame )
+        public WindowsNavigationService( ObjectCreator viewModelCreator, ViewRegistry views,
+                                         TimeSpan savedStateExpirationTime, Frame frame )
+            : base( viewModelCreator, views, savedStateExpirationTime )
         {
-            _views = views;
-            _viewModelCreator = viewModelCreator;
-            _dataStore = new WindowsKeyValueStore( "ThinMvvm.Navigation" );
             _frame = frame;
 
             _frame.Navigating += FrameNavigating;
             _frame.Navigated += FrameNavigated;
 
-            Application.Current.Suspending += ApplicationSuspending;
+            Application.Current.Suspending += ( _, __ ) => StoreState();
 
-            SystemNavigationManager.GetForCurrentView().BackRequested += BackRequested;
+            SystemNavigationManager.GetForCurrentView().BackRequested += ( _, e ) =>
+            {
+                NavigateBack();
+                e.Handled = true;
+            };
         }
 
 
         /// <summary>
-        /// Occurs after navigating to a ViewModel.
+        /// Navigates to the specified view, with the specified argument.
         /// </summary>
-        public event EventHandler<NavigatedEventArgs> Navigated;
-
-
-        /// <summary>
-        /// Navigates to the specified parameterless ViewModel type.
-        /// </summary>
-        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
-        public void NavigateTo<TViewModel>()
-            where TViewModel : ViewModel<NoParameter>
+        protected override void NavigateTo<TArg>( Type viewType, TArg arg )
         {
-            NavigateTo( typeof( TViewModel ), null );
-        }
-
-        /// <summary>
-        /// Navigates to the specified ViewModel type using the specified argument.
-        /// </summary>
-        /// <typeparam name="TViewModel">The ViewModel type.</typeparam>
-        /// <typeparam name="TArg">The argument type.</typeparam>
-        /// <param name="arg">The argument.</param>
-        public void NavigateTo<TViewModel, TArg>( TArg arg )
-            where TViewModel : ViewModel<TArg>
-        {
-            if( WindowsSerializer.IsTypeNativelySupported( typeof( TArg ) ) )
-            {
-                NavigateTo( typeof( TViewModel ), arg );
-            }
-            else
-            {
-                NavigateTo( typeof( TViewModel ), WindowsSerializer.Serialize( arg ) );
-            }
+            var convertedArg = ConvertArgument( arg );
+            _frame.Navigate( viewType, convertedArg );
         }
 
         /// <summary>
         /// Navigates back to the previous ViewModel.
         /// </summary>
-        public void NavigateBack()
+        public override void NavigateBack()
         {
-            if( _frame.CanGoBack )
+            if( CanNavigateBack )
             {
+                ( (Page) _frame.Content ).NavigationCacheMode = NavigationCacheMode.Disabled;
                 _frame.GoBack();
-                // ThinMvvm, by design, does not support forward navigation
                 _frame.ForwardStack.Clear();
             }
             else
@@ -123,95 +127,74 @@ namespace ThinMvvm.Windows
         /// <summary>
         /// Resets the service, as if no navigation had occurred.
         /// </summary>
-        public void Reset()
+        public override void Reset()
         {
             _frame.BackStack.Clear();
             _frame.Content = null;
-            _mustRemoveLastFromBackStack = true;
+            IsCurrentViewTransient = true;
         }
 
         /// <summary>
-        /// Restores navigation state from a previous execution.
+        /// Pops the last entry out of the service's back stack.
         /// </summary>
-        /// <returns>True if state had to be restored and the restore was successful; false otherwise.</returns>
-        public bool RestorePreviousState()
+        protected override void PopBackStack()
         {
-            try
-            {
-                var suspendDate = _dataStore.Get<DateTimeOffset>( DataKeys.SuspendDate );
-                var navigationState = _dataStore.Get<string>( DataKeys.NavigationState );
-                if( !suspendDate.HasValue || !navigationState.HasValue )
-                {
-                    return false;
-                }
+            _frame.BackStack.RemoveAt( _frame.BackStack.Count - 1 );
+        }
 
-                if( ( DateTimeOffset.UtcNow - suspendDate.Value ).TotalHours > MaxSuspendedHours )
-                {
-                    return false;
-                }
+        /// <summary>
+        /// Gets the current navigation state.
+        /// </summary>
+        protected override string GetNavigationState()
+        {
+            return _frame.GetNavigationState();
+        }
 
-                _frame.SetNavigationState( navigationState.Value );
+        /// <summary>
+        /// Sets the current navigation state, which may trigger a navigation.
+        /// </summary>
+        protected override void SetNavigationState( string state )
+        {
+            _frame.SetNavigationState( state );
+            _frame.Navigate( typeof( Page ), NavigationParameterSentinel );
+        }
 
-                // MASSIVE HACK
-                // There is no way to get the current page's parameter, 
-                // as it is neither in the backward nor in the forward stack.
-                // Thus, we perform a fake navigation, identified by a special parameter,
-                // so that the current page goes in the back stack, which means we can fetch its parameter.
-                // Then, we remember said parameter and navigate back, and finally finish navigation as usual.
-                _frame.Navigate( _frame.SourcePageType, NavigationParameterSentinel );
-                return true;
-            }
-            catch
-            {
-                // If an exception occurs, it's likely to occur again if the restoring was retried
+        /// <summary>
+        /// Gets the ViewModel of the specified View.
+        /// </summary>
+        protected override IViewModel GetViewModel( Page view )
+        {
+            return (IViewModel) view.DataContext;
+        }
 
-                _dataStore.Delete( DataKeys.SuspendDate );
-                _dataStore.Delete( DataKeys.NavigationState );
+        /// <summary>
+        /// Sets the ViewModel of the specified view.
+        /// </summary>
+        protected override void SetViewModel( Page view, IViewModel viewModel )
+        {
+            view.DataContext = viewModel;
+        }
 
-                return false;
-            }
+        /// <summary>
+        /// Gets a state store for the specified name.
+        /// </summary>
+        protected override IKeyValueStore GetStateStore( string name )
+        {
+            return new WindowsKeyValueStore( "ThinMvvm.Navigation." + name );
         }
 
 
         /// <summary>
         /// Called when the frame is navigating.
         /// </summary>
-        private void FrameNavigating( object sender, NavigatingCancelEventArgs e )
+        private async void FrameNavigating( object sender, NavigatingCancelEventArgs e )
         {
-            // HACK, see RestorePreviousState
             if( e.Parameter == NavigationParameterSentinel || _restoredParameter != NavigationParameterSentinel )
             {
                 return;
             }
 
-            if( _frame.Content == null )
-            {
-                // First navigation
-                return;
-            }
-
-            var view = (Page) _frame.Content;
-            var viewModel = (IViewModel) view.DataContext;
-
-            if( viewModel.IsTransient )
-            {
-                _mustRemoveLastFromBackStack = true;
-            }
-
-            if( e.NavigationMode == NavigationMode.New )
-            {
-                var store = GetCurrentStateStore();
-                store.Clear();
-                viewModel.SaveState( store );
-
-                viewModel.OnNavigatedFromAsync( NavigationKind.Forwards );
-            }
-            else
-            {
-                GetCurrentStateStore().Delete();
-
-                viewModel.OnNavigatedFromAsync( NavigationKind.Backwards );
-            }
+            await BeginNavigationAsync( e.NavigationMode == NavigationMode.New ? NavigationKind.Forwards : NavigationKind.Backwards );
         }
 
         /// <summary>
@@ -219,151 +202,68 @@ namespace ThinMvvm.Windows
         /// </summary>
         private async void FrameNavigated( object sender, NavigationEventArgs e )
         {
-            // HACK, see RestorePreviousState
             if( e.Parameter == NavigationParameterSentinel )
             {
                 _restoredParameter = _frame.BackStack[_frame.BackStackDepth - 1].Parameter;
-                // Frame ignores navigations that occur during the Navigated event.
-                // HACK: This is not pretty!
+
                 await Task.Yield();
+
                 NavigateBack();
                 return;
             }
+
+            var navigationKind = e.NavigationMode == NavigationMode.New ? NavigationKind.Forwards : NavigationKind.Backwards;
+            var arg = e.Parameter;
+
             if( _restoredParameter != NavigationParameterSentinel )
             {
-                EndNavigation( NavigationMode.New, _restoredParameter );
+                navigationKind = NavigationKind.Forwards;
+                arg = _restoredParameter;
+
                 _restoredParameter = NavigationParameterSentinel;
-                return;
             }
 
-            if( _mustRemoveLastFromBackStack )
-            {
-                // In some cases (e.g. calling Reset without any previous navigation) this can be false
-                if( _frame.BackStackDepth > 0 )
-                {
-                    _frame.BackStack.RemoveAt( _frame.BackStackDepth - 1 );
-                }
+            var argType = GetParameterType( CurrentView.GetType() );
+            arg = ConvertBackArgument( arg, argType );
 
-                _mustRemoveLastFromBackStack = false;
-            }
-
-            EndNavigation( e.NavigationMode, e.Parameter );
-        }
-
-        /// <summary>
-        /// Called when the app is about to be suspended.
-        /// </summary>
-        private void ApplicationSuspending( object sender, SuspendingEventArgs e )
-        {
-            _dataStore.Set( DataKeys.SuspendDate, DateTimeOffset.UtcNow );
-            _dataStore.Set( DataKeys.NavigationState, _frame.GetNavigationState() );
-
-            var view = (Page) _frame.Content;
-            if( view == null )
-            {
-                return;
-            }
-
-            var viewModel = (IViewModel) view.DataContext;
-            if( viewModel == null )
-            {
-                return;
-            }
-
-            var store = GetCurrentStateStore();
-            store.Clear();
-            viewModel.SaveState( store );
-        }
-
-        /// <summary>
-        /// Called when the user pressed the (hardware or software) back button.
-        /// </summary>
-        private void BackRequested( object sender, BackRequestedEventArgs e )
-        {
-            NavigateBack();
-            e.Handled = true;
+            await EndNavigationAsync( navigationKind, arg );
         }
 
 
         /// <summary>
-        /// Navigates to the specified ViewModel type using the specified argument.
+        /// Converts the specified argument to an object serializable in the Frame's navigation state.
         /// </summary>
-        private void NavigateTo( Type viewModelType, object arg )
+        private object ConvertArgument<TArg>( TArg arg )
         {
-            var viewType = _views.GetViewType( viewModelType );
-            _frame.Navigate( viewType, arg );
+            if( arg == null )
+            {
+                return arg;
+            }
+
+            if( typeof( TArg ) != typeof( string ) && WindowsSerializer.IsTypeNativelySupported( typeof( TArg ) ) )
+            {
+                return arg;
+            }
+
+            return WindowsSerializer.Serialize( arg );
         }
 
         /// <summary>
-        /// Ends a navigation by storing necessary data and creating a ViewModel if necessary.
+        /// Converts the specified argument back to the specified type.
         /// </summary>
-        private void EndNavigation( NavigationMode navigationMode, object arg )
+        private object ConvertBackArgument( object arg, Type targetType )
         {
-            var view = (Page) _frame.Content;
-            IViewModel viewModel;
-            if( navigationMode == NavigationMode.New || view.DataContext == null )
+            if( arg == null )
             {
-                var viewModelType = _views.GetViewModelType( view.GetType() );
-                var parameterType = GetParameterType( viewModelType );
-
-                if( parameterType != typeof( NoParameter ) && !WindowsSerializer.IsTypeNativelySupported( parameterType ) )
-                {
-                    arg = WindowsSerializer.Deserialize( parameterType, (string) arg );
-                }
-
-                viewModel = (IViewModel) _viewModelCreator.Create( viewModelType );
-                viewModel.Initialize( arg );
-                view.DataContext = viewModel;
-            }
-            else
-            {
-                viewModel = (IViewModel) view.DataContext;
+                return arg;
             }
 
-            var store = GetCurrentStateStore();
-            if( store.Exists() )
+            if( targetType != typeof( string ) && WindowsSerializer.IsTypeNativelySupported( targetType ) )
             {
-                // If the store exists, loading the state is required.
-                viewModel.LoadState( store );
+                return arg;
             }
 
-            var navigationKind = navigationMode == NavigationMode.New ? NavigationKind.Forwards : NavigationKind.Backwards;
-
-            Navigated?.Invoke( this, new NavigatedEventArgs( viewModel, navigationKind ) );
-
-            viewModel.OnNavigatedToAsync( navigationKind );
-        }
-
-        /// <summary>
-        /// Gets the current store, which changes at each navigation.
-        /// </summary>
-        private WindowsKeyValueStore GetCurrentStateStore()
-        {
-            return new WindowsKeyValueStore( "ThinMvvm.Navigation." + _frame.BackStackDepth );
-        }
-
-
-        /// <summary>
-        /// Gets the type of the parameter for the specified ViewModel.
-        /// </summary>
-        private static Type GetParameterType( Type viewModelType )
-        {
-            while( !viewModelType.IsConstructedGenericType || viewModelType.GetGenericTypeDefinition() != typeof( ViewModel<> ) )
-            {
-                viewModelType = viewModelType.GetTypeInfo().BaseType;
-            }
-
-            return viewModelType.GetGenericArguments()[0];
-        }
-
-
-        /// <summary>
-        /// Holds string constants to use as keys for storage.
-        /// </summary>
-        private static class DataKeys
-        {
-            public const string SuspendDate = "SuspendDate";
-            public const string NavigationState = "NavigationState";
+            return WindowsSerializer.Deserialize( targetType, (string) arg );
         }
     }
 }

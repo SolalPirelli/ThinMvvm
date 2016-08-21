@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ThinMvvm.Tests.TestInfrastructure
@@ -25,6 +26,11 @@ namespace ThinMvvm.Tests.TestInfrastructure
         public void Delete( string key )
         {
             _values.Remove( key );
+        }
+
+        public void Clear()
+        {
+            _values.Clear();
         }
     }
 }

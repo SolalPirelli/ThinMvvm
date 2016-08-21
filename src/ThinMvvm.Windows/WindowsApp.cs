@@ -82,7 +82,12 @@ namespace ThinMvvm.Windows
             _isBackButtonEnabled = config.IsSoftwareBackButtonEnabled;
             _skeleton = config.Skeleton;
 
-            navigationService = new WindowsNavigationService( objectCreator, viewRegistry, _skeleton.NavigationFrame );
+            navigationService = new WindowsNavigationService( 
+                objectCreator, 
+                viewRegistry, 
+                config.SavedStateExpirationTime, 
+                _skeleton.NavigationFrame 
+            );
             navigationService.Navigated += NavigationServiceNavigated;
 
             // This is another cycle in the initialization; the navigation service needs the skeleton,
@@ -134,9 +139,8 @@ namespace ThinMvvm.Windows
             if( !_hasNavigated )
             {
                 e.Target.NavigatedTo += ViewModelFirstNavigatedTo;
+                _hasNavigated = true;
             }
-
-            _hasNavigated = true;
 
             if( _isBackButtonEnabled )
             {

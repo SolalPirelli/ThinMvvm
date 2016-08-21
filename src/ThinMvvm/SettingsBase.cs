@@ -229,6 +229,14 @@ namespace ThinMvvm
             {
                 throw new NotSupportedException( "This class is meant for use by SettingsBase, which will never call this method." );
             }
+
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public void Clear()
+            {
+                throw new NotSupportedException( "This class is meant for use by SettingsBase, which will never call this method." );
+            }
         }
     }
 }

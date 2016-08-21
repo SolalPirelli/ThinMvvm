@@ -15,9 +15,8 @@ namespace ThinMvvm.Windows
     /// </remarks>
     public sealed class WindowsKeyValueStore : IKeyValueStore
     {
-        private readonly string _name;
-        private bool _alive;
-        private ApplicationDataContainer _container;
+        private readonly ApplicationDataContainer _container;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowsKeyValueStore" /> class using the specified settings container.
@@ -25,8 +24,14 @@ namespace ThinMvvm.Windows
         /// <param name="containerName">The container name, or null to use the default container.</param>
         public WindowsKeyValueStore( string containerName )
         {
-            _name = containerName;
-            _alive = true;
+            if( containerName == null )
+            {
+                _container = ApplicationData.Current.LocalSettings;
+            }
+            else
+            {
+                _container = ApplicationData.Current.LocalSettings.CreateContainer( containerName, ApplicationDataCreateDisposition.Always );
+            }
         }
 
 
@@ -38,7 +43,6 @@ namespace ThinMvvm.Windows
         /// <returns>The value, if it was found.</returns>
         public Optional<T> Get<T>( string key )
         {
-            EnsureAlive();
             ValidateKey( key );
 
             if( !_container.Values.ContainsKey( key ) )
@@ -64,7 +68,6 @@ namespace ThinMvvm.Windows
         /// <param name="value">The value.</param>
         public void Set<T>( string key, T value )
         {
-            EnsureAlive();
             ValidateKey( key );
 
             _container.Values[key] = ToStorageValue( value );
@@ -76,66 +79,17 @@ namespace ThinMvvm.Windows
         /// <param name="key">The key.</param>
         public void Delete( string key )
         {
-            EnsureAlive();
             ValidateKey( key );
 
             _container.Values.Remove( key );
         }
 
-
         /// <summary>
-        /// Indicates whether the underlying container has already been created.
-        /// </summary>
-        /// <returns>A value indicating whether the underlying container has already been created.</returns>
-        public bool Exists()
-        {
-            return ApplicationData.Current.LocalSettings.Containers.ContainsKey( _name );
-        }
-
-        /// <summary>
-        /// Clears all data in the container.
+        /// Deletes all keys and values.
         /// </summary>
         public void Clear()
         {
-            EnsureAlive();
-
-            ApplicationData.Current.LocalSettings.DeleteContainer( _container.Name );
-            _container = null;
-        }
-
-        /// <summary>
-        /// Deletes the container, and all of its data.
-        /// </summary>
-        public void Delete()
-        {
-            Clear();
-            _alive = false;
-        }
-
-
-        /// <summary>
-        /// Ensures that the store is still alive, and creates the underlying container if necessary.
-        /// </summary>
-        private void EnsureAlive()
-        {
-            if( _container == null )
-            {
-                if( _alive )
-                {
-                    if( _name == null )
-                    {
-                        _container = ApplicationData.Current.LocalSettings;
-                    }
-                    else
-                    {
-                        _container = ApplicationData.Current.LocalSettings.CreateContainer( _name, ApplicationDataCreateDisposition.Always );
-                    }
-                }
-                else
-                {
-                    throw new InvalidOperationException( "This container has been deleted." );
-                }
-            }
+            _container.Values.Clear();
         }
 
         /// <summary>

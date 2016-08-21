@@ -5,6 +5,8 @@ namespace ThinMvvm.Windows
 {
     public sealed class WindowsAppConfig
     {
+        public TimeSpan SavedStateExpirationTime { get; }
+
         public bool IsSoftwareBackButtonEnabled { get; }
 
         public WindowsSplashScreenGraphics SplashScreenGraphics { get; }
@@ -16,12 +18,14 @@ namespace ThinMvvm.Windows
         public Func<ObjectCreator, WindowsAppCore> CoreFactory { get; }
 
 
-        public WindowsAppConfig( bool isSoftwareBackButtonEnabled,
+        public WindowsAppConfig( TimeSpan savedStateExpirationTime,
+                                 bool isSoftwareBackButtonEnabled,
                                  WindowsSplashScreenGraphics splashScreenGraphics,
                                  IWindowsApplicationSkeleton skeleton,
                                  Type skeletonViewModelType,
                                  Func<ObjectCreator, WindowsAppCore> coreFactory )
         {
+            SavedStateExpirationTime = savedStateExpirationTime;
             IsSoftwareBackButtonEnabled = isSoftwareBackButtonEnabled;
             SplashScreenGraphics = splashScreenGraphics;
             Skeleton = skeleton;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ThinMvvm.Data;
+using ThinMvvm.Data.Infrastructure;
 using ThinMvvm.Tests.TestInfrastructure;
 using Xunit;
 
@@ -39,6 +40,7 @@ namespace ThinMvvm.Tests.Data
             var form = new IntForm( () => Task.FromResult( 42 ), _ => TaskEx.CompletedTask );
 
             Assert.Equal( 0, form.Input );
+            Assert.Equal( 0, ( (IForm) form ).Input );
             Assert.Equal( FormStatus.None, form.Status );
             Assert.Null( form.Error );
         }
@@ -55,6 +57,7 @@ namespace ThinMvvm.Tests.Data
                 if( e.PropertyName == nameof( IntForm.Status ) && hits.Count == 0 )
                 {
                     Assert.Equal( 0, form.Input );
+                    Assert.Equal( 0, ( (IForm) form ).Input );
                     Assert.Equal( FormStatus.Initializing, form.Status );
                     Assert.Null( form.Error );
                 }
@@ -86,6 +89,7 @@ namespace ThinMvvm.Tests.Data
                 if( e.PropertyName == nameof( IntForm.Status ) )
                 {
                     Assert.Equal( 42, form.Input );
+                    Assert.Equal( 42, ( (IForm) form ).Input );
                     Assert.Equal( FormStatus.Initialized, form.Status );
                     Assert.Null( form.Error );
                 }
@@ -114,6 +118,7 @@ namespace ThinMvvm.Tests.Data
                 if( e.PropertyName == nameof( IntForm.Status ) )
                 {
                     Assert.Equal( 0, form.Input );
+                    Assert.Equal( 0, ( (IForm) form ).Input );
                     Assert.Equal( FormStatus.None, form.Status );
                     Assert.Equal( ex, form.Error );
                 }
@@ -161,6 +166,7 @@ namespace ThinMvvm.Tests.Data
             await form.InitializeAsync();
 
             Assert.Equal( 42, form.Input );
+            Assert.Equal( 42, ( (IForm) form ).Input );
             Assert.Equal( FormStatus.Initialized, form.Status );
             Assert.Null( form.Error );
         }
@@ -211,6 +217,7 @@ namespace ThinMvvm.Tests.Data
                 if( e.PropertyName == nameof( IntForm.Status ) && hits.Count == 0 )
                 {
                     Assert.Equal( 42, form.Input );
+                    Assert.Equal( 42, ( (IForm) form ).Input );
                     Assert.Equal( FormStatus.Submitting, form.Status );
                     Assert.Null( form.Error );
                 }
@@ -244,6 +251,7 @@ namespace ThinMvvm.Tests.Data
                 if( e.PropertyName == nameof( IntForm.Status ) )
                 {
                     Assert.Equal( 42, form.Input );
+                    Assert.Equal( 42, ( (IForm) form ).Input );
                     Assert.Equal( FormStatus.Submitted, form.Status );
                     Assert.Null( form.Error );
                 }
@@ -274,6 +282,7 @@ namespace ThinMvvm.Tests.Data
                 if( e.PropertyName == nameof( IntForm.Status ) )
                 {
                     Assert.Equal( 42, form.Input );
+                    Assert.Equal( 42, ( (IForm) form ).Input );
                     Assert.Equal( FormStatus.Submitted, form.Status );
                     Assert.Equal( ex, form.Error );
                 }

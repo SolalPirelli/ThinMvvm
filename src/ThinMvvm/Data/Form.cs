@@ -8,7 +8,7 @@ namespace ThinMvvm.Data
     /// Base class for input forms.
     /// </summary>
     /// <typeparam name="T">The input type.</typeparam>
-    public abstract class Form<T> : ObservableObject
+    public abstract class Form<T> : ObservableObject, IForm
     {
         // Locks methods, since neither initialization nor submission can be called concurrently.
         private readonly object _lock;
@@ -47,6 +47,7 @@ namespace ThinMvvm.Data
             get { return _error; }
             private set { Set( ref _error, value ); }
         }
+
 
 
         /// <summary>
@@ -122,5 +123,9 @@ namespace ThinMvvm.Data
         /// <param name="input">The input.</param>
         /// <returns>A task that represents the submit operation.</returns>
         protected abstract Task SubmitAsync( T input );
+
+
+        // Explicitly implemented to provide a typed value instead.
+        object IForm.Input => Input;
     }
 }
