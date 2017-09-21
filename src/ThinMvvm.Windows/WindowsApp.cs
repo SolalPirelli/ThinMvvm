@@ -64,6 +64,8 @@ namespace ThinMvvm.Windows
         private async void Run<TArgs>( TArgs args, Func<WindowsAppCore, INavigationService, TArgs, Task> initialization )
             where TArgs : IActivatedEventArgs
         {
+            _hasNavigated = false;
+
             // The navigation service obviously needs to be available to ViewModels,
             // but it also needs the object creator, which causes a kind of circular dependency;
             // this cycle is broken by using lazy initialization
@@ -82,11 +84,11 @@ namespace ThinMvvm.Windows
             _isBackButtonEnabled = config.IsSoftwareBackButtonEnabled;
             _skeleton = config.Skeleton;
 
-            navigationService = new WindowsNavigationService( 
-                objectCreator, 
-                viewRegistry, 
-                config.SavedStateExpirationTime, 
-                _skeleton.NavigationFrame 
+            navigationService = new WindowsNavigationService(
+                objectCreator,
+                viewRegistry,
+                config.SavedStateExpirationTime,
+                _skeleton.NavigationFrame
             );
             navigationService.Navigated += NavigationServiceNavigated;
 

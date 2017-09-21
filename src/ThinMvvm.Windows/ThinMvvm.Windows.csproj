@@ -111,7 +111,10 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\DataContainer.cs" />
+    <Compile Include="Controls\DataPresenter.cs" />
+    <Compile Include="Controls\DataSourceContainer.cs" />
+    <Compile Include="Controls\DataStatusDisplay.cs" />
+    <Compile Include="Controls\Infrastructure\DataControlBase.cs" />
     <Compile Include="Infrastructure\WindowsSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WindowsAppCore.cs" />

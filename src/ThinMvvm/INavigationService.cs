@@ -1,5 +1,8 @@
 using System;
 
+// TODO IDEA: "dialogs" in the form of an additional <TReturn> with corresponding TReturn NavigateTo<thing, ..., ...>(...).
+// (have some way to forbid usage of the nav service itself during a dialog?)
+
 namespace ThinMvvm
 {
     /// <summary>
@@ -63,6 +66,7 @@ namespace ThinMvvm
         /// </summary>
         void Reset();
 
+        // TODO may not want to silence errors here...
         /// <summary>
         /// Restores navigation state from a previous execution.
         /// </summary>

@@ -32,16 +32,13 @@ namespace ThinMvvm.Windows.Infrastructure
 
             _image = new Image
             {
-                Source = new BitmapImage( graphics.LogoUri ),
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top
+                Source = new BitmapImage( graphics.LogoUri )
             };
 
             _progressRing = new ProgressRing
             {
                 IsActive = true,
                 Foreground = new SolidColorBrush( graphics.ForegroundColor ),
-                HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Bottom
             };
 
@@ -87,43 +84,31 @@ namespace ThinMvvm.Windows.Infrastructure
         /// </summary>
         private void PositionControls()
         {
-            PositionImage( _image, _appSplashScreen.ImageLocation );
-            PositionProgressRing( _progressRing, _appSplashScreen.ImageLocation );
-        }
+            var location = _appSplashScreen.ImageLocation;
 
-        /// <summary>
-        /// Sets the logo image's position.
-        /// </summary>
-        private void PositionImage( Image image, Rect imageLocation )
-        {
-            image.Margin = new Thickness( imageLocation.Left, imageLocation.Top, 0, 0 );
-
-            // Official Windows 10 samples do this, not sure why the scale factor is not needed on desktop...
-            if( ApiInformation.IsTypePresent( "Windows.Phone.UI.Input.HardwareButtons" ) )
+            // For some reason (bug?), on phone the imageLocation is the entire screen.
+            if( location.Left == 0 && location.Top == 0 )
             {
-                var scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
-                image.Height = imageLocation.Height / scaleFactor;
-                image.Width = imageLocation.Width / scaleFactor;
+                _image.HorizontalAlignment = HorizontalAlignment.Center;
+                _image.VerticalAlignment = VerticalAlignment.Center;
+                _image.Stretch = Stretch.Uniform;
             }
             else
             {
-                image.Height = imageLocation.Height;
-                image.Width = imageLocation.Width;
+                _image.HorizontalAlignment = HorizontalAlignment.Left;
+                _image.VerticalAlignment = VerticalAlignment.Top;
+                _image.Margin = new Thickness( location.Left, location.Top, 0, 0 );
+                _image.Height = location.Height;
+                _image.Width = location.Width;
             }
-        }
 
-        /// <summary>
-        /// Sets the progress ring's position.
-        /// </summary>
-        private void PositionProgressRing( ProgressRing ring, Rect imageLocation )
-        {
-            var remainingHeight = Window.Current.Bounds.Height - imageLocation.Bottom;
+            var remainingHeight = ( Window.Current.Bounds.Height - _image.ActualHeight ) / 2;
 
             // MSDN says ProgressRing does not display if it's less than 20px
-            ring.Height = Math.Max( 20, remainingHeight / 5 );
-            ring.Width = ring.Height;
+            _progressRing.Height = Math.Max( 20, remainingHeight / 3 );
+            _progressRing.Width = _progressRing.Height;
 
-            ring.Margin = new Thickness( 0, 0, 0, ring.Height * 2 );
+            _progressRing.Margin = new Thickness( 0, 0, 0, _progressRing.Height );
         }
     }
 }

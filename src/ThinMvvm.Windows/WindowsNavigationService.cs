@@ -33,6 +33,10 @@ using Windows.UI.Xaml.Navigation;
 //   Workaround: Always serialize/deserialize strings when passing them as parameters.
 //   This has obvious perf implications, but also ensures that any other bug like this is worked around;
 //   attempting to detect null chars and serialize in that case would not provide such a guarantee.
+//
+// - The page cache is used even for forwards navigation, using pages from the back stack.
+//   For instance, going A -> B -> A will use the same instance of A twice.
+//   Workaround: Make sure forwards navigation don't try to use existing ViewModels.
 
 namespace ThinMvvm.Windows
 {
@@ -97,7 +101,6 @@ namespace ThinMvvm.Windows
             };
         }
 
-
         /// <summary>
         /// Navigates to the specified view, with the specified argument.
         /// </summary>
@@ -110,11 +113,13 @@ namespace ThinMvvm.Windows
         /// <summary>
         /// Navigates back to the previous ViewModel.
         /// </summary>
-        public override void NavigateBack()
+        public override async void NavigateBack()
         {
             if( CanNavigateBack )
             {
                 ( (Page) _frame.Content ).NavigationCacheMode = NavigationCacheMode.Disabled;
+                // HACK: Because of the popbackstack hack, need to do this here to allow popbackstack during onnavigatedfrom
+                await BeginNavigationAsync( NavigationKind.Backwards );
                 _frame.GoBack();
                 _frame.ForwardStack.Clear();
             }
@@ -194,7 +199,13 @@ namespace ThinMvvm.Windows
                 return;
             }
 
-            await BeginNavigationAsync( e.NavigationMode == NavigationMode.New ? NavigationKind.Forwards : NavigationKind.Backwards );
+            if( e.NavigationMode != NavigationMode.New )
+            {
+                // HACK, see GoBack: BeginNavigationAsync already done earlier.
+                return;
+            }
+
+            await BeginNavigationAsync( NavigationKind.Forwards );
         }
 
         /// <summary>
@@ -217,7 +228,7 @@ namespace ThinMvvm.Windows
 
             if( _restoredParameter != NavigationParameterSentinel )
             {
-                navigationKind = NavigationKind.Forwards;
+                navigationKind = NavigationKind.Restore;
                 arg = _restoredParameter;
 
                 _restoredParameter = NavigationParameterSentinel;

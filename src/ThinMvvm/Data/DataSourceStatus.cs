@@ -21,11 +21,6 @@ namespace ThinMvvm.Data
         LoadingMore,
 
         /// <summary>
-        /// Data is being transformed.
-        /// </summary>
-        Transforming,
-
-        /// <summary>
         /// Data has been loaded.
         /// </summary>
         Loaded

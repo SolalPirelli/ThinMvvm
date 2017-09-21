@@ -13,6 +13,11 @@ namespace ThinMvvm
         /// <summary>
         /// Backwards navigation.
         /// </summary>
-        Backwards
+        Backwards,
+
+        /// <summary>
+        /// Navigation to the ViewModel that was active before the app was suspended.
+        /// </summary>
+        Restore
     }
 }

@@ -111,7 +111,7 @@ namespace ThinMvvm.Data
         protected abstract Task<PaginatedData<TValue, TToken>> FetchAsync( Optional<TToken> paginationToken, CancellationToken cancellationToken );
 
         /// <summary>
-        /// Asynchronously transforms the specified value, if necessary.
+        /// Transforms the specified value, if necessary.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="isIncremental">
@@ -119,32 +119,29 @@ namespace ThinMvvm.Data
         /// If <c>true</c>, the return value of this method will be added to the source's current value.
         /// Otherwise, the return value of this method will replace the source's current value.
         /// </param>
-        /// <returns>A task that represents the transform operation..</returns>
-        protected virtual Task<TValue> TransformAsync( TValue value, bool isIncremental )
+        /// <returns>The transformed value.</returns>
+        protected virtual TValue Transform( TValue value, bool isIncremental )
         {
-            return Task.FromResult( value );
+            return value;
         }
 
         /// <summary>
-        /// Asynchronously updates the values by re-applying <see cref="TransformAsync" />.
+        /// Updates the values by re-applying <see cref="Transform" />.
         /// This method will not fetch any new data.
         /// </summary>
-        /// <returns>A task that represents the update operation.</returns>
-        protected async Task UpdateValuesAsync()
+        protected void UpdateValues()
         {
             if( _originalValues == null )
             {
-                throw new InvalidOperationException( $"{nameof( UpdateValuesAsync )} can only be called after data has been successfully loaded." );
+                throw new InvalidOperationException( $"{nameof( UpdateValues )} can only be called after data has been successfully loaded." );
             }
-
-            Status = DataSourceStatus.Transforming;
 
             var version = _version;
 
             var transformed = new List<DataChunk<TValue>>();
             for( int n = 0; n < _originalValues.Count; n++ )
             {
-                transformed.Add( await DataOperations.TransformAsync( _originalValues[n], items => TransformAsync( items, n == 0 ) ) );
+                transformed.Add( DataChunkOperations.Transform( _originalValues[n], items => Transform( items, n == 0 ) ) );
             }
 
 
@@ -154,6 +151,8 @@ namespace ThinMvvm.Data
                 {
                     _writeableValues = new ObservableCollection<DataChunk<TValue>>( transformed );
                     Data = new ReadOnlyObservableCollection<DataChunk<TValue>>( _writeableValues );
+                    // Trigger the status change no matter what
+                    OnPropertyChanged( nameof( Status ) );
                     Status = DataSourceStatus.Loaded;
                 }
             }
@@ -197,15 +196,15 @@ namespace ThinMvvm.Data
             var paginationToken = isIncremental ? _paginationToken : default( Optional<TToken> );
             var cancellationToken = _cancellationTokens.CreateAndCancelPrevious();
 
-            var chunk = await DataOperations.FetchAsync( () => FetchAsync( paginationToken, cancellationToken ) );
+            var chunk = await DataChunkOperations.FetchAsync( () => FetchAsync( paginationToken, cancellationToken ) );
 
             if( _cache != null )
             {
-                chunk = await DataOperations.CacheAsync( chunk, _cache, () => _cacheMetadataCreator( paginationToken ) );
+                chunk = await DataChunkOperations.CacheAsync( chunk, _cache, () => _cacheMetadataCreator( paginationToken ) );
             }
 
             var itemsChunk = new DataChunk<TValue>( chunk.Value == null ? default( TValue ) : chunk.Value.Value, chunk.Status, chunk.Errors );
-            var transformedChunk = await DataOperations.TransformAsync( itemsChunk, items => TransformAsync( items, isIncremental ) );
+            var transformedChunk = DataChunkOperations.Transform( itemsChunk, items => Transform( items, isIncremental ) );
 
             lock( _lock )
             {

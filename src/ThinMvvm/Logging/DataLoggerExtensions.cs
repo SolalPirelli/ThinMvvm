@@ -40,34 +40,27 @@ namespace ThinMvvm.Logging
         }
 
         /// <summary>
-        /// Registers the specified <see cref="IForm" /> for error logging.
+        /// Registers the specified <see cref="DataOperation" /> for error logging.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="form">The form.</param>
-        public static void Register( this ILogger logger, IForm form )
+        /// <param name="operation">The operation.</param>
+        public static void Register( this ILogger logger, DataOperation operation )
         {
             if( logger == null )
             {
                 throw new ArgumentNullException( nameof( logger ) );
             }
-            if( form == null )
+            if( operation == null )
             {
-                throw new ArgumentNullException( nameof( form ) );
+                throw new ArgumentNullException( nameof( operation ) );
             }
 
-            form.PropertyChanged += ( s, e ) =>
+            operation.PropertyChanged += ( s, e ) =>
             {
-                var f = (IForm) s;
-                if( e.PropertyName == nameof( IForm.Status ) )
+                var f = (DataOperation) s;
+                if( e.PropertyName == nameof( DataOperation.IsLoading ) )
                 {
-                    if( f.Status == FormStatus.None )
-                    {
-                        Log( logger, "Form initialization error", f.Error );
-                    }
-                    else if( f.Status == FormStatus.Submitted )
-                    {
-                        Log( logger, "Form submission error", f.Error );
-                    }
+                    Log( logger, "Operation error", f.Error );
                 }
             };
         }

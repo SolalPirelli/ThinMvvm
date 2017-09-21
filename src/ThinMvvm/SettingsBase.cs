@@ -4,6 +4,12 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
+// TODO the change tracking part here is not that great;
+//      at least need a way to stop tracking old values.
+// Also, test coverage is dubious, there was a bug with name/key mixups that didn't get caught.
+
+// TODO having to use as a singleton kinda sucks...
+
 namespace ThinMvvm
 {
     /// <summary>
@@ -20,6 +26,7 @@ namespace ThinMvvm
         private readonly StoreCache _store;
         private readonly string _keyPrefix;
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SettingsBase" /> class, using the specified store.
         /// </summary>
@@ -32,7 +39,8 @@ namespace ThinMvvm
             }
 
             _store = new StoreCache( store );
-            _keyPrefix = GetType().FullName + ".";
+            // TODO Calling a virtual func in the ctor isn't very nice :/
+            _keyPrefix = CreateStoragePrefix();
         }
 
 
@@ -41,6 +49,17 @@ namespace ThinMvvm
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
+
+        // TODO would be nicer to have KVStore be hierarchical...
+        // Or maybe have 1 interface for the creator, i.e. CreateKV(key) / CreateData(key) ?
+        /// <summary>
+        /// Creates the prefix used to store keys.
+        /// </summary>
+        /// <returns>The prefix.</returns>
+        protected virtual string CreateStoragePrefix()
+        {
+            return GetType().FullName + ".";
+        }
 
         /// <summary>
         /// Gets a property, using the specified default value.
@@ -56,9 +75,15 @@ namespace ThinMvvm
                 throw new ArgumentNullException( nameof( name ) );
             }
 
-            var stored = _store.Get<T>( _keyPrefix + name );
+            bool wasInCache;
+            var stored = _store.Get<T>( _keyPrefix + name, out wasInCache );
             if( stored.HasValue )
             {
+                if( !wasInCache )
+                {
+                    ListenToChanges( name, stored.Value );
+                }
+
                 return stored.Value;
             }
 
@@ -80,9 +105,15 @@ namespace ThinMvvm
                 throw new ArgumentNullException( nameof( name ) );
             }
 
-            var stored = _store.Get<T>( _keyPrefix + name );
+            bool wasInCache;
+            var stored = _store.Get<T>( _keyPrefix + name, out wasInCache );
             if( stored.HasValue )
             {
+                if( !wasInCache )
+                {
+                    ListenToChanges( name, stored.Value );
+                }
+
                 return stored.Value;
             }
 
@@ -104,9 +135,8 @@ namespace ThinMvvm
                 throw new ArgumentNullException( nameof( name ) );
             }
 
-            var key = _keyPrefix + name;
-
-            var stored = _store.Get<T>( key );
+            bool ignored;
+            var stored = _store.Get<T>( _keyPrefix + name, out ignored );
             if( !stored.HasValue || !object.Equals( value, stored.Value ) )
             {
                 SetAndNotify( name, value );
@@ -138,10 +168,10 @@ namespace ThinMvvm
         /// in order to re-write it to the persistent store when it changes.
         /// </summary>
         /// <remarks>
-        /// This method is generic in the hope that a smart compiler/JIT may eliminate it
-        /// for types that do not support property or collection changes.
+        /// This method must be generic (and cast its _store.Set argument) for .NET Native
+        /// to figure out which serialization metadata to generate automatically.
         /// </remarks>
-        private void ListenToChanges<T>( string key, T value )
+        private void ListenToChanges<T>( string name, T value )
         {
             var collectionNotifier = value as INotifyCollectionChanged;
             var propertyNotifier = value as INotifyPropertyChanged;
@@ -150,7 +180,7 @@ namespace ThinMvvm
             {
                 if( collectionNotifier == null )
                 {
-                    propertyNotifier.PropertyChanged += ( o, _ ) => _store.Set( key, o );
+                    propertyNotifier.PropertyChanged += ( o, _ ) => _store.Set( _keyPrefix + name, (T) o );
                 }
                 else
                 {
@@ -158,7 +188,7 @@ namespace ThinMvvm
                     {
                         if( e.PropertyName != "Count" && e.PropertyName != "Item[]" )
                         {
-                            _store.Set( key, o );
+                            _store.Set( _keyPrefix + name, (T) o );
                         }
                     };
                 }
@@ -166,7 +196,7 @@ namespace ThinMvvm
 
             if( collectionNotifier != null )
             {
-                collectionNotifier.CollectionChanged += ( o, _ ) => _store.Set( key, o );
+                collectionNotifier.CollectionChanged += ( o, _ ) => _store.Set( _keyPrefix + name, (T) o );
             }
         }
 
@@ -175,7 +205,7 @@ namespace ThinMvvm
         /// Cache for the store, in order to avoid calling <see cref="IKeyValueStore.Get" /> too much.
         /// This is because most stores serialize values before storing them, which incurs a non-trivial cost.
         /// </summary>
-        private sealed class StoreCache : IKeyValueStore
+        private sealed class StoreCache
         {
             private readonly IKeyValueStore _wrapped;
             private readonly Dictionary<string, object> _cache;
@@ -195,11 +225,13 @@ namespace ThinMvvm
             /// <summary>
             /// Gets the value corresponding to the specified key, if it exists,
             /// first looking into an in-memory cache.
+            /// Also returns whether the value was found in the cache.
             /// </summary>
-            public Optional<T> Get<T>( string key )
+            public Optional<T> Get<T>( string key, out bool wasInCache )
             {
                 object boxedValue;
-                if( _cache.TryGetValue( key, out boxedValue ) )
+                wasInCache = _cache.TryGetValue( key, out boxedValue );
+                if( wasInCache )
                 {
                     return new Optional<T>( (T) boxedValue );
                 }
@@ -220,22 +252,6 @@ namespace ThinMvvm
             {
                 _wrapped.Set( key, value );
                 _cache[key] = value;
-            }
-
-            /// <summary>
-            /// Not supported.
-            /// </summary>
-            public void Delete( string key )
-            {
-                throw new NotSupportedException( "This class is meant for use by SettingsBase, which will never call this method." );
-            }
-
-            /// <summary>
-            /// Not supported.
-            /// </summary>
-            public void Clear()
-            {
-                throw new NotSupportedException( "This class is meant for use by SettingsBase, which will never call this method." );
             }
         }
     }

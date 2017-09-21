@@ -52,6 +52,37 @@ namespace ThinMvvm
 
 
         /// <summary>
+        /// Gets this optional's value, or the specified default value if it has none.
+        /// </summary>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns>Either the optional's value, or the default value if it has none.</returns>
+        public T OrElse( T defaultValue )
+        {
+            if( HasValue )
+            {
+                return Value;
+            }
+
+            return defaultValue;
+        }
+
+
+        /// <summary>
+        /// Creates an optional with the specified value, or without a value if it's null.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The created optional.</returns>
+        public static Optional<T> FromNullable( T value )
+        {
+            if( value == null )
+            {
+                return default( Optional<T> );
+            }
+
+            return new Optional<T>( value );
+        }
+
+        /// <summary>
         /// Indicates whether the two instances of <see cref="Optional{T}" /> are equal.
         /// </summary>
         /// <param name="left">The first instance.</param>

@@ -61,13 +61,13 @@ namespace ThinMvvm.Windows
                 var manifest = XDocument.Load( "AppxManifest.xml" );
                 var ns = XNamespace.Get( "http://schemas.microsoft.com/appx/manifest/uap/windows10" );
 
-                var visualElements = manifest.Descendants( ns + "VisualElements" ).First();
+                var splashScreen = manifest.Descendants( ns + "VisualElements" ).First()
+                                           .Descendants( ns + "SplashScreen" ).First();
 
-                var colorText = visualElements.Attribute( "BackgroundColor" ).Value;
-
-                var logoPath = visualElements.Descendants( ns + "SplashScreen" ).First()
-                                             .Attribute( "Image" ).Value
-                                             .Replace( '\\', '/' );
+                var colorText = splashScreen.Attribute( "BackgroundColor" ).Value;
+                
+                var logoPath = splashScreen.Attribute( "Image" ).Value
+                                           .Replace( '\\', '/' );
 
                 var backgroundColor = ParseColor( colorText ) ?? AccentColor;
                 var foregroundColor = GetForegroundColorFromBackground( backgroundColor );

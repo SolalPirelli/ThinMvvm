@@ -11,8 +11,6 @@ namespace ThinMvvm.Data
     {
         /// <summary>
         /// Gets the chunk's value, if any.
-        /// 
-        /// This property will throw a <see cref="InvalidOperationException" /> if there is no value.
         /// </summary>
         public T Value { get; }
 

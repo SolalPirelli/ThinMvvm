@@ -16,6 +16,7 @@ namespace ThinMvvm
         private event EventHandler<EventArgs> _navigatedTo;
         private event EventHandler<EventArgs> _navigatedFrom;
 
+        // TODO remove this in favor of dialogs
         /// <summary>
         /// Gets a value indicating whether the ViewModel should be kept into navigation history.
         /// </summary>

@@ -30,7 +30,7 @@ namespace ThinMvvm
             {
                 throw new ArgumentNullException( nameof( target ) );
             }
-            if( kind != NavigationKind.Forwards && kind != NavigationKind.Backwards )
+            if( kind != NavigationKind.Forwards && kind != NavigationKind.Backwards && kind != NavigationKind.Restore )
             {
                 throw new ArgumentException( "Invalid kind.", nameof( kind ) );
             }

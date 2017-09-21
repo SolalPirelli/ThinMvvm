@@ -51,6 +51,11 @@ namespace ThinMvvm.Windows
             }
 
             var value = FromStorageValue<T>( _container.Values[key] );
+            // TODO: Fix this, make it work for reference, nullable and value types properly.
+            if( value == null )
+            {
+                return new Optional<T>( (T) (object) null );
+            }
 
             if( !( value is T ) )
             {

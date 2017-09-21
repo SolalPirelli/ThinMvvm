@@ -20,6 +20,16 @@ namespace ThinMvvm.Infrastructure
     /// <typeparam name="TNavigationState">The navigation state type.</typeparam>
     public abstract class NavigationServiceBase<TView, TNavigationState> : INavigationService
     {
+        /// <summary>
+        /// ODIOUS HACK
+        /// TODO: Support dialogs.
+        /// </summary>
+        public void HACK_PopBackStack()
+        {
+            PopBackStack();
+        }
+
+
         // COMPAT: Profile111 does not contain Task.CompletedTask
         private static readonly Task CompletedTask = Task.FromResult( 0 );
 
@@ -255,7 +265,7 @@ namespace ThinMvvm.Infrastructure
         {
             if( IsCurrentViewTransient )
             {
-                if( BackStackDepth > 0 )
+                if( navigationKind == NavigationKind.Forwards && BackStackDepth > 0 )
                 {
                     PopBackStack();
                 }
@@ -263,14 +273,13 @@ namespace ThinMvvm.Infrastructure
                 IsCurrentViewTransient = false;
             }
 
-            var viewModel = GetViewModel( CurrentView );
-
+            var viewModel = navigationKind == NavigationKind.Forwards ? null : GetViewModel( CurrentView );
             if( viewModel == null )
             {
                 var viewModelType = _views.GetViewModelType( CurrentView.GetType() );
                 viewModel = CreateViewModel( viewModelType, arg );
 
-                if( navigationKind == NavigationKind.Backwards )
+                if( navigationKind == NavigationKind.Backwards || navigationKind == NavigationKind.Restore )
                 {
                     var store = GetStateStore( BackStackDepth.ToString() );
                     viewModel.LoadState( store );
@@ -293,7 +302,7 @@ namespace ThinMvvm.Infrastructure
             var navigationState = GetNavigationState();
             suspensionStore.Set( NavigationStateKey, navigationState );
             suspensionStore.Set( SuspendDateKey, DateTimeOffset.UtcNow );
-            
+
             // Can happen if this method is called before any navigation.
             if( CurrentView == null )
             {

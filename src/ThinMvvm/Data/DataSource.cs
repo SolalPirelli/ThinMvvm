@@ -5,6 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using ThinMvvm.Data.Infrastructure;
 
+// TODO: Idea: What if the refresh method was protected (i.e. no public thing by default),
+//       but took a delegate, and then there was a retry method? Would solve problems like "either query or map item"... maybe.
+
 namespace ThinMvvm.Data
 {
     /// <summary>
@@ -80,14 +83,14 @@ namespace ThinMvvm.Data
 
             var token = _cancellationTokens.CreateAndCancelPrevious();
 
-            var value = await DataOperations.FetchAsync( () => FetchAsync( token ) );
+            var value = await DataChunkOperations.FetchAsync( () => FetchAsync( token ) );
 
             if( _cache != null )
             {
-                value = await DataOperations.CacheAsync( value, _cache, _cacheMetadataCreator );
+                value = await DataChunkOperations.CacheAsync( value, _cache, _cacheMetadataCreator );
             }
 
-            var transformedValue = await DataOperations.TransformAsync( value, TransformAsync );
+            var transformedValue = DataChunkOperations.Transform( value, Transform );
 
             lock( _lock )
             {
@@ -110,38 +113,36 @@ namespace ThinMvvm.Data
         protected abstract Task<T> FetchAsync( CancellationToken cancellationToken );
 
         /// <summary>
-        /// Asynchronously transforms the specified value, if necessary.
+        /// Transforms the specified value, if necessary.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <returns>A task that represents the transform operation.</returns>
-        protected virtual Task<T> TransformAsync( T value )
+        /// <returns>The transformed value (or can be the original one).</returns>
+        protected virtual T Transform( T value )
         {
-            return Task.FromResult( value );
+            return value;
         }
 
         /// <summary>
-        /// Asynchronously updates the value by re-applying <see cref="TransformAsync" />.
+        /// Updates the value by re-applying <see cref="Transform" />.
         /// This method will not fetch any new data.
         /// </summary>
-        /// <returns>A task that represents the update operation.</returns>
-        protected async Task UpdateValueAsync()
+        protected void UpdateValue()
         {
             if( _originalData == null )
             {
-                throw new InvalidOperationException( $"{nameof( UpdateValueAsync )} can only be called after data has been successfully loaded." );
+                throw new InvalidOperationException( $"{nameof( UpdateValue )} can only be called after data has been successfully loaded." );
             }
-
-            Status = DataSourceStatus.Transforming;
 
             var version = _version;
 
-            var transformedData = await DataOperations.TransformAsync( _originalData, TransformAsync );
+            var transformedData = DataChunkOperations.Transform( _originalData, Transform );
 
             lock( _lock )
             {
                 if( version == _version )
                 {
                     Data = transformedData;
+                    // Trigger the status change no matter what
                     OnPropertyChanged( nameof( Status ) );
                     Status = DataSourceStatus.Loaded;
                 }
